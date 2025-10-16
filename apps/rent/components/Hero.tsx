@@ -1,3 +1,5 @@
+"use client"
+
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowRight, Sparkles } from "lucide-react";
@@ -34,10 +36,10 @@ const Hero = () => {
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
           <Button variant="hero" size="lg" className="group" asChild>
-            <Link href="/auth/signup">
+            <a href="http://localhost:3000/signup">
               Get Started
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Link>
+            </a>
           </Button>
           <Button variant="glass" size="lg" asChild>
             <Link href="/docs">View Documentation</Link>

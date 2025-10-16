@@ -1,3 +1,5 @@
+"use client"
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import Hero from "@/components/Hero";
@@ -23,10 +25,10 @@ export default function Home() {
           </nav>
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="sm" asChild>
-              <Link href="/auth/login">Login</Link>
+              <a href="http://localhost:3000">Login</a>
             </Button>
             <Button size="sm" asChild>
-              <Link href="/auth/signup">Sign Up</Link>
+              <a href="http://localhost:3000/signup">Sign Up</a>
             </Button>
           </div>
         </div>
