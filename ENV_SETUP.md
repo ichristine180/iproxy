@@ -41,8 +41,7 @@ TELEGRAM_BOT_TOKEN=your-telegram-bot-token
 # App URLs
 NEXT_PUBLIC_APP_BASE_URL=http://localhost:3000
 NEXT_PUBLIC_RENT_BASE_URL=http://localhost:3001
-NEXT_PUBLIC_LOGIN_URL=http://localhost:3000
-NEXT_PUBLIC_SIGNUP_URL=http://localhost:3000/signup
+
 ```
 
 ### 2. Start Development
@@ -161,8 +160,7 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ```env
 NEXT_PUBLIC_APP_BASE_URL=http://localhost:3000
 NEXT_PUBLIC_RENT_BASE_URL=http://localhost:3001
-NEXT_PUBLIC_LOGIN_URL=http://localhost:3000
-NEXT_PUBLIC_SIGNUP_URL=http://localhost:3000/signup
+
 ```
 
 ### Payment Provider (Optional)

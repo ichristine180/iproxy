@@ -109,12 +109,11 @@ export const clientEnv = {
   NEXT_PUBLIC_CRYPTOMUS_API_BASE: cryptomus.apiBase,
   NEXT_PUBLIC_APP_BASE_URL: urls.app,
   NEXT_PUBLIC_RENT_BASE_URL: urls.rent,
-  NEXT_PUBLIC_LOGIN_URL: urls.login,
-  NEXT_PUBLIC_SIGNUP_URL: urls.signup,
 } as const;
 
 // Make client env available on process.env for Next.js
-if (typeof window === 'undefined') {
+// Only run this on the server-side (Node.js environment)
+if (typeof process !== 'undefined' && process.env) {
   Object.entries(clientEnv).forEach(([key, value]) => {
     if (!process.env[key]) {
       process.env[key] = value;
