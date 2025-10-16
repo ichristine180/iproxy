@@ -2,7 +2,7 @@
 -- Track incoming webhooks from payment providers and other services
 CREATE TABLE IF NOT EXISTS public.webhook_events (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  provider TEXT NOT NULL CHECK (provider IN ('cryptomus', 'stripe', 'paypal', 'custom')),
+  provider TEXT NOT NULL CHECK (provider IN ('nowpayments', 'cryptomus', 'stripe', 'paypal', 'custom')),
   event_type TEXT NOT NULL,
   signature_ok BOOLEAN,
   payload JSONB NOT NULL,

@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS public.payments (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
   order_id UUID REFERENCES public.orders(id) ON DELETE SET NULL,
-  provider TEXT NOT NULL DEFAULT 'cryptomus' CHECK (provider IN ('cryptomus', 'stripe', 'paypal', 'manual')),
+  provider TEXT NOT NULL DEFAULT 'nowpayments' CHECK (provider IN ('nowpayments', 'cryptomus', 'stripe', 'paypal', 'manual')),
   invoice_uuid TEXT,
   amount DECIMAL(10, 2) NOT NULL CHECK (amount > 0),
   currency TEXT NOT NULL DEFAULT 'USD',

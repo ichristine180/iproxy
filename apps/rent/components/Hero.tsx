@@ -14,17 +14,17 @@ const Hero = () => {
       </div>
 
       {/* Glow effects */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-[120px] [animation:var(--animate-glow-pulse)]" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/20 rounded-full blur-[120px] [animation:var(--animate-glow-pulse)]" />
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-[120px] animate-glow-pulse" />
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/20 rounded-full blur-[120px] animate-glow-pulse delay-1000" />
 
       {/* Content */}
-      <div className="relative z-10 container mx-auto px-4 py-20 text-center [animation:var(--animate-fade-in)]">
+      <div className="relative z-10 container mx-auto px-4 py-20 text-center animate-fade-in">
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card/50 backdrop-blur-sm border border-border mb-6">
           <Sparkles className="w-4 h-4 text-accent" />
           <span className="text-sm text-muted-foreground">Powered by Advanced Technology</span>
         </div>
 
-        <h1 className="text-5xl md:text-7xl font-bold mb-6 [background-image:linear-gradient(to_right,var(--color-foreground),var(--color-primary),var(--color-accent))] bg-clip-text text-transparent leading-tight">
+        <h1 className="text-5xl md:text-7xl font-bold mb-6 gradient-text leading-tight">
           Manage Your Proxies
           <br />
           with Ease
@@ -36,7 +36,7 @@ const Hero = () => {
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
           <Button variant="hero" size="lg" className="group" asChild>
-            <a href="http://localhost:3000/signup">
+            <a href={`${process.env.NEXT_PUBLIC_APP_BASE_URL}/signup`}>
               Get Started
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </a>
@@ -46,9 +46,9 @@ const Hero = () => {
           </Button>
         </div>
 
-        {/* Feature preview */}
-        <div className="mt-16 max-w-3xl mx-auto [animation:var(--animate-slide-up)]">
-          <div className="bg-card/70 backdrop-blur-sm border border-border rounded-lg p-6 [box-shadow:var(--shadow-card)]">
+        {/* Code preview */}
+        <div className="mt-16 max-w-3xl mx-auto animate-slide-up">
+          <div className="bg-card/70 backdrop-blur-sm border border-border rounded-lg p-6 shadow-card">
             <div className="flex items-center gap-2 mb-4">
               <div className="flex gap-2">
                 <div className="w-3 h-3 rounded-full bg-destructive/50" />
@@ -59,10 +59,14 @@ const Hero = () => {
             </div>
             <pre className="text-left text-sm">
               <code className="text-accent">
-                {`const proxy = await api.createProxy({
-  location: 'us-east-1',
-  type: 'residential',
-  rotation: 'auto'
+                {`const proxy = await fetch('api.iproxy.com/v1/proxies/rent', {
+  method: 'POST',
+  headers: { 'Authorization': 'Bearer YOUR_API_KEY' },
+  body: JSON.stringify({
+    location: 'us-east-1',
+    type: 'residential',
+    rotation: 'auto'
+  })
 });`}
               </code>
             </pre>
