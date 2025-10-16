@@ -1,0 +1,22 @@
+{
+  "name": "@iproxy/env",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "description": "Centralized environment variables registry for iProxy monorepo",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/node": "^24.7.2",
+    "dotenv": "^17.2.3"
+  }
+}

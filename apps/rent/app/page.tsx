@@ -25,10 +25,10 @@ export default function Home() {
           </nav>
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="sm" asChild>
-              <a href="http://localhost:3000">Login</a>
+              <a href={process.env.NEXT_PUBLIC_LOGIN_URL}>Login</a>
             </Button>
             <Button size="sm" asChild>
-              <a href="http://localhost:3000/signup">Sign Up</a>
+              <a href={process.env.NEXT_PUBLIC_SIGNUP_URL}>Sign Up</a>
             </Button>
           </div>
         </div>
