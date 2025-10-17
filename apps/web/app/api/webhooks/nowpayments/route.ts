@@ -2,15 +2,22 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
 
-// NowPayments official webhook IPs
-// Source: https://documenter.getpostman.com/view/7907941/2s93JusNJt
 const NOWPAYMENTS_IPS = [
+  // Current NOWPayments webhook IPs (2025)
+  '51.75.77.69',
+  '138.201.172.58',
+  '65.21.158.36',
+  // Legacy AWS IPs (kept for compatibility)
   '52.49.219.70',
   '54.229.170.212',
   '52.208.91.102',
   '54.171.196.196',
   '52.213.104.34',
   '3.248.168.21',
+  // IPv6 mapped versions
+  '::ffff:51.75.77.69',
+  '::ffff:138.201.172.58',
+  '::ffff:65.21.158.36',
   '::ffff:52.49.219.70',
   '::ffff:54.229.170.212',
   '::ffff:52.208.91.102',

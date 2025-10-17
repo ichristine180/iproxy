@@ -78,16 +78,7 @@ async function processSuccessfulPayment(webhook: NowPaymentsWebhook) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    // Update user balance using the database function (if it exists)
-    // If you have a balance table/function, update it here
-    // Example:
-    // const { data: newBalance, error: balanceError } = await supabase
-    //   .rpc('update_user_balance', {
-    //     p_user_id: userId,
-    //     p_amount: webhook.price_amount,
-    //     p_operation: 'add'
-    //   });
-
+   
     // Find transaction by order_id stored in payment_id field
     console.log(`Looking for transaction with order_id: ${webhook.order_id}`);
 
