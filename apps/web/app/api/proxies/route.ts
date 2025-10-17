@@ -2,6 +2,22 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 
+// Types for the response
+type OrderWithPlan = {
+  id: string;
+  quantity: number;
+  status: string;
+  created_at: string;
+  start_at: string;
+  expires_at: string;
+  plan: {
+    id: string;
+    name: string;
+    channel: string;
+    rotation_api: boolean;
+  };
+};
+
 // GET - Fetch user's proxies from active orders
 export async function GET(request: NextRequest) {
   try {
@@ -22,7 +38,7 @@ export async function GET(request: NextRequest) {
     );
 
     // Fetch active orders with plan details
-    const { data: orders, error } = await supabaseAdmin
+    const { data: rawOrders, error } = await supabaseAdmin
       .from('orders')
       .select(`
         id,
@@ -41,6 +57,12 @@ export async function GET(request: NextRequest) {
       .eq('user_id', user.id)
       .eq('status', 'active')
       .order('created_at', { ascending: false });
+
+    // Type cast and filter out orders without plans
+    const orders = (rawOrders as any[])?.map(order => ({
+      ...order,
+      plan: Array.isArray(order.plan) ? order.plan[0] : order.plan
+    })).filter(order => order.plan) as OrderWithPlan[];
 
     if (error) {
       console.error('Error fetching proxies:', error);
