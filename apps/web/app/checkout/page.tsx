@@ -105,26 +105,51 @@ export default function CheckoutPage() {
     setError("");
 
     try {
-      const response = await fetch('/api/orders', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          plan_id: plan.id,
-          quantity,
-          pay_currency: selectedCrypto,
-        }),
-      });
+      // For free trial plans ($0), skip payment and activate immediately
+      if (plan.price_usd_month === 0) {
+        const response = await fetch('/api/orders/free-trial', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            plan_id: plan.id,
+            quantity,
+          }),
+        });
 
-      const data = await response.json();
+        const data = await response.json();
 
-      if (data.success) {
-        // Redirect to payment invoice URL
-        window.location.href = data.payment.invoice_url;
+        if (data.success) {
+          // Redirect to dashboard for free trial
+          router.push('/dashboard?trial=activated');
+        } else {
+          setError(data.error || "Failed to activate free trial");
+          setIsProcessing(false);
+        }
       } else {
-        setError(data.error || "Failed to create order");
-        setIsProcessing(false);
+        // Regular paid plan - process payment
+        const response = await fetch('/api/orders', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            plan_id: plan.id,
+            quantity,
+            pay_currency: selectedCrypto,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          // Redirect to payment invoice URL
+          window.location.href = data.payment.invoice_url;
+        } else {
+          setError(data.error || "Failed to create order");
+          setIsProcessing(false);
+        }
       }
     } catch (err) {
       console.error("Checkout error:", err);
@@ -230,42 +255,67 @@ export default function CheckoutPage() {
             {/* Payment Method */}
             <Card>
               <CardHeader>
-                <CardTitle>Payment Method</CardTitle>
-                <CardDescription>Choose your cryptocurrency</CardDescription>
+                <CardTitle>{plan.price_usd_month === 0 ? 'Free Trial' : 'Payment Method'}</CardTitle>
+                <CardDescription>
+                  {plan.price_usd_month === 0
+                    ? 'Activate your free trial instantly'
+                    : 'Choose your cryptocurrency'}
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <Label>Select Cryptocurrency</Label>
-                  <div className="grid grid-cols-2 gap-3 mt-2">
-                    {POPULAR_CRYPTOS.map((crypto) => (
-                      <button
-                        key={crypto.code}
-                        onClick={() => setSelectedCrypto(crypto.code)}
-                        className={`
-                          p-3 rounded-lg border-2 transition-all
-                          ${selectedCrypto === crypto.code
-                            ? 'border-primary bg-primary/10'
-                            : 'border-border hover:border-primary/50'
-                          }
-                        `}
-                      >
-                        <div className="text-2xl mb-1">{crypto.icon}</div>
-                        <div className="text-sm font-medium">{crypto.name}</div>
-                        <div className="text-xs text-muted-foreground uppercase">{crypto.code}</div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="p-4 bg-muted rounded-lg">
-                  <div className="flex items-start gap-2">
-                    <CreditCard className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                    <div className="text-sm text-muted-foreground">
-                      <p className="font-medium text-foreground mb-1">Secure Payment</p>
-                      <p>You'll be redirected to NowPayments to complete your purchase securely.</p>
+                {plan.price_usd_month === 0 ? (
+                  // Free Trial UI
+                  <div className="space-y-4">
+                    <div className="p-6 bg-primary/10 border border-primary/20 rounded-lg text-center">
+                      <div className="text-5xl mb-4">🎉</div>
+                      <p className="text-lg font-semibold mb-2">No Payment Required!</p>
+                      <p className="text-sm text-muted-foreground">
+                        Get started with your free trial immediately. No credit card needed.
+                      </p>
+                    </div>
+                    <div className="p-4 bg-muted rounded-lg">
+                      <p className="text-sm text-muted-foreground">
+                        Your trial will be activated instantly and you'll get full access to all features included in this plan.
+                      </p>
                     </div>
                   </div>
-                </div>
+                ) : (
+                  // Paid Plan UI
+                  <>
+                    <div>
+                      <Label>Select Cryptocurrency</Label>
+                      <div className="grid grid-cols-2 gap-3 mt-2">
+                        {POPULAR_CRYPTOS.map((crypto) => (
+                          <button
+                            key={crypto.code}
+                            onClick={() => setSelectedCrypto(crypto.code)}
+                            className={`
+                              p-3 rounded-lg border-2 transition-all
+                              ${selectedCrypto === crypto.code
+                                ? 'border-primary bg-primary/10'
+                                : 'border-border hover:border-primary/50'
+                              }
+                            `}
+                          >
+                            <div className="text-2xl mb-1">{crypto.icon}</div>
+                            <div className="text-sm font-medium">{crypto.name}</div>
+                            <div className="text-xs text-muted-foreground uppercase">{crypto.code}</div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="p-4 bg-muted rounded-lg">
+                      <div className="flex items-start gap-2">
+                        <CreditCard className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                        <div className="text-sm text-muted-foreground">
+                          <p className="font-medium text-foreground mb-1">Secure Payment</p>
+                          <p>You'll be redirected to NowPayments to complete your purchase securely.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
               </CardContent>
               <CardFooter>
                 <Button
@@ -279,10 +329,10 @@ export default function CheckoutPage() {
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                       Processing...
                     </>
+                  ) : plan.price_usd_month === 0 ? (
+                    'Activate Free Trial'
                   ) : (
-                    <>
-                      Pay ${calculateTotal()} with {selectedCrypto.toUpperCase()}
-                    </>
+                    `Pay $${calculateTotal()} with ${selectedCrypto.toUpperCase()}`
                   )}
                 </Button>
               </CardFooter>

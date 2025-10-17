@@ -4,9 +4,10 @@ import { createClient } from '@supabase/supabase-js';
 // GET - Fetch all active plans
 export async function GET(request: NextRequest) {
   try {
+    // Use service role key to bypass RLS for public plans
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
     // Get query parameters

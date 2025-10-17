@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, CheckCircle } from "lucide-react";
+import { Loader2, CheckCircle, TrendingUp, Package, Clock, DollarSign } from "lucide-react";
 
 interface Order {
   id: string;
@@ -22,12 +22,14 @@ export default function DashboardPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const paymentStatus = searchParams.get('payment');
+  const trialStatus = searchParams.get('trial');
 
   const [user, setUser] = useState<any>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [hasActiveOrder, setHasActiveOrder] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [showTrialMessage, setShowTrialMessage] = useState(false);
 
   useEffect(() => {
     if (paymentStatus === 'success') {
@@ -36,6 +38,14 @@ export default function DashboardPage() {
       setTimeout(() => setShowSuccessMessage(false), 5000);
     }
   }, [paymentStatus]);
+
+  useEffect(() => {
+    if (trialStatus === 'activated') {
+      setShowTrialMessage(true);
+      // Hide trial message after 5 seconds
+      setTimeout(() => setShowTrialMessage(false), 5000);
+    }
+  }, [trialStatus]);
 
   useEffect(() => {
     const fetchUserAndOrders = async () => {
@@ -93,6 +103,13 @@ export default function DashboardPage() {
   };
 
   const activeOrders = orders.filter(order => order.status === 'active');
+  const pendingOrders = orders.filter(order => order.status === 'pending');
+
+  // Calculate statistics
+  const totalOrders = orders.length;
+  const totalActive = activeOrders.length;
+  const totalPending = pendingOrders.length;
+  const totalSpent = orders.reduce((sum, order) => sum + parseFloat(order.total_amount.toString()), 0);
 
   if (isLoading) {
     return (
@@ -130,6 +147,19 @@ export default function DashboardPage() {
                 <p className="font-medium text-green-600">Payment Successful!</p>
                 <p className="text-sm text-muted-foreground">
                   Your order will be activated shortly once payment is confirmed.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Free Trial Activated Message */}
+          {showTrialMessage && (
+            <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg flex items-center gap-3">
+              <CheckCircle className="w-5 h-5 text-blue-600" />
+              <div>
+                <p className="font-medium text-blue-600">Free Trial Activated!</p>
+                <p className="text-sm text-muted-foreground">
+                  Your 7-day free trial has been activated. Enjoy full access to all features!
                 </p>
               </div>
             </div>
