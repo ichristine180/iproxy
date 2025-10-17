@@ -123,7 +123,7 @@ export async function POST(request: NextRequest) {
     const totalAmount = parseFloat(plan.price_usd_month) * quantity;
 
     // Create invoice via payments API
-    const origin = request.headers.get('origin') || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const origin = request.headers.get('origin') || process.env.NEXT_PUBLIC_APP_BASE_URL;
 
     const invoiceResponse = await fetch(`${origin}/api/payments/invoice`, {
       method: 'POST',

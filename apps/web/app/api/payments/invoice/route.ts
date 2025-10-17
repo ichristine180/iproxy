@@ -144,7 +144,7 @@ export async function POST(request: NextRequest) {
     const nowpaymentsOrderId = `payment-${Date.now()}-${user.id}`;
 
     // Get the origin for callback URLs
-    const origin = request.headers.get('origin') || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const origin = request.headers.get('origin') || process.env.NEXT_PUBLIC_APP_BASE_URL;
 
     // Create invoice with NowPayments
     const invoicePayload = {
