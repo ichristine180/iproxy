@@ -297,13 +297,23 @@ async function processWebhook(
       console.log('Free trial orders deactivated for user:', currentOrder.user_id);
     }
 
+    // Fetch current order to check if dates need to be set
+    const { data: currentOrderData } = await supabase
+      .from('orders')
+      .select('start_at, expires_at')
+      .eq('id', payment.order_id)
+      .single();
+
+    const now = new Date().toISOString();
+    const thirtyDaysFromNow = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+
     const { error: orderError } = await supabase
       .from('orders')
       .update({
         status: orderStatus,
-        start_at: supabase.sql`COALESCE(start_at, NOW())`,
-        expires_at: supabase.sql`COALESCE(expires_at, NOW() + interval '30 days')`,
-        updated_at: new Date().toISOString(),
+        start_at: currentOrderData?.start_at || now,
+        expires_at: currentOrderData?.expires_at || thirtyDaysFromNow,
+        updated_at: now,
       })
       .eq('id', payment.order_id)
       .eq('status', 'pending'); // Only update pending orders
