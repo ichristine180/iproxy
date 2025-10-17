@@ -55,19 +55,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if user already has an active free trial
+    // Check if user already has an active free trial or paid plan
     const { data: existingOrders } = await supabaseAdmin
       .from('orders')
       .select('*')
       .eq('user_id', user.id)
-      .eq('plan_id', plan_id)
       .in('status', ['active', 'pending']);
 
     if (existingOrders && existingOrders.length > 0) {
-      return NextResponse.json(
-        { success: false, error: 'You already have an active or pending order for this plan' },
-        { status: 400 }
-      );
+      // Check if they have any paid plans
+      const hasPaidPlan = existingOrders.some(order => order.total_amount > 0);
+      if (hasPaidPlan) {
+        return NextResponse.json(
+          { success: false, error: 'You already have an active paid plan. Free trial is not available.' },
+          { status: 400 }
+        );
+      }
+
+      // Check if they already have a free trial
+      const hasFreeTrial = existingOrders.some(order => order.total_amount === 0);
+      if (hasFreeTrial) {
+        return NextResponse.json(
+          { success: false, error: 'You already have an active free trial' },
+          { status: 400 }
+        );
+      }
     }
 
     // Calculate expiry date (7 days from now for free trial)

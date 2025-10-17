@@ -31,6 +31,10 @@
   --color-input: hsl(229 40% 18%);
   --color-ring: hsl(263 70% 60%);
 
+  --color-sidebar: hsl(229 70% 8%);
+  --color-sidebar-foreground: hsl(210 40% 98%);
+  --color-sidebar-border: hsl(229 40% 18%);
+
   --radius-lg: 0.75rem;
   --radius-md: calc(0.75rem - 2px);
   --radius-sm: calc(0.75rem - 4px);
@@ -42,6 +46,8 @@
 }
 
 :root {
+  --border: 229 40% 18%;
+
   --gradient-primary: linear-gradient(135deg, hsl(263 70% 60%), hsl(220 90% 60%));
   --gradient-accent: linear-gradient(135deg, hsl(193 82% 55%), hsl(263 70% 60%));
   --gradient-glow: linear-gradient(135deg, hsl(263 70% 60% / 0.3), hsl(193 82% 55% / 0.3));

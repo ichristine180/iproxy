@@ -215,7 +215,7 @@ function extractUserIdFromOrderId(orderId: string): string | null {
   const timestampMatch = withoutPrefix.match(/^(\d+)-(.+)$/);
 
   if (timestampMatch) {
-    return timestampMatch[2]; // Return the user ID part (everything after timestamp)
+    return timestampMatch[2] ?? null; // Return the user ID part (everything after timestamp)
   }
 
   return null;

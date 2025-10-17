@@ -160,11 +160,18 @@ export async function POST(request: NextRequest) {
 
       // Log processing error
       if (webhookEventId) {
+        // Fetch current retry count
+        const { data: currentEvent } = await supabase
+          .from('webhook_events')
+          .select('retry_count')
+          .eq('id', webhookEventId)
+          .single();
+
         await supabase
           .from('webhook_events')
           .update({
             processing_error: processingError.message,
-            retry_count: supabase.sql`retry_count + 1`,
+            retry_count: (currentEvent?.retry_count || 0) + 1,
           })
           .eq('id', webhookEventId);
       }
@@ -261,12 +268,34 @@ async function processWebhook(
 
   // Update order status if payment is final and successful (paid or paid_over)
   if (isFinal && (paymentStatus === 'paid') && payment.order_id) {
+    // Get the order to check if it's a paid plan
+    const { data: currentOrder } = await supabase
+      .from('orders')
+      .select('user_id, total_amount')
+      .eq('id', payment.order_id)
+      .single();
+
+    // If activating a paid plan, deactivate all free trial orders
+    if (currentOrder && currentOrder.total_amount > 0) {
+      await supabase
+        .from('orders')
+        .update({
+          status: 'cancelled',
+          expires_at: new Date().toISOString()
+        })
+        .eq('user_id', currentOrder.user_id)
+        .eq('total_amount', 0)
+        .eq('status', 'active');
+
+      console.log('Free trial orders deactivated for user:', currentOrder.user_id);
+    }
+
     const { error: orderError } = await supabase
       .from('orders')
       .update({
         status: orderStatus,
         start_at: supabase.sql`COALESCE(start_at, NOW())`,
-        end_at: supabase.sql`COALESCE(end_at, NOW() + interval '30 days')`,
+        expires_at: supabase.sql`COALESCE(expires_at, NOW() + interval '30 days')`,
         updated_at: new Date().toISOString(),
       })
       .eq('id', payment.order_id)
@@ -350,7 +379,7 @@ function extractUserIdFromOrderId(orderId: string): string | null {
   const timestampMatch = withoutPrefix.match(/^(\d+)-(.+)$/);
 
   if (timestampMatch) {
-    return timestampMatch[2]; // Return the user ID part
+    return timestampMatch[2] ?? null; // Return the user ID part
   }
 
   return null;
@@ -360,7 +389,10 @@ function getClientIp(request: NextRequest): string {
   // Try various headers for real IP
   const forwarded = request.headers.get('x-forwarded-for');
   if (forwarded) {
-    return forwarded.split(',')[0].trim();
+    const firstIp = forwarded.split(',')[0];
+    if (firstIp) {
+      return firstIp.trim();
+    }
   }
 
   const realIp = request.headers.get('x-real-ip');

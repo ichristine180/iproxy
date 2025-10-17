@@ -1,10 +1,25 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, CheckCircle, TrendingUp, Package, Clock, DollarSign } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Loader2,
+  CheckCircle,
+  Server,
+  Copy,
+  Eye,
+  EyeOff,
+  AlertCircle,
+  Clock,
+} from "lucide-react";
 
 interface Order {
   id: string;
@@ -15,101 +30,155 @@ interface Order {
   };
   total_amount: number;
   start_at: string;
-  end_at: string;
+  expires_at: string;
 }
 
-export default function DashboardPage() {
+interface Proxy {
+  id: string;
+  host: string;
+  port: number;
+  username: string;
+  password: string;
+  channel: string;
+  plan_name: string;
+  rotation_api: boolean;
+  status: string;
+  expires_at: string;
+}
+
+function DashboardPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const paymentStatus = searchParams.get('payment');
-  const trialStatus = searchParams.get('trial');
+  const paymentStatus = searchParams.get("payment");
+  const trialStatus = searchParams.get("trial");
 
-  const [user, setUser] = useState<any>(null);
   const [orders, setOrders] = useState<Order[]>([]);
-  const [hasActiveOrder, setHasActiveOrder] = useState(false);
+  const [proxies, setProxies] = useState<Proxy[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [showTrialMessage, setShowTrialMessage] = useState(false);
+  const [showPasswords, setShowPasswords] = useState<{ [key: string]: boolean }>({});
+  const [copiedField, setCopiedField] = useState<string>("");
+  const [activatingOrder, setActivatingOrder] = useState<string | null>(null);
+
+  // Only show manual activation in development
+  const isDevelopment = process.env.NODE_ENV === 'development';
 
   useEffect(() => {
-    if (paymentStatus === 'success') {
+    if (paymentStatus === "success") {
       setShowSuccessMessage(true);
-      // Hide success message after 5 seconds
       setTimeout(() => setShowSuccessMessage(false), 5000);
     }
   }, [paymentStatus]);
 
   useEffect(() => {
-    if (trialStatus === 'activated') {
+    if (trialStatus === "activated") {
       setShowTrialMessage(true);
-      // Hide trial message after 5 seconds
       setTimeout(() => setShowTrialMessage(false), 5000);
     }
   }, [trialStatus]);
 
   useEffect(() => {
-    const fetchUserAndOrders = async () => {
-      try {
-        // Fetch user
-        const userResponse = await fetch("/api/auth/user");
-        const userData = await userResponse.json();
+    fetchData();
+  }, [router]);
 
-        if (!userData.success) {
-          router.push("/");
+  const fetchData = async () => {
+    try {
+      // Fetch orders
+      const ordersResponse = await fetch("/api/orders");
+      const ordersData = await ordersResponse.json();
+
+      if (ordersData.success) {
+        setOrders(ordersData.orders);
+
+        if (ordersData.orders.length === 0) {
+          router.push("/pricing");
           return;
         }
-
-        setUser(userData.user);
-
-        // Fetch orders
-        const ordersResponse = await fetch("/api/orders");
-        const ordersData = await ordersResponse.json();
-
-        if (ordersData.success) {
-          setOrders(ordersData.orders);
-          setHasActiveOrder(ordersData.hasActiveOrder);
-
-          // Only redirect to pricing if user has ZERO orders (never purchased anything)
-          // This allows users with pending payments to stay on dashboard
-          if (ordersData.orders.length === 0) {
-            router.push("/pricing");
-          }
-        }
-      } catch (error) {
-        console.error("Failed to fetch data:", error);
-        router.push("/");
-      } finally {
-        setIsLoading(false);
       }
-    };
 
-    fetchUserAndOrders();
-  }, [router, paymentStatus]);
+      // Fetch proxies
+      const proxiesResponse = await fetch("/api/proxies");
+      const proxiesData = await proxiesResponse.json();
 
-  const handleLogout = async () => {
+      if (proxiesData.success) {
+        setProxies(proxiesData.proxies);
+      }
+    } catch (error) {
+      console.error("Failed to fetch data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const copyToClipboard = (text: string, field: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(""), 2000);
+  };
+
+  const togglePasswordVisibility = (proxyId: string) => {
+    setShowPasswords((prev) => ({
+      ...prev,
+      [proxyId]: !prev[proxyId],
+    }));
+  };
+
+  const getTimeRemaining = (expiresAt: string) => {
+    const now = new Date();
+    const expiry = new Date(expiresAt);
+    const diff = expiry.getTime() - now.getTime();
+
+    if (diff <= 0) return "Expired";
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+    if (days > 0) return `${days} day${days > 1 ? "s" : ""} remaining`;
+    if (hours > 0) return `${hours} hour${hours > 1 ? "s" : ""} remaining`;
+    return "Less than 1 hour";
+  };
+
+  const isFreeTrial = (order: Order) => {
+    return order.total_amount === 0;
+  };
+
+  const handleActivateOrder = async (orderId: string) => {
+    setActivatingOrder(orderId);
     try {
-      const response = await fetch("/api/auth/logout", {
+      const response = await fetch("/api/payments/activate", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ order_id: orderId }),
       });
 
       const data = await response.json();
 
       if (data.success) {
-        router.push("/");
+        // Refresh data
+        await fetchData();
+        alert("Order activated successfully!");
+      } else {
+        alert(`Failed to activate: ${data.error}`);
       }
     } catch (error) {
-      console.error("Logout failed:", error);
+      console.error("Error activating order:", error);
+      alert("Failed to activate order");
+    } finally {
+      setActivatingOrder(null);
     }
   };
 
-  const activeOrders = orders.filter(order => order.status === 'active');
-  const pendingOrders = orders.filter(order => order.status === 'pending');
+  const activeOrders = orders.filter((order) => order.status === "active");
+  const pendingOrders = orders.filter((order) => order.status === "pending");
 
-  // Calculate statistics
-  const totalOrders = orders.length;
-  const totalActive = activeOrders.length;
-  const totalPending = pendingOrders.length;
-  const totalSpent = orders.reduce((sum, order) => sum + parseFloat(order.total_amount.toString()), 0);
+  const freeTrialOrder = orders.find((order) => isFreeTrial(order) && order.status === "active");
+  const hasPaidPlan = activeOrders.some((order) => order.total_amount > 0);
+
+  // Only show free trial warning if user has free trial and no paid plans
+  const showFreeTrialWarning = freeTrialOrder && !hasPaidPlan;
 
   if (isLoading) {
     return (
@@ -120,148 +189,343 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border/50 bg-background/80 backdrop-blur-sm">
-        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold [background-image:var(--gradient-primary)] bg-clip-text text-transparent">
-            iProxy Dashboard
-          </h1>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => router.push("/pricing")}>
-              Browse Plans
-            </Button>
-            <Button variant="outline" onClick={handleLogout}>
-              Logout
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      <main className="container mx-auto px-6 py-12">
-        <div className="max-w-4xl mx-auto space-y-8">
-          {/* Success Message */}
-          {showSuccessMessage && (
-            <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg flex items-center gap-3">
-              <CheckCircle className="w-5 h-5 text-green-600" />
-              <div>
-                <p className="font-medium text-green-600">Payment Successful!</p>
-                <p className="text-sm text-muted-foreground">
-                  Your order will be activated shortly once payment is confirmed.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Free Trial Activated Message */}
-          {showTrialMessage && (
-            <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg flex items-center gap-3">
-              <CheckCircle className="w-5 h-5 text-blue-600" />
-              <div>
-                <p className="font-medium text-blue-600">Free Trial Activated!</p>
-                <p className="text-sm text-muted-foreground">
-                  Your 7-day free trial has been activated. Enjoy full access to all features!
-                </p>
-              </div>
-            </div>
-          )}
-
-          <div>
-            <h2 className="text-3xl font-bold mb-2">Welcome back{user?.name ? `, ${user.name}` : ''}!</h2>
-            <p className="text-muted-foreground">
-              Manage your proxies and account settings
-            </p>
-          </div>
-
-          <div className="grid gap-6 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Profile Information</CardTitle>
-                <CardDescription>Your account details</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-2">
+    <div className="space-y-6">
+          <div className="space-y-6">
+            {/* Success Messages */}
+            {showSuccessMessage && (
+              <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-xl flex items-center gap-3 shadow-sm">
+                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
                 <div>
-                  <p className="text-sm text-muted-foreground">Name</p>
-                  <p className="font-medium">{user?.name || "N/A"}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Email</p>
-                  <p className="font-medium">{user?.email}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Email Verified</p>
-                  <p className="font-medium">
-                    {user?.emailVerified ? (
-                      <span className="text-green-600">Verified</span>
-                    ) : (
-                      <span className="text-yellow-600">Not verified</span>
-                    )}
+                  <p className="font-semibold text-green-700 dark:text-green-600">Payment Successful!</p>
+                  <p className="text-sm text-muted-foreground">
+                    Your order will be activated shortly once payment is confirmed.
                   </p>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            )}
 
-            <Card>
+            {showTrialMessage && (
+              <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl flex items-center gap-3 shadow-sm">
+                <CheckCircle className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                <div>
+                  <p className="font-semibold text-blue-700 dark:text-blue-600">Free Trial Activated!</p>
+                  <p className="text-sm text-muted-foreground">
+                    Your 7-day free trial has been activated. Enjoy full access to all
+                    features!
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Free Trial Warning */}
+            {showFreeTrialWarning && freeTrialOrder && (
+              <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl flex items-start gap-3 shadow-sm">
+                <Clock className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="font-semibold text-yellow-700 dark:text-yellow-600">Free Trial Active</p>
+                  <p className="text-sm text-muted-foreground">
+                    Your trial expires on{" "}
+                    {new Date(freeTrialOrder.expires_at).toLocaleDateString()}.{" "}
+                    {getTimeRemaining(freeTrialOrder.expires_at)}
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  onClick={() => router.push("/pricing")}
+                  className="flex-shrink-0"
+                >
+                  Upgrade Now
+                </Button>
+              </div>
+            )}
+
+            {/* Overview Stats */}
+            <div className="grid gap-4 md:grid-cols-3">
+              <Card className="shadow-sm bg-card/50 backdrop-blur" style={{ borderColor: 'hsl(var(--border))' }}>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Active Proxies</CardTitle>
+                  <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Server className="h-4 w-4 text-primary" />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold">{proxies.length}</div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    From {activeOrders.length} active order{activeOrders.length !== 1 ? "s" : ""}
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="shadow-sm bg-card/50 backdrop-blur" style={{ borderColor: 'hsl(var(--border))' }}>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Pending Orders</CardTitle>
+                  <div className="h-8 w-8 rounded-lg bg-yellow-500/10 flex items-center justify-center">
+                    <AlertCircle className="h-4 w-4 text-yellow-600" />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold">{pendingOrders.length}</div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Awaiting payment confirmation
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="shadow-sm bg-card/50 backdrop-blur" style={{ borderColor: 'hsl(var(--border))' }}>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
+                  <div className="h-8 w-8 rounded-lg bg-green-500/10 flex items-center justify-center">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold">{orders.length}</div>
+                  <p className="text-xs text-muted-foreground mt-1">All time orders</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Proxies List */}
+            <Card className="border-0 shadow-sm bg-card/50 backdrop-blur">
               <CardHeader>
-                <CardTitle>Active Plans</CardTitle>
-                <CardDescription>Your current subscriptions</CardDescription>
+                <CardTitle>Your Proxies</CardTitle>
+                <CardDescription>
+                  Active proxy credentials for your orders
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                {activeOrders.length === 0 ? (
-                  <>
-                    <p className="text-muted-foreground mb-4">No active plans</p>
-                    <Button onClick={() => router.push("/pricing")}>
+                {proxies.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Server className="mx-auto h-12 w-12 text-muted-foreground/50" />
+                    <h3 className="mt-4 text-lg font-semibold">No active proxies</h3>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Purchase a plan to get started with proxies
+                    </p>
+                    <Button
+                      className="mt-4"
+                      onClick={() => router.push("/pricing")}
+                    >
                       Browse Plans
                     </Button>
-                  </>
+                  </div>
                 ) : (
-                  <div className="space-y-3">
-                    {activeOrders.map((order) => (
-                      <div key={order.id} className="p-3 border rounded-lg">
-                        <p className="font-medium">{order.plan.name}</p>
-                        <p className="text-sm text-muted-foreground capitalize">
-                          {order.plan.channel} • ${order.total_amount}/month
-                        </p>
-                        {order.end_at && (
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Expires: {new Date(order.end_at).toLocaleDateString()}
-                          </p>
-                        )}
+                  <div className="space-y-4">
+                    {proxies.map((proxy) => (
+                      <div
+                        key={proxy.id}
+                        className="border rounded-lg p-4 space-y-3"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h4 className="font-semibold">{proxy.plan_name}</h4>
+                            <p className="text-sm text-muted-foreground capitalize">
+                              {proxy.channel} • {proxy.rotation_api ? "API Rotation" : "Standard"}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-green-500/10 text-green-600 border">
+                              Active
+                            </span>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {getTimeRemaining(proxy.expires_at)}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="grid gap-3 md:grid-cols-2">
+                          {/* Host */}
+                          <div className="space-y-1">
+                            <label className="text-xs font-medium text-muted-foreground">
+                              Host
+                            </label>
+                            <div className="flex items-center gap-2">
+                              <code className="flex-1 rounded bg-muted px-2 py-1 text-sm">
+                                {proxy.host}
+                              </code>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 w-7 p-0"
+                                onClick={() =>
+                                  copyToClipboard(proxy.host, `${proxy.id}-host`)
+                                }
+                              >
+                                {copiedField === `${proxy.id}-host` ? (
+                                  <CheckCircle className="h-3 w-3 text-green-600" />
+                                ) : (
+                                  <Copy className="h-3 w-3" />
+                                )}
+                              </Button>
+                            </div>
+                          </div>
+
+                          {/* Port */}
+                          <div className="space-y-1">
+                            <label className="text-xs font-medium text-muted-foreground">
+                              Port
+                            </label>
+                            <div className="flex items-center gap-2">
+                              <code className="flex-1 rounded bg-muted px-2 py-1 text-sm">
+                                {proxy.port}
+                              </code>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 w-7 p-0"
+                                onClick={() =>
+                                  copyToClipboard(
+                                    proxy.port.toString(),
+                                    `${proxy.id}-port`
+                                  )
+                                }
+                              >
+                                {copiedField === `${proxy.id}-port` ? (
+                                  <CheckCircle className="h-3 w-3 text-green-600" />
+                                ) : (
+                                  <Copy className="h-3 w-3" />
+                                )}
+                              </Button>
+                            </div>
+                          </div>
+
+                          {/* Username */}
+                          <div className="space-y-1">
+                            <label className="text-xs font-medium text-muted-foreground">
+                              Username
+                            </label>
+                            <div className="flex items-center gap-2">
+                              <code className="flex-1 rounded bg-muted px-2 py-1 text-sm">
+                                {proxy.username}
+                              </code>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 w-7 p-0"
+                                onClick={() =>
+                                  copyToClipboard(proxy.username, `${proxy.id}-username`)
+                                }
+                              >
+                                {copiedField === `${proxy.id}-username` ? (
+                                  <CheckCircle className="h-3 w-3 text-green-600" />
+                                ) : (
+                                  <Copy className="h-3 w-3" />
+                                )}
+                              </Button>
+                            </div>
+                          </div>
+
+                          {/* Password */}
+                          <div className="space-y-1">
+                            <label className="text-xs font-medium text-muted-foreground">
+                              Password
+                            </label>
+                            <div className="flex items-center gap-2">
+                              <code className="flex-1 rounded bg-muted px-2 py-1 text-sm">
+                                {showPasswords[proxy.id]
+                                  ? proxy.password
+                                  : "••••••••••"}
+                              </code>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 w-7 p-0"
+                                onClick={() => togglePasswordVisibility(proxy.id)}
+                              >
+                                {showPasswords[proxy.id] ? (
+                                  <EyeOff className="h-3 w-3" />
+                                ) : (
+                                  <Eye className="h-3 w-3" />
+                                )}
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 w-7 p-0"
+                                onClick={() =>
+                                  copyToClipboard(proxy.password, `${proxy.id}-password`)
+                                }
+                              >
+                                {copiedField === `${proxy.id}-password` ? (
+                                  <CheckCircle className="h-3 w-3 text-green-600" />
+                                ) : (
+                                  <Copy className="h-3 w-3" />
+                                )}
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     ))}
                   </div>
                 )}
               </CardContent>
             </Card>
-          </div>
 
-          {/* Pending Orders */}
-          {orders.some(order => order.status === 'pending') && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Pending Orders</CardTitle>
-                <CardDescription>Orders awaiting payment confirmation</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {orders.filter(order => order.status === 'pending').map((order) => (
-                    <div key={order.id} className="p-3 border rounded-lg flex justify-between items-center">
-                      <div>
-                        <p className="font-medium">{order.plan.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          ${order.total_amount} • Awaiting payment
-                        </p>
+            {/* Pending Orders */}
+            {pendingOrders.length > 0 && (
+              <Card className="border-0 shadow-sm bg-card/50 backdrop-blur">
+                <CardHeader>
+                  <CardTitle>Pending Orders</CardTitle>
+                  <CardDescription>
+                    Complete payment to activate these orders
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {pendingOrders.map((order) => (
+                      <div
+                        key={order.id}
+                        className="flex items-center justify-between p-3 border rounded-lg"
+                      >
+                        <div>
+                          <p className="font-medium">{order.plan.name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            ${order.total_amount} • Awaiting payment
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {isDevelopment && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleActivateOrder(order.id)}
+                              disabled={activatingOrder === order.id}
+                            >
+                              {activatingOrder === order.id ? (
+                                <>
+                                  <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                                  Activating...
+                                </>
+                              ) : (
+                                "Activate Order (Dev Only)"
+                              )}
+                            </Button>
+                          )}
+                          <span className="px-3 py-1 rounded-full text-xs font-medium bg-yellow-500/10 text-yellow-600 border">
+                            Pending
+                          </span>
+                        </div>
                       </div>
-                      <span className="px-3 py-1 rounded-full text-xs font-medium bg-yellow-500/10 text-yellow-600 border border-yellow-500/20">
-                        Pending
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-      </main>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      }
+    >
+      <DashboardPageContent />
+    </Suspense>
   );
 }

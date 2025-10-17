@@ -1,9 +1,16 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Loader2, ArrowLeft, CreditCard } from "lucide-react";
@@ -19,29 +26,30 @@ interface Plan {
 }
 
 const POPULAR_CRYPTOS = [
-  { code: 'btc', name: 'Bitcoin', icon: '₿' },
-  { code: 'eth', name: 'Ethereum', icon: 'Ξ' },
-  { code: 'usdt', name: 'Tether (USDT)', icon: '₮' },
-  { code: 'usdc', name: 'USD Coin', icon: '$' },
-  { code: 'bnb', name: 'Binance Coin', icon: 'BNB' },
-  { code: 'ltc', name: 'Litecoin', icon: 'Ł' },
+  { code: "btc", name: "Bitcoin", icon: "₿" },
+  { code: "eth", name: "Ethereum", icon: "Ξ" },
+  { code: "usdt", name: "Tether (USDT)", icon: "₮" },
+  { code: "usdc", name: "USD Coin", icon: "$" },
+  { code: "bnb", name: "Binance Coin", icon: "BNB" },
+  { code: "ltc", name: "Litecoin", icon: "Ł" },
+  { code: "trx", name: "TRON", icon: "TRX" },
 ];
 
-export default function CheckoutPage() {
+function CheckoutPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const planId = searchParams.get('plan_id');
+  const planId = searchParams.get("plan_id");
 
   const [plan, setPlan] = useState<Plan | null>(null);
   const [quantity, setQuantity] = useState(1);
-  const [selectedCrypto, setSelectedCrypto] = useState('btc');
+  const [selectedCrypto, setSelectedCrypto] = useState("btc");
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
     if (!planId) {
-      router.push('/pricing');
+      router.push("/pricing");
       return;
     }
     checkAuthAndFetchPlan();
@@ -85,7 +93,7 @@ export default function CheckoutPage() {
           setPlan(selectedPlan);
         } else {
           setError("Plan not found");
-          router.push('/pricing');
+          router.push("/pricing");
         }
       } else {
         setError(data.error || "Failed to fetch plan");
@@ -107,10 +115,10 @@ export default function CheckoutPage() {
     try {
       // For free trial plans ($0), skip payment and activate immediately
       if (plan.price_usd_month === 0) {
-        const response = await fetch('/api/orders/free-trial', {
-          method: 'POST',
+        const response = await fetch("/api/orders/free-trial", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             plan_id: plan.id,
@@ -122,17 +130,17 @@ export default function CheckoutPage() {
 
         if (data.success) {
           // Redirect to dashboard for free trial
-          router.push('/dashboard?trial=activated');
+          router.push("/dashboard?trial=activated");
         } else {
           setError(data.error || "Failed to activate free trial");
           setIsProcessing(false);
         }
       } else {
         // Regular paid plan - process payment
-        const response = await fetch('/api/orders', {
-          method: 'POST',
+        const response = await fetch("/api/orders", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             plan_id: plan.id,
@@ -235,13 +243,17 @@ export default function CheckoutPage() {
                     type="number"
                     min="1"
                     value={quantity}
-                    onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                    onChange={(e) =>
+                      setQuantity(Math.max(1, parseInt(e.target.value) || 1))
+                    }
                     className="mt-2"
                   />
                 </div>
                 <div className="pt-4 border-t">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Subtotal</span>
+                    <span className="text-sm text-muted-foreground">
+                      Subtotal
+                    </span>
                     <span className="font-medium">${calculateTotal()}</span>
                   </div>
                   <div className="flex justify-between items-center mt-2 text-lg font-bold">
@@ -255,11 +267,13 @@ export default function CheckoutPage() {
             {/* Payment Method */}
             <Card>
               <CardHeader>
-                <CardTitle>{plan.price_usd_month === 0 ? 'Free Trial' : 'Payment Method'}</CardTitle>
+                <CardTitle>
+                  {plan.price_usd_month === 0 ? "Free Trial" : "Payment Method"}
+                </CardTitle>
                 <CardDescription>
                   {plan.price_usd_month === 0
-                    ? 'Activate your free trial instantly'
-                    : 'Choose your cryptocurrency'}
+                    ? "Activate your free trial instantly"
+                    : "Choose your cryptocurrency"}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -268,14 +282,18 @@ export default function CheckoutPage() {
                   <div className="space-y-4">
                     <div className="p-6 bg-primary/10 border border-primary/20 rounded-lg text-center">
                       <div className="text-5xl mb-4">🎉</div>
-                      <p className="text-lg font-semibold mb-2">No Payment Required!</p>
+                      <p className="text-lg font-semibold mb-2">
+                        No Payment Required!
+                      </p>
                       <p className="text-sm text-muted-foreground">
-                        Get started with your free trial immediately. No credit card needed.
+                        Get started with your free trial immediately. No credit
+                        card needed.
                       </p>
                     </div>
                     <div className="p-4 bg-muted rounded-lg">
                       <p className="text-sm text-muted-foreground">
-                        Your trial will be activated instantly and you'll get full access to all features included in this plan.
+                        Your trial will be activated instantly and you'll get
+                        full access to all features included in this plan.
                       </p>
                     </div>
                   </div>
@@ -291,15 +309,20 @@ export default function CheckoutPage() {
                             onClick={() => setSelectedCrypto(crypto.code)}
                             className={`
                               p-3 rounded-lg border-2 transition-all
-                              ${selectedCrypto === crypto.code
-                                ? 'border-primary bg-primary/10'
-                                : 'border-border hover:border-primary/50'
+                              ${
+                                selectedCrypto === crypto.code
+                                  ? "border-primary bg-primary/10"
+                                  : "border-border hover:border-primary/50"
                               }
                             `}
                           >
                             <div className="text-2xl mb-1">{crypto.icon}</div>
-                            <div className="text-sm font-medium">{crypto.name}</div>
-                            <div className="text-xs text-muted-foreground uppercase">{crypto.code}</div>
+                            <div className="text-sm font-medium">
+                              {crypto.name}
+                            </div>
+                            <div className="text-xs text-muted-foreground uppercase">
+                              {crypto.code}
+                            </div>
                           </button>
                         ))}
                       </div>
@@ -309,8 +332,13 @@ export default function CheckoutPage() {
                       <div className="flex items-start gap-2">
                         <CreditCard className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
                         <div className="text-sm text-muted-foreground">
-                          <p className="font-medium text-foreground mb-1">Secure Payment</p>
-                          <p>You'll be redirected to NowPayments to complete your purchase securely.</p>
+                          <p className="font-medium text-foreground mb-1">
+                            Secure Payment
+                          </p>
+                          <p>
+                            You'll be redirected to NowPayments to complete your
+                            purchase securely.
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -330,7 +358,7 @@ export default function CheckoutPage() {
                       Processing...
                     </>
                   ) : plan.price_usd_month === 0 ? (
-                    'Activate Free Trial'
+                    "Activate Free Trial"
                   ) : (
                     `Pay $${calculateTotal()} with ${selectedCrypto.toUpperCase()}`
                   )}
@@ -341,5 +369,19 @@ export default function CheckoutPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      }
+    >
+      <CheckoutPageContent />
+    </Suspense>
   );
 }
