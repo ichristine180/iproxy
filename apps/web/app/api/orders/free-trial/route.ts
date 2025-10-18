@@ -82,7 +82,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Calculate expiry date (7 days from now for free trial)
+    // Calculate dates for free trial
+    const startDate = new Date();
     const expiryDate = new Date();
     expiryDate.setDate(expiryDate.getDate() + 7);
 
@@ -95,6 +96,7 @@ export async function POST(request: NextRequest) {
         quantity: quantity,
         total_amount: 0,
         status: 'active',
+        start_at: startDate.toISOString(),
         expires_at: expiryDate.toISOString(),
       })
       .select()
@@ -120,6 +122,7 @@ export async function POST(request: NextRequest) {
         quantity,
         total_amount: 0,
         status: 'active',
+        start_at: startDate.toISOString(),
         expires_at: expiryDate.toISOString(),
       },
       message: 'Free trial activated successfully!',

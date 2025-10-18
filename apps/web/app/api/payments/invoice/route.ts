@@ -112,7 +112,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create order
+    // Create order with initial dates
+    const now = new Date().toISOString();
+    const thirtyDaysFromNow = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+
     const { data: order, error: orderError } = await supabaseAdmin
       .from('orders')
       .insert({
@@ -122,6 +125,8 @@ export async function POST(request: NextRequest) {
         quantity: quantity,
         total_amount: price_amount,
         currency: price_currency.toUpperCase(),
+        start_at: now,
+        expires_at: thirtyDaysFromNow,
         metadata: {
           pay_currency: pay_currency,
           order_description: order_description,

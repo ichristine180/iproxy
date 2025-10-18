@@ -1,24 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 
-// Types for the response
-type OrderWithPlan = {
-  id: string;
-  quantity: number;
-  status: string;
-  created_at: string;
-  start_at: string;
-  expires_at: string;
-  plan: {
-    id: string;
-    name: string;
-    channel: string;
-    rotation_api: boolean;
-  };
-};
-
-// GET - Fetch user's proxies from active orders
+// GET - Fetch user's proxies via RLS
 export async function GET(request: NextRequest) {
   try {
     // Get authenticated user
@@ -32,37 +15,11 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const supabaseAdmin = createSupabaseClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
-
-    // Fetch active orders with plan details
-    const { data: rawOrders, error } = await supabaseAdmin
-      .from('orders')
-      .select(`
-        id,
-        quantity,
-        status,
-        created_at,
-        start_at,
-        expires_at,
-        plan:plans(
-          id,
-          name,
-          channel,
-          rotation_api
-        )
-      `)
-      .eq('user_id', user.id)
-      .eq('status', 'active')
+    // Fetch proxies using RLS - only user's own proxies will be returned
+    const { data: proxies, error } = await supabase
+      .from('proxies')
+      .select('*')
       .order('created_at', { ascending: false });
-
-    // Type cast and filter out orders without plans
-    const orders = (rawOrders as any[])?.map(order => ({
-      ...order,
-      plan: Array.isArray(order.plan) ? order.plan[0] : order.plan
-    })).filter(order => order.plan) as OrderWithPlan[];
 
     if (error) {
       console.error('Error fetching proxies:', error);
@@ -72,35 +29,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Generate proxy information based on orders
-    const proxies = orders?.flatMap((order) => {
-      const baseProxies = [];
-      for (let i = 0; i < order.quantity; i++) {
-        // Generate proxy credentials (in production, these would come from your proxy infrastructure)
-        const proxyNumber = i + 1;
-        const proxy = {
-          id: `${order.id}-${i}`,
-          order_id: order.id,
-          host: `${order.plan.channel}.proxy.iproxy.com`,
-          port: 8000 + i,
-          username: `user_${user.id.substring(0, 8)}_${proxyNumber}`,
-          password: `pass_${order.id.substring(0, 8)}_${proxyNumber}`,
-          channel: order.plan.channel,
-          plan_name: order.plan.name,
-          rotation_api: order.plan.rotation_api,
-          status: 'active',
-          created_at: order.created_at,
-          expires_at: order.expires_at,
-        };
-        baseProxies.push(proxy);
-      }
-      return baseProxies;
-    }) || [];
-
     return NextResponse.json({
       success: true,
-      proxies,
-      total: proxies.length,
+      proxies: proxies || [],
+      total: proxies?.length || 0,
     });
   } catch (error) {
     console.error('Error in proxies GET API:', error);
