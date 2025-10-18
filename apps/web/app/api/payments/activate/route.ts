@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
+import { iproxyService } from '@/lib/iproxy-service';
+import bcrypt from 'bcryptjs';
 
 // POST - Manually activate a payment (for testing/development ONLY)
 export async function POST(request: NextRequest) {
@@ -121,10 +123,87 @@ export async function POST(request: NextRequest) {
       console.log('Warning: Could not update payment status:', paymentUpdateError);
     }
 
+    // Provision proxy for the activated order
+    let provisionedProxy = null;
+    try {
+      console.log('Starting proxy provisioning for order:', order_id);
+
+      // Step 1: Get connections from Console API
+      console.log('Fetching connections from Console API...');
+      const { success: connectionsSuccess, connections, error: connectionsError } =
+        await iproxyService.getConsoleConnections();
+
+      if (!connectionsSuccess || connections.length === 0) {
+        throw new Error(`Failed to get connections: ${connectionsError || 'No connections available'}`);
+      }
+
+      // Step 2: Select a random connection
+      const selectedConnection = connections[Math.floor(Math.random() * connections.length)];
+      if (!selectedConnection) {
+        throw new Error('No connection selected');
+      }
+      console.log(`Selected connection: ${selectedConnection.id} (${selectedConnection.basic_info.name})`);
+
+      // Step 3: Grant proxy access
+      const proxyRequest = {
+        listen_service: 'http' as const,
+        auth_type: 'userpass' as const,
+        description: `Proxy for order ${order_id} - ${order.plan?.name || 'Plan'}`,
+        expires_at: expiryDate.toISOString(),
+      };
+
+      console.log('Granting proxy access...');
+      const { success: proxySuccess, proxy, error: proxyError } =
+        await iproxyService.grantProxyAccess(selectedConnection.id, proxyRequest);
+
+      if (!proxySuccess || !proxy) {
+        throw new Error(`Failed to grant proxy access: ${proxyError || 'Unknown error'}`);
+      }
+
+      console.log('Proxy access granted:', proxy.id);
+
+      // Step 4: Save proxy to database
+      const passwordHash = await bcrypt.hash(proxy.auth.password, 10);
+
+      const { data: savedProxy, error: saveError } = await supabaseAdmin
+        .from('proxies')
+        .insert({
+          user_id: user.id,
+          label: proxy.description || `Proxy for ${order.plan?.name || 'order'}`,
+          host: proxy.hostname,
+          port_http: proxy.listen_service === 'http' ? proxy.port : null,
+          port_socks5: proxy.listen_service === 'socks5' ? proxy.port : null,
+          username: proxy.auth.login,
+          password_hash: passwordHash,
+          status: 'active',
+          iproxy_connection_id: proxy.connection_id,
+        })
+        .select()
+        .single();
+
+      if (saveError) {
+        throw new Error(`Failed to save proxy to database: ${saveError.message}`);
+      }
+
+      console.log('Proxy saved to database:', savedProxy.id);
+      provisionedProxy = {
+        id: savedProxy.id,
+        label: savedProxy.label,
+        host: savedProxy.host,
+        port_http: savedProxy.port_http,
+        port_socks5: savedProxy.port_socks5,
+        username: savedProxy.username,
+      };
+    } catch (proxyError: any) {
+      console.error('Error provisioning proxy:', proxyError);
+      // Don't fail the activation, just log the error
+    }
+
     return NextResponse.json({
       success: true,
       message: 'Order activated successfully',
       order: updatedOrder,
+      proxy: provisionedProxy,
       expires_at: expiryDate.toISOString(),
     });
   } catch (error) {

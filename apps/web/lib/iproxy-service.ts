@@ -1,20 +1,63 @@
-/**
- * iProxy.online API Integration Service
- *
- * API Documentation: https://iproxy.online/docs-api-connection
- * Base URL: https://iproxy.online/api/cn/v1/
- * Authentication: Bearer token in Authorization header
- *
- * Required Environment Variables:
- * - IPROXY_API_KEY: Your iProxy.online API key
- */
-
 // Types based on iProxy.online API
 export interface IProxyConnection {
   id: string;
   name: string;
   status: string;
-  [key: string]: any; // Additional fields from API
+  [key: string]: any;
+}
+
+// Console API Types
+export interface ConsoleConnection {
+  id: string;
+  basic_info: {
+    name: string;
+    description: string;
+    created_at: string;
+    updated_at: string;
+    is_onboarding: boolean;
+    user_id: string;
+    server_id: string;
+    server_geo: {
+      city: string;
+      country: string;
+    };
+    c_fqdn: string;
+    api_key_exists: boolean;
+    busy_by?: string;
+  };
+  app_data: any;
+  plan_info: any;
+  settings: any;
+  shared_users: any[];
+}
+
+export interface ConsoleProxyAccessRequest {
+  listen_service: "http" | "socks5";
+  auth_type: "userpass" | "noauth";
+  auth?: {
+    login: string;
+    password: string;
+  };
+  description?: string;
+  acl_inbound_policy?: "deny_except";
+  acl_inbound_ips?: string[];
+  expires_at?: string; 
+}
+
+export interface ConsoleProxyAccessResponse {
+  id: string;
+  connection_id: string;
+  description: string;
+  listen_service: "http" | "socks5";
+  auth_type: "userpass" | "noauth";
+  auth: {
+    login: string;
+    password: string;
+  };
+  ip: string;
+  port: number;
+  hostname: string;
+  password_updated_at: string;
 }
 
 export interface IProxyConfig {
@@ -51,48 +94,18 @@ export class IProxyService {
   private apiUrl: string;
   private apiKey: string;
 
+
   constructor() {
-    this.apiUrl = 'https://iproxy.online/api/cn/v1';
-    this.apiKey = process.env.IPROXY_API_KEY || '';
+    this.apiUrl = "https://iproxy.online/api/console/v1";
+    this.apiKey = process.env.IPROXY_API_KEY || "";
+    
 
     if (!this.apiKey) {
-      console.warn('IPROXY_API_KEY not set in environment variables');
+      console.warn("IPROXY_API_KEY not set in environment variables");
     }
+   
   }
 
-  /**
-   * Get list of connections (devices/sources)
-   * GET /connections
-   */
-  async getConnections(): Promise<{ success: boolean; connections: IProxyConnection[]; error?: string }> {
-    try {
-      const response = await fetch(`${this.apiUrl}/connections`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || data.message || 'Failed to fetch connections');
-      }
-
-      return {
-        success: true,
-        connections: data.connections || data.data || data,
-      };
-    } catch (error) {
-      console.error('Error fetching iProxy connections:', error);
-      return {
-        success: false,
-        connections: [],
-        error: error instanceof Error ? error.message : 'Unknown error',
-      };
-    }
-  }
 
   /**
    * Create a new proxy under a connection
@@ -103,19 +116,22 @@ export class IProxyService {
     config?: IProxyConfig
   ): Promise<{ success: boolean; proxy?: IProxyDetails; error?: string }> {
     try {
-      const response = await fetch(`${this.apiUrl}/connections/${connectionId}/proxies`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(config || {}),
-      });
+      const response = await fetch(
+        `${this.apiUrl}/connections/${connectionId}/proxies`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${this.apiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(config || {}),
+        }
+      );
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || data.message || 'Failed to create proxy');
+        throw new Error(data.error || data.message || "Failed to create proxy");
       }
 
       return {
@@ -123,10 +139,10 @@ export class IProxyService {
         proxy: data.proxy || data.data || data,
       };
     } catch (error) {
-      console.error('Error creating iProxy proxy:', error);
+      console.error("Error creating iProxy proxy:", error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
       };
     }
   }
@@ -139,18 +155,23 @@ export class IProxyService {
     connectionId: string
   ): Promise<{ success: boolean; proxies: IProxyDetails[]; error?: string }> {
     try {
-      const response = await fetch(`${this.apiUrl}/connections/${connectionId}/proxies`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json',
-        },
-      });
+      const response = await fetch(
+        `${this.apiUrl}/connections/${connectionId}/proxies`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${this.apiKey}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || data.message || 'Failed to fetch proxies');
+        throw new Error(
+          data.error || data.message || "Failed to fetch proxies"
+        );
       }
 
       return {
@@ -158,11 +179,11 @@ export class IProxyService {
         proxies: data.proxies || data.data || data,
       };
     } catch (error) {
-      console.error('Error fetching iProxy proxies:', error);
+      console.error("Error fetching iProxy proxies:", error);
       return {
         success: false,
         proxies: [],
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
       };
     }
   }
@@ -176,27 +197,30 @@ export class IProxyService {
     proxyId: string
   ): Promise<{ success: boolean; error?: string }> {
     try {
-      const response = await fetch(`${this.apiUrl}/connections/${connectionId}/proxies/${proxyId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json',
-        },
-      });
+      const response = await fetch(
+        `${this.apiUrl}/connections/${connectionId}/proxies/${proxyId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${this.apiKey}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || data.message || 'Failed to delete proxy');
+        throw new Error(data.error || data.message || "Failed to delete proxy");
       }
 
       return {
         success: true,
       };
     } catch (error) {
-      console.error('Error deleting iProxy proxy:', error);
+      console.error("Error deleting iProxy proxy:", error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
       };
     }
   }
@@ -210,16 +234,16 @@ export class IProxyService {
       // The change_url can be called directly (may or may not require auth)
       // Try with auth first
       const response = await fetch(changeUrl, {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
+          Authorization: `Bearer ${this.apiKey}`,
         },
       });
 
       const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        throw new Error(data.error || data.message || 'Failed to rotate IP');
+        throw new Error(data.error || data.message || "Failed to rotate IP");
       }
 
       return {
@@ -229,38 +253,99 @@ export class IProxyService {
         message: data.message,
       };
     } catch (error) {
-      console.error('Error rotating IP:', error);
+      console.error("Error rotating IP:", error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
+    }
+  }
+
+
+
+
+  /**
+   * Get list of connections from Console API
+   * GET /api/console/v1/connections
+   */
+  async getConsoleConnections(): Promise<{
+    success: boolean;
+    connections: ConsoleConnection[];
+    error?: string;
+  }> {
+    try {
+      const response = await fetch(`${this.apiUrl}/connections`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${this.apiKey}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error || data.message || "Failed to fetch console connections"
+        );
+      }
+
+      return {
+        success: true,
+        connections: data.connections || [],
+      };
+    } catch (error) {
+      console.error("Error fetching console connections:", error);
+      return {
+        success: false,
+        connections: [],
+        error: error instanceof Error ? error.message : "Unknown error",
       };
     }
   }
 
   /**
-   * Get current IP for a proxy by checking through the proxy
-   * This requires making a request through the proxy to a service like ipify
+   * Grant proxy access to a connection
+   * POST /api/console/v1/connections/{conn_id}/proxy-access
    */
-  async getCurrentIP(
-    proxyHost: string,
-    proxyPort: number,
-    proxyUsername: string,
-    proxyPassword: string
-  ): Promise<{ success: boolean; ip?: string; error?: string }> {
+  async grantProxyAccess(
+    connectionId: string,
+    request: ConsoleProxyAccessRequest
+  ): Promise<{
+    success: boolean;
+    proxy?: ConsoleProxyAccessResponse;
+    error?: string;
+  }> {
     try {
-      // Note: This would require a proxy-capable HTTP client
-      // For now, return a placeholder
-      // In production, you'd use node-fetch with proxy-agent or similar
+      const response = await fetch(
+        `${this.apiUrl}/connections/${connectionId}/proxy-access`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${this.apiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(request),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error || data.message || "Failed to grant proxy access"
+        );
+      }
 
       return {
-        success: false,
-        error: 'getCurrentIP requires proxy-capable HTTP client implementation',
+        success: true,
+        proxy: data,
       };
     } catch (error) {
-      console.error('Error getting current IP:', error);
+      console.error("Error granting proxy access:", error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
       };
     }
   }
