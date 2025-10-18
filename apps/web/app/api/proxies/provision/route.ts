@@ -64,6 +64,12 @@ export async function POST(request: NextRequest) {
     }
 
     const order = orders[0];
+    if (!order) {
+      return NextResponse.json(
+        { success: false, error: 'No active orders found' },
+        { status: 404 }
+      );
+    }
     const plan = Array.isArray(order.plan) ? order.plan[0] : order.plan;
 
     if (!plan) {

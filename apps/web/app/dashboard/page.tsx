@@ -36,7 +36,7 @@ interface Order {
 interface Proxy {
   id: string;
   host: string;
-  port: number;
+  port_http: number;
   username: string;
   password: string;
   channel: string;
@@ -366,7 +366,7 @@ function DashboardPageContent() {
                             </label>
                             <div className="flex items-center gap-2">
                               <code className="flex-1 rounded bg-muted px-2 py-1 text-sm">
-                                {proxy.port}
+                                {proxy.port_http}
                               </code>
                               <Button
                                 size="sm"
@@ -374,7 +374,7 @@ function DashboardPageContent() {
                                 className="h-7 w-7 p-0"
                                 onClick={() =>
                                   copyToClipboard(
-                                    proxy.port.toString(),
+                                    proxy.port_http.toString(),
                                     `${proxy.id}-port`
                                   )
                                 }

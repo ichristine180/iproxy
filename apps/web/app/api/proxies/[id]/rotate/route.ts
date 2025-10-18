@@ -9,8 +9,9 @@ import { iproxyService } from '@/lib/iproxy-service';
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -22,7 +23,7 @@ export async function POST(
       );
     }
 
-    const proxyId = params.id;
+    const proxyId = id;
 
     // Fetch the proxy (RLS ensures user can only access their own)
     const { data: proxy, error: proxyError } = await supabase
@@ -116,7 +117,7 @@ export async function POST(
       await supabase
         .from('proxies')
         .update({ status: 'error' })
-        .eq('id', params.id);
+        .eq('id', id);
     } catch (updateError) {
       console.error('Failed to update proxy status:', updateError);
     }

@@ -202,6 +202,7 @@ export default function ProxiesPage() {
 
   const activeProxies = proxies.filter((p) => p.status === "active");
   const inactiveProxies = proxies.filter((p) => p.status !== "active");
+console.log(activeProxies);
 
   if (isLoading) {
     return (
@@ -579,13 +580,13 @@ export default function ProxiesPage() {
                                 <div className="text-center py-4">
                                   <Loader2 className="w-4 h-4 animate-spin mx-auto text-muted-foreground" />
                                 </div>
-                              ) : rotationLogs[proxy.id].length === 0 ? (
+                              ) : rotationLogs[proxy.id]?.length === 0 ? (
                                 <p className="text-xs text-muted-foreground text-center py-4">
                                   No rotation history yet
                                 </p>
                               ) : (
                                 <div className="space-y-1 max-h-64 overflow-y-auto">
-                                  {rotationLogs[proxy.id].map((log) => (
+                                  {rotationLogs[proxy.id]?.map((log) => (
                                     <div
                                       key={log.id}
                                       className={`text-xs p-2 rounded border ${
