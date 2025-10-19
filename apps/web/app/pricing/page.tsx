@@ -15,6 +15,8 @@ interface Plan {
   description: string;
   features: string[];
   is_active: boolean;
+  duration_days?: number;
+  country?: string;
 }
 
 export default function PricingPage() {
@@ -104,6 +106,17 @@ export default function PricingPage() {
     }
   };
 
+  const formatDuration = (durationDays?: number) => {
+    if (!durationDays) return 'month';
+
+    if (durationDays === 1) return 'day';
+    if (durationDays === 7) return 'week';
+    if (durationDays === 30) return 'month';
+    if (durationDays < 7) return `${durationDays} days`;
+    if (durationDays < 30) return `${Math.floor(durationDays / 7)} weeks`;
+    return `${Math.floor(durationDays / 30)} months`;
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -181,7 +194,7 @@ export default function PricingPage() {
                     <div className="mb-6">
                       <div className="flex items-baseline">
                         <span className="text-4xl font-bold">${plan.price_usd_month}</span>
-                        <span className="text-muted-foreground ml-2">/month</span>
+                        <span className="text-muted-foreground ml-2">/{formatDuration(plan.duration_days)}</span>
                       </div>
                     </div>
 

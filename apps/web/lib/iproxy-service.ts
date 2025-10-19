@@ -31,6 +31,23 @@ export interface ConsoleConnection {
   shared_users: any[];
 }
 
+export interface CreateConnectionRequest {
+  name: string;
+  description?: string;
+  prolongation_enabled?: boolean;
+  country?: string; // 2-letter country code
+  city?: string;
+  socks5_udp?: boolean;
+  server_id?: string; // Only for VIP servers, mutually exclusive with city+country and socks5_udp
+}
+
+export interface CreateConnectionResponse {
+  id: string;
+  country: string;
+  city: string;
+  server_id: string;
+}
+
 export interface ConsoleProxyAccessRequest {
   listen_service: "http" | "socks5";
   auth_type: "userpass" | "noauth";
@@ -41,7 +58,7 @@ export interface ConsoleProxyAccessRequest {
   description?: string;
   acl_inbound_policy?: "deny_except";
   acl_inbound_ips?: string[];
-  expires_at?: string; 
+  expires_at?: string;
 }
 
 export interface ConsoleProxyAccessResponse {
@@ -343,6 +360,183 @@ export class IProxyService {
       };
     } catch (error) {
       console.error("Error granting proxy access:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
+    }
+  }
+
+  /**
+   * Create a new connection
+   * POST /api/console/v1/connections
+   */
+  async createConnection(
+    request: CreateConnectionRequest
+  ): Promise<{
+    success: boolean;
+    connection?: CreateConnectionResponse;
+    error?: string;
+  }> {
+    try {
+      const response = await fetch(`${this.apiUrl}/connections`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${this.apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(request),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error || data.message || "Failed to create connection"
+        );
+      }
+
+      return {
+        success: true,
+        connection: data,
+      };
+    } catch (error) {
+      console.error("Error creating connection:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
+    }
+  }
+
+  /**
+   * Get full connection details by ID
+   * GET /api/console/v1/connections/{conn_id}
+   */
+  async getConnection(
+    connectionId: string
+  ): Promise<{
+    success: boolean;
+    connection?: ConsoleConnection;
+    error?: string;
+  }> {
+    try {
+      const response = await fetch(`${this.apiUrl}/connections/${connectionId}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${this.apiKey}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error || data.message || "Failed to get connection"
+        );
+      }
+
+      return {
+        success: true,
+        connection: data,
+      };
+    } catch (error) {
+      console.error("Error getting connection:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
+    }
+  }
+
+  /**
+   * Create a new connection and retrieve its full details
+   * Combines POST /api/console/v1/connections and GET /api/console/v1/connections/{conn_id}
+   */
+  async createAndGetConnection(
+    request: CreateConnectionRequest
+  ): Promise<{
+    success: boolean;
+    connection?: ConsoleConnection;
+    error?: string;
+  }> {
+    try {
+      // Step 1: Create the connection
+      const createResult = await this.createConnection(request);
+
+      if (!createResult.success || !createResult.connection) {
+        return {
+          success: false,
+          error: createResult.error || "Failed to create connection",
+        };
+      }
+
+      // Step 2: Get the full connection details
+      const getResult = await this.getConnection(createResult.connection.id);
+
+      if (!getResult.success || !getResult.connection) {
+        return {
+          success: false,
+          error: getResult.error || "Connection created but failed to retrieve details",
+        };
+      }
+
+      return {
+        success: true,
+        connection: getResult.connection,
+      };
+    } catch (error) {
+      console.error("Error creating and getting connection:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
+    }
+  }
+
+  /**
+   * Update connection settings
+   * POST /api/console/v1/connections/{conn_id}/update-settings
+   */
+  async updateConnectionSettings(
+    connectionId: string,
+    settings: {
+      ip_change_enabled?: boolean;
+      ip_change_interval_minutes?: number;
+      prolongation_enabled?: boolean;
+      [key: string]: any;
+    }
+  ): Promise<{
+    success: boolean;
+    error?: string;
+  }> {
+    try {
+      const response = await fetch(
+        `${this.apiUrl}/connections/${connectionId}/update-settings`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${this.apiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(settings),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error || data.message || "Failed to update connection settings"
+        );
+      }
+
+      return {
+        success: true,
+      };
+    } catch (error) {
+      console.error("Error updating connection settings:", error);
       return {
         success: false,
         error: error instanceof Error ? error.message : "Unknown error",

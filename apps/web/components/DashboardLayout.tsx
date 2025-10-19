@@ -27,6 +27,7 @@ import {
   Settings,
   Bell,
   Search,
+  Wallet,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -44,8 +45,8 @@ const DashboardSidebar = () => {
 
   const navItems = [
     { title: 'Overview', url: '/dashboard', icon: LayoutDashboard },
-    { title: 'My Proxies', url: '/dashboard/proxies', icon: Server },
-    { title: 'Orders', url: '/dashboard/orders', icon: Package },
+    { title: 'Billing', url: '/dashboard/Billing', icon: Wallet },
+    { title: 'Plans & rates', url: '/dashboard/plan&rates', icon: Package },
   ];
 
   return (

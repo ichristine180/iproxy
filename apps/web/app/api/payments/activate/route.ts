@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { iproxyService } from '@/lib/iproxy-service';
-import bcrypt from 'bcryptjs';
 
 // POST - Manually activate a payment (for testing/development ONLY)
 export async function POST(request: NextRequest) {
@@ -85,9 +84,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Calculate expiry date (30 days from now, or 7 days for free trial)
+    // Calculate expiry date using plan's duration_days (default 30 days, or 7 days for free trial)
     const expiryDate = new Date();
-    const daysToAdd = order.total_amount === 0 ? 7 : 30;
+    const daysToAdd = order.total_amount === 0 ? 7 : (order.plan?.duration_days || 30);
     expiryDate.setDate(expiryDate.getDate() + daysToAdd);
 
     // Update order status to active
@@ -114,8 +113,9 @@ export async function POST(request: NextRequest) {
     const { error: paymentUpdateError } = await supabaseAdmin
       .from('payments')
       .update({
-        status: 'completed',
+        status: 'paid',
         is_final: true,
+        paid_at: new Date().toISOString(),
       })
       .eq('order_id', order_id);
 
@@ -123,79 +123,83 @@ export async function POST(request: NextRequest) {
       console.log('Warning: Could not update payment status:', paymentUpdateError);
     }
 
-    // Provision proxy for the activated order
-    let provisionedProxy = null;
+    // Provision connection for the activated order
+    let provisionedConnection = null;
     try {
-      console.log('Starting proxy provisioning for order:', order_id);
+      console.log('Starting connection provisioning for order:', order_id);
 
-      // Step 1: Get connections from Console API
-      console.log('Fetching connections from Console API...');
-      const { success: connectionsSuccess, connections, error: connectionsError } =
-        await iproxyService.getConsoleConnections();
+      // Get user profile for email
+      const { data: profile } = await supabaseAdmin
+        .from('profiles')
+        .select('email')
+        .eq('id', user.id)
+        .single();
 
-      if (!connectionsSuccess || connections.length === 0) {
-        throw new Error(`Failed to get connections: ${connectionsError || 'No connections available'}`);
-      }
+      const userEmail = profile?.email || user.id;
 
-      // Step 2: Select a random connection
-      const selectedConnection = connections[Math.floor(Math.random() * connections.length)];
-      if (!selectedConnection) {
-        throw new Error('No connection selected');
-      }
-      console.log(`Selected connection: ${selectedConnection.id} (${selectedConnection.basic_info.name})`);
+      // Step 1: Create a new connection
+      const connectionName = `${order.plan?.name || 'Plan'} - ${userEmail}`;
 
-      // Step 3: Grant proxy access
-      const proxyRequest = {
-        listen_service: 'http' as const,
-        auth_type: 'userpass' as const,
-        description: `Proxy for order ${order_id} - ${order.plan?.name || 'Plan'}`,
-        expires_at: expiryDate.toISOString(),
+      // Map default cities for countries
+      const country = order.plan?.country || 'us';
+      const defaultCities: Record<string, string> = {
+        'us': 'nyc',
+        'de': 'fra',
+        'gb': 'lon',
       };
 
-      console.log('Granting proxy access...');
-      const { success: proxySuccess, proxy, error: proxyError } =
-        await iproxyService.grantProxyAccess(selectedConnection.id, proxyRequest);
+      const connectionRequest = {
+        name: connectionName,
+        description: `Connection for order ${order_id}`,
+        prolongation_enabled: true,
+        country: country,
+        city: order.plan?.city || defaultCities[country] || 'nyc',
+        socks5_udp: order.plan?.socks5_udp || false,
+      };
 
-      if (!proxySuccess || !proxy) {
-        throw new Error(`Failed to grant proxy access: ${proxyError || 'Unknown error'}`);
+      console.log('Creating new connection:', connectionRequest);
+      const { success: connectionSuccess, connection, error: connectionError } =
+        await iproxyService.createAndGetConnection(connectionRequest);
+
+      if (!connectionSuccess || !connection) {
+        throw new Error(`Failed to create connection: ${connectionError || 'Unknown error'}`);
       }
 
-      console.log('Proxy access granted:', proxy.id);
+      console.log('Connection created and retrieved:', connection.id);
 
-      // Step 4: Save proxy to database
-      const passwordHash = await bcrypt.hash(proxy.auth.password, 10);
-
+      // Step 2: Save connection to database mapped to user and order
       const { data: savedProxy, error: saveError } = await supabaseAdmin
         .from('proxies')
         .insert({
           user_id: user.id,
-          label: proxy.description || `Proxy for ${order.plan?.name || 'order'}`,
-          host: proxy.hostname,
-          port_http: proxy.listen_service === 'http' ? proxy.port : null,
-          port_socks5: proxy.listen_service === 'socks5' ? proxy.port : null,
-          username: proxy.auth.login,
-          password_hash: passwordHash,
+          order_id: order_id,
+          label: connectionName,
+          host: connection.basic_info.c_fqdn,
+          port_http: null, // Will be set when proxy access is granted
+          port_socks5: null,
+          username: null, // Will be set when proxy access is granted
+          password_hash: null,
           status: 'active',
-          iproxy_connection_id: proxy.connection_id,
+          iproxy_connection_id: connection.id,
+          expires_at: expiryDate.toISOString(),
+          connection_data: connection, // Store full connection details
         })
         .select()
         .single();
 
       if (saveError) {
-        throw new Error(`Failed to save proxy to database: ${saveError.message}`);
+        throw new Error(`Failed to save connection to database: ${saveError.message}`);
       }
 
-      console.log('Proxy saved to database:', savedProxy.id);
-      provisionedProxy = {
+      console.log('Connection saved to database:', savedProxy.id);
+      provisionedConnection = {
         id: savedProxy.id,
         label: savedProxy.label,
+        connection_id: connection.id,
         host: savedProxy.host,
-        port_http: savedProxy.port_http,
-        port_socks5: savedProxy.port_socks5,
-        username: savedProxy.username,
       };
-    } catch (proxyError: any) {
-      console.error('Error provisioning proxy:', proxyError);
+    } catch (connectionError: any) {
+      console.error('Error provisioning connection:', connectionError);
       // Don't fail the activation, just log the error
     }
 
@@ -203,7 +207,7 @@ export async function POST(request: NextRequest) {
       success: true,
       message: 'Order activated successfully',
       order: updatedOrder,
-      proxy: provisionedProxy,
+      connection: provisionedConnection,
       expires_at: expiryDate.toISOString(),
     });
   } catch (error) {

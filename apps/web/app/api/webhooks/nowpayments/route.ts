@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
 import { iproxyService } from '@/lib/iproxy-service';
-import bcrypt from 'bcryptjs';
 
 const NOWPAYMENTS_IPS = [
   // Current NOWPayments webhook IPs (2025)
@@ -299,22 +298,24 @@ async function processWebhook(
       console.log('Free trial orders deactivated for user:', currentOrder.user_id);
     }
 
-    // Fetch current order to check if dates need to be set
+    // Fetch current order to check if dates need to be set and get plan duration
     const { data: currentOrderData } = await supabase
       .from('orders')
-      .select('start_at, expires_at')
+      .select('start_at, expires_at, plan:plans(duration_days)')
       .eq('id', payment.order_id)
       .single();
 
     const now = new Date().toISOString();
-    const thirtyDaysFromNow = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+    // Use plan's duration_days or default to 30 days
+    const durationDays = currentOrderData?.plan?.duration_days || 30;
+    const expiresAt = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000).toISOString();
 
     const { error: orderError } = await supabase
       .from('orders')
       .update({
         status: orderStatus,
         start_at: currentOrderData?.start_at || now,
-        expires_at: currentOrderData?.expires_at || thirtyDaysFromNow,
+        expires_at: currentOrderData?.expires_at || expiresAt,
         updated_at: now,
       })
       .eq('id', payment.order_id)
@@ -325,11 +326,12 @@ async function processWebhook(
       throw orderError;
     }
 
-    console.log('Order activated:', payment.order_id);
+    console.log('Order activated:', payment.order_id, 'Duration:', durationDays, 'days');
 
     // Provision proxy for the activated order
     try {
-      await provisionProxyForOrder(supabase, payment.order_id, userId, thirtyDaysFromNow);
+      const finalExpiresAt = currentOrderData?.expires_at || expiresAt;
+      await provisionProxyForOrder(supabase, payment.order_id, userId, finalExpiresAt);
     } catch (proxyError: any) {
       console.error('Error provisioning proxy:', proxyError);
       // Don't throw - order is already activated, log the error for retry
@@ -359,7 +361,7 @@ async function provisionProxyForOrder(
   userId: string,
   expiresAt: string
 ) {
-  console.log('Starting proxy provisioning for order:', orderId);
+  console.log('Starting connection provisioning for order:', orderId);
 
   // Step 1: Get order details with plan info
   const { data: order, error: orderFetchError } = await supabase
@@ -372,64 +374,70 @@ async function provisionProxyForOrder(
     throw new Error(`Failed to fetch order: ${orderFetchError?.message}`);
   }
 
-  // Step 2: Get connections from Console API
-  console.log('Fetching connections from Console API...');
-  const { success: connectionsSuccess, connections, error: connectionsError } =
-    await iproxyService.getConsoleConnections();
+  // Step 2: Get user details to fetch email for connection naming
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('email')
+    .eq('id', userId)
+    .single();
 
-  if (!connectionsSuccess || connections.length === 0) {
-    throw new Error(`Failed to get connections: ${connectionsError || 'No connections available'}`);
-  }
+  const userEmail = profile?.email || userId;
 
-  // Step 3: Select a random connection
-  const selectedConnection = connections[Math.floor(Math.random() * connections.length)];
-  if (!selectedConnection) {
-    throw new Error('No connection selected');
-  }
-  console.log(`Selected connection: ${selectedConnection.id} (${selectedConnection.basic_info.name})`);
+  // Step 3: Create a new connection
+  const connectionName = `${order.plan?.name || 'Plan'} - ${userEmail}`;
 
-  // Step 4: Grant proxy access
-  const proxyRequest = {
-    listen_service: 'http' as const,
-    auth_type: 'userpass' as const,
-    description: `Proxy for order ${orderId} - ${order.plan?.name || 'Plan'}`,
-    expires_at: expiresAt,
+  // Map default cities for countries
+  const country = order.plan?.country || 'us';
+  const defaultCities: Record<string, string> = {
+    'us': 'nyc',
+    'de': 'fra',
+    'gb': 'lon',
   };
 
-  console.log('Granting proxy access...');
-  const { success: proxySuccess, proxy, error: proxyError } =
-    await iproxyService.grantProxyAccess(selectedConnection.id, proxyRequest);
+  const connectionRequest = {
+    name: connectionName,
+    description: `Connection for order ${orderId}`,
+    prolongation_enabled: true,
+    country: country,
+    city: order.plan?.city || defaultCities[country] || 'nyc',
+    socks5_udp: order.plan?.socks5_udp || false,
+  };
 
-  if (!proxySuccess || !proxy) {
-    throw new Error(`Failed to grant proxy access: ${proxyError || 'Unknown error'}`);
+  console.log('Creating new connection:', connectionRequest);
+  const { success: connectionSuccess, connection, error: connectionError } =
+    await iproxyService.createAndGetConnection(connectionRequest);
+
+  if (!connectionSuccess || !connection) {
+    throw new Error(`Failed to create connection: ${connectionError || 'Unknown error'}`);
   }
 
-  console.log('Proxy access granted:', proxy.id);
+  console.log('Connection created and retrieved:', connection.id);
 
-  // Step 5: Save proxy to database
-  const passwordHash = await bcrypt.hash(proxy.auth.password, 10);
-
+  // Step 4: Save connection to database mapped to user and order
   const { data: savedProxy, error: saveError } = await supabase
     .from('proxies')
     .insert({
       user_id: userId,
-      label: proxy.description || `Proxy for ${order.plan?.name || 'order'}`,
-      host: proxy.hostname,
-      port_http: proxy.listen_service === 'http' ? proxy.port : null,
-      port_socks5: proxy.listen_service === 'socks5' ? proxy.port : null,
-      username: proxy.auth.login,
-      password_hash: passwordHash,
+      order_id: orderId,
+      label: connectionName,
+      host: connection.basic_info.c_fqdn,
+      port_http: null, // Will be set when proxy access is granted
+      port_socks5: null,
+      username: null, // Will be set when proxy access is granted
+      password_hash: null,
       status: 'active',
-      iproxy_connection_id: proxy.connection_id,
+      iproxy_connection_id: connection.id,
+      expires_at: expiresAt,
+      connection_data: connection, // Store full connection details
     })
     .select()
     .single();
 
   if (saveError) {
-    throw new Error(`Failed to save proxy to database: ${saveError.message}`);
+    throw new Error(`Failed to save connection to database: ${saveError.message}`);
   }
 
-  console.log('Proxy saved to database:', savedProxy.id);
+  console.log('Connection saved to database:', savedProxy.id);
   return savedProxy;
 }
 
@@ -440,7 +448,7 @@ async function findPaymentByOrderId(supabase: any, orderId: string) {
     .eq('metadata->>order_id', orderId)
     .single();
 
-  if (error && error.code !== 'PGRST116') { // PGRST116 = not found
+  if (error && error.code !== 'PGRST116') { 
     console.error('Error finding payment:', error);
   }
 
@@ -460,7 +468,6 @@ function verifyWebhookSignature(body: string, signature: string | null): boolean
   }
 
   try {
-    // NowPayments uses HMAC-SHA512 for signature verification
     const expectedSignature = crypto
       .createHmac('sha512', ipnSecret)
       .update(body)
@@ -474,26 +481,20 @@ function verifyWebhookSignature(body: string, signature: string | null): boolean
 }
 
 function extractUserIdFromOrderId(orderId: string): string | null {
-  // Order_id format: "payment-{timestamp}-{userId}" where userId is a UUID
-  // Example: "payment-1759701483198-c740c555-758b-4b16-8ac9-196cd040d580"
-
   if (!orderId.startsWith('payment-')) {
     return null;
   }
-
-  // Remove "payment-" prefix and find the timestamp
-  const withoutPrefix = orderId.substring(8); // Remove "payment-"
+  const withoutPrefix = orderId.substring(8); 
   const timestampMatch = withoutPrefix.match(/^(\d+)-(.+)$/);
 
   if (timestampMatch) {
-    return timestampMatch[2] ?? null; // Return the user ID part
+    return timestampMatch[2] ?? null; 
   }
 
   return null;
 }
 
 function getClientIp(request: NextRequest): string {
-  // Try various headers for real IP
   const forwarded = request.headers.get('x-forwarded-for');
   if (forwarded) {
     const firstIp = forwarded.split(',')[0];
@@ -519,7 +520,5 @@ function isIpAllowed(ip: string): boolean {
   if (ip === 'unknown') {
     return false;
   }
-
-  // Check if IP is in allow-list
   return NOWPAYMENTS_IPS.includes(ip);
 }

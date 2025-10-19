@@ -15,10 +15,11 @@ TRUNCATE TABLE public.proxies CASCADE;
 TRUNCATE TABLE public.payments CASCADE;
 TRUNCATE TABLE public.orders CASCADE;
 TRUNCATE TABLE public.api_keys CASCADE;
+TRUNCATE TABLE public.plans CASCADE;
 
 -- Optionally clear profiles (keeps auth.users intact but clears profile data)
 -- Uncomment the line below if you want to also clear user profiles
-TRUNCATE TABLE public.profiles CASCADE;
+-- TRUNCATE TABLE public.profiles CASCADE;
 
 -- Re-enable triggers
 ALTER TABLE public.proxies ENABLE TRIGGER audit_proxies;

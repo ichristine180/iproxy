@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, Suspense, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,6 +19,17 @@ import {
   EyeOff,
   AlertCircle,
   Clock,
+  Globe,
+  Signal,
+  Database,
+  RefreshCw,
+  ExternalLink,
+  Shield,
+  Calendar,
+  DollarSign,
+  MapPin,
+  Hash,
+  Settings,
 } from "lucide-react";
 
 interface Order {
@@ -37,6 +48,7 @@ interface Proxy {
   id: string;
   host: string;
   port_http: number;
+  port_socks5?: number;
   username: string;
   password: string;
   channel: string;
@@ -44,6 +56,20 @@ interface Proxy {
   rotation_api: boolean;
   status: string;
   expires_at: string;
+  // Additional fields for comprehensive UI
+  serial_number?: number;
+  price?: number;
+  plan_duration?: string; // e.g., "1 Day", "1 Week", "1 Month"
+  location?: string; // GEO location
+  carrier?: string; // Mobile carrier
+  data_usage_http?: number; // in MB
+  data_usage_socks5?: number; // in MB
+  rotation_interval_min?: number;
+  data_usage_rotation?: number; // Number of rotations used
+  external_ip?: string;
+  rotation_url?: string;
+  auto_renew?: boolean;
+  has_access?: boolean; // Whether proxy access has been granted
 }
 
 function DashboardPageContent() {
@@ -60,6 +86,9 @@ function DashboardPageContent() {
   const [showPasswords, setShowPasswords] = useState<{ [key: string]: boolean }>({});
   const [copiedField, setCopiedField] = useState<string>("");
   const [activatingOrder, setActivatingOrder] = useState<string | null>(null);
+  const [isPolling, setIsPolling] = useState(false);
+  const [previousProxyCount, setPreviousProxyCount] = useState<number>(0);
+  const [showProxyAddedMessage, setShowProxyAddedMessage] = useState(false);
 
   // Only show manual activation in development
   const isDevelopment = process.env.NODE_ENV === 'development';
@@ -78,11 +107,16 @@ function DashboardPageContent() {
     }
   }, [trialStatus]);
 
+  // Detect when new proxies are added
   useEffect(() => {
-    fetchData();
-  }, [router]);
+    if (previousProxyCount > 0 && proxies.length > previousProxyCount) {
+      setShowProxyAddedMessage(true);
+      setTimeout(() => setShowProxyAddedMessage(false), 5000);
+    }
+    setPreviousProxyCount(proxies.length);
+  }, [proxies.length]);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       // Fetch orders
       const ordersResponse = await fetch("/api/orders");
@@ -109,7 +143,44 @@ function DashboardPageContent() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [router]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // Poll for proxy updates when there are pending orders
+  useEffect(() => {
+    const pendingOrdersExist = orders.some(order => order.status === 'pending');
+
+    if (!pendingOrdersExist || isLoading) {
+      setIsPolling(false);
+      return;
+    }
+
+    // Only poll for orders created in the last 10 minutes
+    const recentPendingOrders = orders.filter(order => {
+      if (order.status !== 'pending') return false;
+      const createdAt = new Date(order.start_at || 0).getTime();
+      const tenMinutesAgo = Date.now() - (10 * 60 * 1000);
+      return createdAt > tenMinutesAgo;
+    });
+
+    if (recentPendingOrders.length === 0) {
+      setIsPolling(false);
+      return;
+    }
+
+    setIsPolling(true);
+
+    // Poll every 5 seconds
+    const interval = setInterval(() => {
+      console.log('Polling for proxy updates...');
+      fetchData();
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [orders, isLoading, fetchData]);
 
   const copyToClipboard = (text: string, field: string) => {
     navigator.clipboard.writeText(text);
@@ -171,6 +242,41 @@ function DashboardPageContent() {
     }
   };
 
+  const formatDataUsage = (bytes?: number) => {
+    if (!bytes) return "0 MB";
+    const mb = bytes / (1024 * 1024);
+    if (mb < 1024) return `${mb.toFixed(2)} MB`;
+    return `${(mb / 1024).toFixed(2)} GB`;
+  };
+
+  const parsePlanName = (planName: string) => {
+
+    const countryMatch = planName?.match(/\(([^)]+)\)$/);
+    const country = countryMatch ? countryMatch[1] : null;
+    const withoutCountry = planName?.replace(/\s*\([^)]+\)$/, '').trim();
+
+    // Split by " - " to separate product and duration
+    const parts = withoutCountry?.split(' - ');
+
+    if (parts?.length >= 2) {
+      const product = parts[0]?.trim(); 
+      const duration = parts[1]?.trim(); 
+
+      return {
+        product,
+        duration,
+        country,
+      };
+    }
+
+    // Fallback if pattern doesn't match
+    return {
+      product: planName,
+      duration: null,
+      country: null,
+    };
+  };
+
   const activeOrders = orders.filter((order) => order.status === "active");
   const pendingOrders = orders.filter((order) => order.status === "pending");
 
@@ -195,12 +301,18 @@ function DashboardPageContent() {
             {showSuccessMessage && (
               <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-xl flex items-center gap-3 shadow-sm">
                 <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                <div>
+                <div className="flex-1">
                   <p className="font-semibold text-green-700 dark:text-green-600">Payment Successful!</p>
                   <p className="text-sm text-muted-foreground">
-                    Your order will be activated shortly once payment is confirmed.
+                    {isPolling
+                      ? "Setting up your proxy connection... This page will update automatically."
+                      : "Your order will be activated shortly once payment is confirmed."
+                    }
                   </p>
                 </div>
+                {isPolling && (
+                  <Loader2 className="w-5 h-5 text-green-600 animate-spin flex-shrink-0" />
+                )}
               </div>
             )}
 
@@ -212,6 +324,18 @@ function DashboardPageContent() {
                   <p className="text-sm text-muted-foreground">
                     Your 7-day free trial has been activated. Enjoy full access to all
                     features!
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {showProxyAddedMessage && (
+              <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-xl flex items-center gap-3 shadow-sm">
+                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                <div>
+                  <p className="font-semibold text-green-700 dark:text-green-600">Connection Ready!</p>
+                  <p className="text-sm text-muted-foreground">
+                    Your proxy connection has been successfully activated and is ready to use.
                   </p>
                 </div>
               </div>
@@ -309,153 +433,436 @@ function DashboardPageContent() {
                     </Button>
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    {proxies.map((proxy) => (
-                      <div
-                        key={proxy.id}
-                        className="border rounded-lg p-4 space-y-3"
-                      >
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h4 className="font-semibold">{proxy.plan_name}</h4>
-                            <p className="text-sm text-muted-foreground capitalize">
-                              {proxy.channel} • {proxy.rotation_api ? "API Rotation" : "Standard"}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-green-500/10 text-green-600 border">
-                              Active
-                            </span>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {getTimeRemaining(proxy.expires_at)}
-                            </p>
-                          </div>
-                        </div>
+                  <div className="space-y-6">
+                    {proxies.map((proxy, index) => {
+                      const parsedPlan = parsePlanName(proxy.plan_name);
 
-                        <div className="grid gap-3 md:grid-cols-2">
-                          {/* Host */}
-                          <div className="space-y-1">
-                            <label className="text-xs font-medium text-muted-foreground">
-                              Host
-                            </label>
-                            <div className="flex items-center gap-2">
-                              <code className="flex-1 rounded bg-muted px-2 py-1 text-sm">
-                                {proxy.host}
-                              </code>
+                      return (
+                        <div
+                          key={proxy.id}
+                          className="border rounded-xl p-6 space-y-6 bg-card/30"
+                        >
+                          {/* Header Section */}
+                          <div className="flex items-start justify-between pb-4 border-b">
+                            <div className="space-y-2 flex-1">
+                              <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-2">
+                                  <Hash className="h-4 w-4 text-muted-foreground" />
+                                  <span className="text-sm font-mono text-muted-foreground">
+                                    #{proxy.serial_number || index + 1}
+                                  </span>
+                                </div>
+                                <h4 className="font-semibold text-lg">{parsedPlan.product}</h4>
+                              </div>
+                              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                                <div className="flex items-center gap-1.5">
+                                  <Clock className="h-3.5 w-3.5" />
+                                  <span className="capitalize">{parsedPlan.duration || proxy.plan_duration || "1 Month"}</span>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                  <DollarSign className="h-3.5 w-3.5" />
+                                  <span>${proxy.price?.toFixed(2) || "49.99"}</span>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                  <MapPin className="h-3.5 w-3.5" />
+                                  <span className="uppercase">{parsedPlan.country || proxy.location || proxy.channel || "US"}</span>
+                                </div>
+                                {proxy.carrier && (
+                                  <div className="flex items-center gap-1.5">
+                                    <Signal className="h-3.5 w-3.5" />
+                                    <span>{proxy.carrier}</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          <div className="text-right space-y-2">
+                            <div className="flex items-center gap-2 justify-end">
+                              <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium bg-green-500/10 text-green-600 border border-green-500/20">
+                                {proxy.status === "active" ? "Active" : proxy.status}
+                              </span>
                               <Button
                                 size="sm"
-                                variant="ghost"
-                                className="h-7 w-7 p-0"
-                                onClick={() =>
-                                  copyToClipboard(proxy.host, `${proxy.id}-host`)
-                                }
+                                variant="outline"
+                                className="h-8 w-8 p-0"
+                                onClick={() => router.push(`/dashboard/proxies/${proxy.id}/settings`)}
                               >
-                                {copiedField === `${proxy.id}-host` ? (
-                                  <CheckCircle className="h-3 w-3 text-green-600" />
-                                ) : (
-                                  <Copy className="h-3 w-3" />
-                                )}
+                                <Settings className="h-4 w-4" />
                               </Button>
                             </div>
-                          </div>
-
-                          {/* Port */}
-                          <div className="space-y-1">
-                            <label className="text-xs font-medium text-muted-foreground">
-                              Port
-                            </label>
-                            <div className="flex items-center gap-2">
-                              <code className="flex-1 rounded bg-muted px-2 py-1 text-sm">
-                                {proxy.port_http}
-                              </code>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="h-7 w-7 p-0"
-                                onClick={() =>
-                                  copyToClipboard(
-                                    proxy.port_http.toString(),
-                                    `${proxy.id}-port`
-                                  )
-                                }
-                              >
-                                {copiedField === `${proxy.id}-port` ? (
-                                  <CheckCircle className="h-3 w-3 text-green-600" />
-                                ) : (
-                                  <Copy className="h-3 w-3" />
-                                )}
-                              </Button>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground justify-end">
+                              <Calendar className="h-3 w-3" />
+                              <span>{getTimeRemaining(proxy.expires_at)}</span>
                             </div>
-                          </div>
-
-                          {/* Username */}
-                          <div className="space-y-1">
-                            <label className="text-xs font-medium text-muted-foreground">
-                              Username
-                            </label>
-                            <div className="flex items-center gap-2">
-                              <code className="flex-1 rounded bg-muted px-2 py-1 text-sm">
-                                {proxy.username}
-                              </code>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="h-7 w-7 p-0"
-                                onClick={() =>
-                                  copyToClipboard(proxy.username, `${proxy.id}-username`)
-                                }
-                              >
-                                {copiedField === `${proxy.id}-username` ? (
-                                  <CheckCircle className="h-3 w-3 text-green-600" />
-                                ) : (
-                                  <Copy className="h-3 w-3" />
-                                )}
-                              </Button>
-                            </div>
-                          </div>
-
-                          {/* Password */}
-                          <div className="space-y-1">
-                            <label className="text-xs font-medium text-muted-foreground">
-                              Password
-                            </label>
-                            <div className="flex items-center gap-2">
-                              <code className="flex-1 rounded bg-muted px-2 py-1 text-sm">
-                                {showPasswords[proxy.id]
-                                  ? proxy.password
-                                  : "••••••••••"}
-                              </code>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="h-7 w-7 p-0"
-                                onClick={() => togglePasswordVisibility(proxy.id)}
-                              >
-                                {showPasswords[proxy.id] ? (
-                                  <EyeOff className="h-3 w-3" />
-                                ) : (
-                                  <Eye className="h-3 w-3" />
-                                )}
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="h-7 w-7 p-0"
-                                onClick={() =>
-                                  copyToClipboard(proxy.password, `${proxy.id}-password`)
-                                }
-                              >
-                                {copiedField === `${proxy.id}-password` ? (
-                                  <CheckCircle className="h-3 w-3 text-green-600" />
-                                ) : (
-                                  <Copy className="h-3 w-3" />
-                                )}
-                              </Button>
+                            <div className="flex items-center gap-2 justify-end">
+                              <input
+                                type="checkbox"
+                                checked={proxy.auto_renew || false}
+                                readOnly
+                                className="h-3.5 w-3.5 rounded border-gray-300"
+                              />
+                              <span className="text-xs text-muted-foreground">Auto-renew</span>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+
+                        {/* Proxy Information */}
+                        <>
+                            {/* HTTP Proxy Section */}
+                            <div className="space-y-3">
+                              <div className="flex items-center gap-2">
+                                <Globe className="h-4 w-4 text-primary" />
+                                <h5 className="font-medium text-sm">HTTP Proxy</h5>
+                              </div>
+                              <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+                                {/* Host */}
+                                <div className="space-y-1.5">
+                                  <label className="text-xs font-medium text-muted-foreground">
+                                    Host
+                                  </label>
+                                  <div className="flex items-center gap-2">
+                                    <code className="flex-1 rounded bg-muted px-2.5 py-1.5 text-xs font-mono">
+                                      {proxy.host || "Not configured"}
+                                    </code>
+                                    {proxy.host && (
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="h-7 w-7 p-0"
+                                        onClick={() =>
+                                          copyToClipboard(proxy.host, `${proxy.id}-host`)
+                                        }
+                                      >
+                                        {copiedField === `${proxy.id}-host` ? (
+                                          <CheckCircle className="h-3 w-3 text-green-600" />
+                                        ) : (
+                                          <Copy className="h-3 w-3" />
+                                        )}
+                                      </Button>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* Port */}
+                                <div className="space-y-1.5">
+                                  <label className="text-xs font-medium text-muted-foreground">
+                                    Port
+                                  </label>
+                                  <div className="flex items-center gap-2">
+                                    <code className="flex-1 rounded bg-muted px-2.5 py-1.5 text-xs font-mono">
+                                      {proxy.port_http || "Not configured"}
+                                    </code>
+                                    {proxy.port_http && (
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="h-7 w-7 p-0"
+                                        onClick={() =>
+                                          copyToClipboard(
+                                            proxy.port_http.toString(),
+                                            `${proxy.id}-port-http`
+                                          )
+                                        }
+                                      >
+                                        {copiedField === `${proxy.id}-port-http` ? (
+                                          <CheckCircle className="h-3 w-3 text-green-600" />
+                                        ) : (
+                                          <Copy className="h-3 w-3" />
+                                        )}
+                                      </Button>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* Username */}
+                                <div className="space-y-1.5">
+                                  <label className="text-xs font-medium text-muted-foreground">
+                                    Username
+                                  </label>
+                                  <div className="flex items-center gap-2">
+                                    <code className="flex-1 rounded bg-muted px-2.5 py-1.5 text-xs font-mono truncate">
+                                      {proxy.username || "Not configured"}
+                                    </code>
+                                    {proxy.username && (
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="h-7 w-7 p-0"
+                                        onClick={() =>
+                                          copyToClipboard(proxy.username, `${proxy.id}-username`)
+                                        }
+                                      >
+                                        {copiedField === `${proxy.id}-username` ? (
+                                          <CheckCircle className="h-3 w-3 text-green-600" />
+                                        ) : (
+                                          <Copy className="h-3 w-3" />
+                                        )}
+                                      </Button>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* Password */}
+                                <div className="space-y-1.5">
+                                  <label className="text-xs font-medium text-muted-foreground">
+                                    Password
+                                  </label>
+                                  <div className="flex items-center gap-2">
+                                    <code className="flex-1 rounded bg-muted px-2.5 py-1.5 text-xs font-mono">
+                                      {proxy.password ? (
+                                        showPasswords[proxy.id]
+                                          ? proxy.password
+                                          : "••••••••••"
+                                      ) : "Not configured"}
+                                    </code>
+                                    {proxy.password && (
+                                      <>
+                                        <Button
+                                          size="sm"
+                                          variant="ghost"
+                                          className="h-7 w-7 p-0"
+                                          onClick={() => togglePasswordVisibility(proxy.id)}
+                                        >
+                                          {showPasswords[proxy.id] ? (
+                                            <EyeOff className="h-3 w-3" />
+                                          ) : (
+                                            <Eye className="h-3 w-3" />
+                                          )}
+                                        </Button>
+                                        <Button
+                                          size="sm"
+                                          variant="ghost"
+                                          className="h-7 w-7 p-0"
+                                          onClick={() =>
+                                            copyToClipboard(proxy.password, `${proxy.id}-password`)
+                                          }
+                                        >
+                                          {copiedField === `${proxy.id}-password` ? (
+                                            <CheckCircle className="h-3 w-3 text-green-600" />
+                                          ) : (
+                                            <Copy className="h-3 w-3" />
+                                          )}
+                                        </Button>
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Full Proxy URL */}
+                              {proxy.host && proxy.port_http && proxy.username && proxy.password && (
+                                <div className="space-y-1.5">
+                                  <label className="text-xs font-medium text-muted-foreground">
+                                    HTTP Proxy URL
+                                  </label>
+                                  <div className="flex items-center gap-2">
+                                    <code className="flex-1 rounded bg-muted px-2.5 py-1.5 text-xs font-mono">
+                                      http://{proxy.username}:{showPasswords[proxy.id] ? proxy.password : "••••••••"}@{proxy.host}:{proxy.port_http}
+                                    </code>
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-7 w-7 p-0"
+                                      onClick={() =>
+                                        copyToClipboard(
+                                          `http://${proxy.username}:${proxy.password}@${proxy.host}:${proxy.port_http}`,
+                                          `${proxy.id}-http-url`
+                                        )
+                                      }
+                                    >
+                                      {copiedField === `${proxy.id}-http-url` ? (
+                                        <CheckCircle className="h-3 w-3 text-green-600" />
+                                      ) : (
+                                        <Copy className="h-3 w-3" />
+                                      )}
+                                    </Button>
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Data Usage */}
+                              <div className="flex items-center gap-2 text-xs">
+                                <Database className="h-3.5 w-3.5 text-muted-foreground" />
+                                <span className="text-muted-foreground">Data Usage:</span>
+                                <span className="font-medium">{formatDataUsage(proxy.data_usage_http)}</span>
+                              </div>
+                            </div>
+
+                            {/* SOCKS5 Proxy Section */}
+                            {proxy.port_socks5 && (
+                              <div className="space-y-3 pt-4 border-t">
+                                <div className="flex items-center gap-2">
+                                  <Server className="h-4 w-4 text-primary" />
+                                  <h5 className="font-medium text-sm">SOCKS5 Proxy</h5>
+                                </div>
+                                {proxy.host && proxy.username && proxy.password ? (
+                                  <>
+                                    <div className="space-y-1.5">
+                                      <label className="text-xs font-medium text-muted-foreground">
+                                        SOCKS5 Proxy URL
+                                      </label>
+                                      <div className="flex items-center gap-2">
+                                        <code className="flex-1 rounded bg-muted px-2.5 py-1.5 text-xs font-mono">
+                                          socks5://{proxy.username}:{showPasswords[proxy.id] ? proxy.password : "••••••••"}@{proxy.host}:{proxy.port_socks5}
+                                        </code>
+                                        <Button
+                                          size="sm"
+                                          variant="ghost"
+                                          className="h-7 w-7 p-0"
+                                          onClick={() =>
+                                            copyToClipboard(
+                                              `socks5://${proxy.username}:${proxy.password}@${proxy.host}:${proxy.port_socks5}`,
+                                              `${proxy.id}-socks5-url`
+                                            )
+                                          }
+                                        >
+                                          {copiedField === `${proxy.id}-socks5-url` ? (
+                                            <CheckCircle className="h-3 w-3 text-green-600" />
+                                          ) : (
+                                            <Copy className="h-3 w-3" />
+                                          )}
+                                        </Button>
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-xs">
+                                      <Database className="h-3.5 w-3.5 text-muted-foreground" />
+                                      <span className="text-muted-foreground">Data Usage:</span>
+                                      <span className="font-medium">{formatDataUsage(proxy.data_usage_socks5)}</span>
+                                    </div>
+                                  </>
+                                ) : (
+                                  <div className="space-y-1.5">
+                                    <code className="rounded bg-muted px-2.5 py-1.5 text-xs font-mono text-muted-foreground">
+                                      Not configured - Port: {proxy.port_socks5}
+                                    </code>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+
+                            {/* Rotation Section */}
+                            {proxy.rotation_api && (
+                              <div className="space-y-3 pt-4 border-t">
+                                <div className="flex items-center gap-2">
+                                  <RefreshCw className="h-4 w-4 text-primary" />
+                                  <h5 className="font-medium text-sm">IP Rotation</h5>
+                                </div>
+                                <div className="grid gap-3 md:grid-cols-2">
+                                  {/* Rotation Interval */}
+                                  <div className="space-y-1.5">
+                                    <label className="text-xs font-medium text-muted-foreground">
+                                      Auto-Rotation Interval
+                                    </label>
+                                    <div className="flex items-center gap-2">
+                                      <code className="flex-1 rounded bg-muted px-2.5 py-1.5 text-xs font-mono">
+                                        {proxy.rotation_interval_min ? `${proxy.rotation_interval_min} min` : "Manual"}
+                                      </code>
+                                      {proxy.rotation_interval_min && (
+                                        <Button
+                                          size="sm"
+                                          variant="ghost"
+                                          className="h-7 w-7 p-0"
+                                          onClick={() =>
+                                            copyToClipboard(
+                                              proxy.rotation_interval_min!.toString(),
+                                              `${proxy.id}-rotation-interval`
+                                            )
+                                          }
+                                        >
+                                          {copiedField === `${proxy.id}-rotation-interval` ? (
+                                            <CheckCircle className="h-3 w-3 text-green-600" />
+                                          ) : (
+                                            <Copy className="h-3 w-3" />
+                                          )}
+                                        </Button>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  {/* External IP */}
+                                  <div className="space-y-1.5">
+                                    <label className="text-xs font-medium text-muted-foreground">
+                                      Current External IP
+                                    </label>
+                                    <div className="flex items-center gap-2">
+                                      <code className="flex-1 rounded bg-muted px-2.5 py-1.5 text-xs font-mono">
+                                        {proxy.external_ip || "Not available"}
+                                      </code>
+                                      {proxy.external_ip && (
+                                        <Button
+                                          size="sm"
+                                          variant="ghost"
+                                          className="h-7 w-7 p-0"
+                                          onClick={() =>
+                                            copyToClipboard(
+                                              proxy.external_ip!,
+                                              `${proxy.id}-external-ip`
+                                            )
+                                          }
+                                        >
+                                          {copiedField === `${proxy.id}-external-ip` ? (
+                                            <CheckCircle className="h-3 w-3 text-green-600" />
+                                          ) : (
+                                            <Copy className="h-3 w-3" />
+                                          )}
+                                        </Button>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Rotation URL */}
+                                {proxy.rotation_url && (
+                                  <div className="space-y-1.5">
+                                    <label className="text-xs font-medium text-muted-foreground">
+                                      Rotation API URL
+                                    </label>
+                                    <div className="flex items-center gap-2">
+                                      <code className="flex-1 rounded bg-muted px-2.5 py-1.5 text-xs font-mono truncate">
+                                        {proxy.rotation_url}
+                                      </code>
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="h-7 w-7 p-0"
+                                        onClick={() =>
+                                          copyToClipboard(
+                                            proxy.rotation_url!,
+                                            `${proxy.id}-rotation-url`
+                                          )
+                                        }
+                                      >
+                                        {copiedField === `${proxy.id}-rotation-url` ? (
+                                          <CheckCircle className="h-3 w-3 text-green-600" />
+                                        ) : (
+                                          <Copy className="h-3 w-3" />
+                                        )}
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="h-7 w-7 p-0"
+                                        asChild
+                                      >
+                                        <a href={proxy.rotation_url} target="_blank" rel="noopener noreferrer">
+                                          <ExternalLink className="h-3 w-3" />
+                                        </a>
+                                      </Button>
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Rotation Usage */}
+                                <div className="flex items-center gap-2 text-xs">
+                                  <RefreshCw className="h-3.5 w-3.5 text-muted-foreground" />
+                                  <span className="text-muted-foreground">Rotations Used:</span>
+                                  <span className="font-medium">{proxy.data_usage_rotation || 0} times</span>
+                                </div>
+                              </div>
+                            )}
+                          </>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </CardContent>
@@ -465,10 +872,20 @@ function DashboardPageContent() {
             {pendingOrders.length > 0 && (
               <Card className="border-0 shadow-sm bg-card/50 backdrop-blur">
                 <CardHeader>
-                  <CardTitle>Pending Orders</CardTitle>
-                  <CardDescription>
-                    Complete payment to activate these orders
-                  </CardDescription>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle>Pending Orders</CardTitle>
+                      <CardDescription>
+                        {isPolling
+                          ? "Checking for activation updates..."
+                          : "Complete payment to activate these orders"
+                        }
+                      </CardDescription>
+                    </div>
+                    {isPolling && (
+                      <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
+                    )}
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
@@ -480,7 +897,7 @@ function DashboardPageContent() {
                         <div>
                           <p className="font-medium">{order.plan.name}</p>
                           <p className="text-sm text-muted-foreground">
-                            ${order.total_amount} • Awaiting payment
+                            ${order.total_amount} • {isPolling ? "Awaiting activation" : "Awaiting payment"}
                           </p>
                         </div>
                         <div className="flex items-center gap-2">
