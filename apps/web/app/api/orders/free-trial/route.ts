@@ -18,7 +18,13 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body = await request.json();
-    const { plan_id, quantity = 1 } = body;
+    const {
+      plan_id,
+      quantity = 1,
+      promo_code,
+      ip_change_enabled = false,
+      ip_change_interval_minutes = 0
+    } = body;
 
     // Validate required fields
     if (!plan_id) {
@@ -98,6 +104,11 @@ export async function POST(request: NextRequest) {
         status: 'active',
         start_at: startDate.toISOString(),
         expires_at: expiryDate.toISOString(),
+        metadata: {
+          promo_code: promo_code || null,
+          ip_change_enabled,
+          ip_change_interval_minutes,
+        },
       })
       .select()
       .single();

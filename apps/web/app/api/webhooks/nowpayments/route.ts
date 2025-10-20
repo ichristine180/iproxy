@@ -436,7 +436,7 @@ async function provisionProxyForOrder(
 ) {
   console.log("Starting connection provisioning for order:", orderId);
 
-  // Step 1: Get order details with plan info
+  // Step 1: Get order details with plan info and metadata
   const { data: order, error: orderFetchError } = await supabase
     .from("orders")
     .select("*, plan:plans(*)")
@@ -446,6 +446,10 @@ async function provisionProxyForOrder(
   if (orderFetchError || !order) {
     throw new Error(`Failed to fetch order: ${orderFetchError?.message}`);
   }
+
+  // Extract rotation settings from order metadata
+  const ipChangeEnabled = order.metadata?.ip_change_enabled || false;
+  const ipChangeIntervalMinutes = order.metadata?.ip_change_interval_minutes || 0;
 
   // Step 2: Get user details to fetch email
   const { data: profile } = await supabase
@@ -503,10 +507,33 @@ async function provisionProxyForOrder(
 
   console.log("Proxy access granted:", proxyAccess.id);
 
-  // Step 5: Format proxy access as IP:PORT:LOGIN:PASSWORD
+  // Step 5: Update connection settings if IP change is enabled
+  if (ipChangeEnabled && ipChangeIntervalMinutes > 0) {
+    console.log(
+      "Updating connection settings for auto IP rotation:",
+      ipChangeIntervalMinutes,
+      "minutes"
+    );
+    const settingsResult = await iproxyService.updateConnectionSettings(
+      availableConnection.connection_id,
+      {
+        ip_change_enabled: true,
+        ip_change_interval_minutes: ipChangeIntervalMinutes,
+      }
+    );
+
+    if (!settingsResult.success) {
+      console.error("Failed to update connection settings:", settingsResult.error);
+      // Non-critical error, continue with provisioning
+    } else {
+      console.log("Connection settings updated successfully");
+    }
+  }
+
+  // Step 6: Format proxy access as IP:PORT:LOGIN:PASSWORD
   const proxyAccessString = `${proxyAccess.ip}:${proxyAccess.port}:${proxyAccess.auth.login}:${proxyAccess.auth.password}`;
 
-  // Step 6: Update connection_info with details and mark as occupied
+  // Step 7: Update connection_info with details and mark as occupied
   const { error: updateError } = await supabase
     .from("connection_info")
     .update({
@@ -517,6 +544,7 @@ async function provisionProxyForOrder(
       is_occupied: true,
       expires_at: expiresAt,
       updated_at: new Date().toISOString(),
+      proxy_id: proxyAccess.id,
     })
     .eq("id", availableConnection.id);
 
@@ -529,7 +557,7 @@ async function provisionProxyForOrder(
     availableConnection.id
   );
 
-  // Step 7: Save to proxies table for backward compatibility
+  // Step 8: Save to proxies table for backward compatibility
   const { data: savedProxy, error: saveError } = await supabase
     .from("proxies")
     .insert({
@@ -537,8 +565,8 @@ async function provisionProxyForOrder(
       order_id: orderId,
       label: `${order.plan?.name || "Plan"} - ${userEmail}`,
       host: proxyAccess.hostname,
-      port_http: proxyAccess.listen_service === "http" && proxyAccess.port,
-      port_socks5: proxyAccess.listen_service === "socks5" && proxyAccess.port,
+      port_http: proxyAccess.listen_service === "http" ? proxyAccess.port : null,
+      port_socks5: proxyAccess.listen_service === "socks5" ? proxyAccess.port : null,
       username: proxyAccess.auth.login,
       password_hash: proxyAccess.auth.password,
       status: "active",

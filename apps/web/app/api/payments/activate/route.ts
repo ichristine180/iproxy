@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { iproxyService } from '@/lib/iproxy-service';
+import crypto from 'crypto';
 
 // POST - Manually activate a payment (for testing/development ONLY)
 export async function POST(request: NextRequest) {
@@ -137,66 +138,121 @@ export async function POST(request: NextRequest) {
 
       const userEmail = profile?.email || user.id;
 
-      // Step 1: Create a new connection
-      const connectionName = `${order.plan?.name || 'Plan'} - ${userEmail}`;
+      // Extract rotation settings from order metadata
+      const ipChangeEnabled = order.metadata?.ip_change_enabled || false;
+      const ipChangeIntervalMinutes = order.metadata?.ip_change_interval_minutes || 0;
 
-      // Map default cities for countries
-      const country = order.plan?.country || 'us';
-      const defaultCities: Record<string, string> = {
-        'us': 'nyc',
-        'de': 'fra',
-        'gb': 'lon',
-      };
+      // Step 1: Get an available connection from connection_info table
+      const { data: availableConnection, error: connectionError } = await supabaseAdmin
+        .from('connection_info')
+        .select('*')
+        .eq('is_occupied', false)
+        .limit(1)
+        .single();
 
-      const connectionRequest = {
-        name: connectionName,
-        description: `Connection for order ${order_id}`,
-        prolongation_enabled: true,
-        country: country,
-        city: order.plan?.city || defaultCities[country] || 'nyc',
-        socks5_udp: order.plan?.socks5_udp || false,
-      };
-
-      console.log('Creating new connection:', connectionRequest);
-      const { success: connectionSuccess, connection, error: connectionError } =
-        await iproxyService.createAndGetConnection(connectionRequest);
-
-      if (!connectionSuccess || !connection) {
-        throw new Error(`Failed to create connection: ${connectionError || 'Unknown error'}`);
+      if (connectionError || !availableConnection) {
+        throw new Error('No available connections found. Please contact admin');
       }
 
-      console.log('Connection created and retrieved:', connection.id);
+      console.log('Found available connection:', availableConnection.connection_id);
 
-      // Step 2: Save connection to database mapped to user and order
+      // Step 2: Grant proxy access to the connection
+      const proxyAccessRequest = {
+        listen_service: 'http' as const,
+        auth_type: 'userpass' as const,
+        auth: {
+          login: `user_${user.id.substring(0, 8)}`,
+          password: generateSecurePassword(),
+        },
+        description: `Proxy for ${userEmail} - Order ${order_id}`,
+        expires_at: expiryDate.toISOString(),
+      };
+
+      console.log('Granting proxy access to connection:', availableConnection.connection_id);
+      const { success: proxySuccess, proxy: proxyAccess, error: proxyError } =
+        await iproxyService.grantProxyAccess(availableConnection.connection_id, proxyAccessRequest);
+
+      if (!proxySuccess || !proxyAccess) {
+        throw new Error(`Failed to grant proxy access: ${proxyError || 'Unknown error'}`);
+      }
+
+      console.log('Proxy access granted:', proxyAccess.id);
+
+      // Step 3: Update connection settings if IP change is enabled
+      if (ipChangeEnabled && ipChangeIntervalMinutes > 0) {
+        console.log('Updating connection settings for auto IP rotation:', ipChangeIntervalMinutes, 'minutes');
+        const settingsResult = await iproxyService.updateConnectionSettings(
+          availableConnection.connection_id,
+          {
+            ip_change_enabled: true,
+            ip_change_interval_minutes: ipChangeIntervalMinutes,
+          }
+        );
+
+        if (!settingsResult.success) {
+          console.error('Failed to update connection settings:', settingsResult.error);
+          // Non-critical error, continue with provisioning
+        } else {
+          console.log('Connection settings updated successfully');
+        }
+      }
+
+      // Step 4: Format proxy access as IP:PORT:LOGIN:PASSWORD
+      const proxyAccessString = `${proxyAccess.ip}:${proxyAccess.port}:${proxyAccess.auth.login}:${proxyAccess.auth.password}`;
+
+      // Step 5: Update connection_info with details and mark as occupied
+      const { error: updateError } = await supabaseAdmin
+        .from('connection_info')
+        .update({
+          client_email: userEmail,
+          user_id: user.id,
+          order_id: order_id,
+          proxy_access: proxyAccessString,
+          is_occupied: true,
+          expires_at: expiryDate.toISOString(),
+          updated_at: new Date().toISOString(),
+          proxy_id:proxyAccess.id
+        })
+        .eq('id', availableConnection.id);
+
+      if (updateError) {
+        throw new Error(`Failed to update connection info: ${updateError.message}`);
+      }
+
+      console.log('Connection info updated and marked as occupied:', availableConnection.id);
+
+      // Step 6: Save to proxies table for backward compatibility
       const { data: savedProxy, error: saveError } = await supabaseAdmin
         .from('proxies')
         .insert({
           user_id: user.id,
           order_id: order_id,
-          label: connectionName,
-          host: connection.basic_info.c_fqdn,
-          port_http: null, // Will be set when proxy access is granted
-          port_socks5: null,
-          username: null, // Will be set when proxy access is granted
-          password_hash: null,
+          label: `${order.plan?.name || 'Plan'} - ${userEmail}`,
+          host: proxyAccess.hostname,
+          port_http: proxyAccess.listen_service === 'http' ? proxyAccess.port : null,
+          port_socks5: proxyAccess.listen_service === 'socks5' ? proxyAccess.port : null,
+          username: proxyAccess.auth.login,
+          password_hash: proxyAccess.auth.password,
           status: 'active',
-          iproxy_connection_id: connection.id,
+          iproxy_connection_id: availableConnection.connection_id,
           expires_at: expiryDate.toISOString(),
-          connection_data: connection, // Store full connection details
+          connection_data: proxyAccess,
+          last_ip: proxyAccess.ip,
         })
         .select()
         .single();
 
       if (saveError) {
-        throw new Error(`Failed to save connection to database: ${saveError.message}`);
+        console.error('Failed to save to proxies table (non-critical):', saveError.message);
+      } else {
+        console.log('Proxy saved to proxies table:', savedProxy.id);
       }
 
-      console.log('Connection saved to database:', savedProxy.id);
       provisionedConnection = {
-        id: savedProxy.id,
-        label: savedProxy.label,
-        connection_id: connection.id,
-        host: savedProxy.host,
+        connection_info_id: availableConnection.id,
+        proxy_id: savedProxy?.id,
+        connection_id: availableConnection.connection_id,
+        proxy_access: proxyAccessString,
       };
     } catch (connectionError: any) {
       console.error('Error provisioning connection:', connectionError);
@@ -217,4 +273,21 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+// Helper function to generate secure password
+function generateSecurePassword(): string {
+  const length = 16;
+  const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
+  let password = '';
+  const randomBytes = crypto.randomBytes(length);
+
+  for (let i = 0; i < length; i++) {
+    const byte = randomBytes[i];
+    if (byte !== undefined) {
+      password += charset[byte % charset.length];
+    }
+  }
+
+  return password;
 }

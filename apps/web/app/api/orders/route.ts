@@ -83,7 +83,14 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body = await request.json();
-    const { plan_id, quantity = 1, pay_currency } = body;
+    const {
+      plan_id,
+      quantity = 1,
+      pay_currency,
+      promo_code,
+      ip_change_enabled = false,
+      ip_change_interval_minutes = 0
+    } = body;
 
     // Validate required fields
     if (!plan_id) {
@@ -138,6 +145,9 @@ export async function POST(request: NextRequest) {
         price_currency: 'usd',
         pay_currency: pay_currency || 'btc',
         order_description: `${plan.name} - ${quantity} proxy${quantity > 1 ? 'ies' : ''}`,
+        promo_code,
+        ip_change_enabled,
+        ip_change_interval_minutes,
       }),
     });
 

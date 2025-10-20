@@ -11,6 +11,9 @@ interface CreateInvoiceRequest {
   price_currency?: string;
   pay_currency?: string;
   order_description?: string;
+  promo_code?: string;
+  ip_change_enabled?: boolean;
+  ip_change_interval_minutes?: number;
 }
 
 interface NowPaymentsInvoiceResponse {
@@ -50,6 +53,9 @@ export async function POST(request: NextRequest) {
       price_currency = 'usd',
       pay_currency,
       order_description,
+      promo_code,
+      ip_change_enabled = false,
+      ip_change_interval_minutes = 0,
     } = body;
 
     // Validate required fields
@@ -130,6 +136,9 @@ export async function POST(request: NextRequest) {
         metadata: {
           pay_currency: pay_currency,
           order_description: order_description,
+          promo_code: promo_code || null,
+          ip_change_enabled,
+          ip_change_interval_minutes,
         },
       })
       .select()

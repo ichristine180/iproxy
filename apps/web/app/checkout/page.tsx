@@ -13,6 +13,13 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Loader2, ArrowLeft, CreditCard } from "lucide-react";
 
 interface Plan {
@@ -43,6 +50,8 @@ function CheckoutPageContent() {
   const [plan, setPlan] = useState<Plan | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [selectedCrypto, setSelectedCrypto] = useState("btc");
+  const [promoCode, setPromoCode] = useState("");
+  const [rotationInterval, setRotationInterval] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState("");
@@ -123,6 +132,9 @@ function CheckoutPageContent() {
           body: JSON.stringify({
             plan_id: plan.id,
             quantity,
+            promo_code: promoCode || undefined,
+            ip_change_enabled: rotationInterval > 0,
+            ip_change_interval_minutes: rotationInterval,
           }),
         });
 
@@ -146,6 +158,9 @@ function CheckoutPageContent() {
             plan_id: plan.id,
             quantity,
             pay_currency: selectedCrypto,
+            promo_code: promoCode || undefined,
+            ip_change_enabled: rotationInterval > 0,
+            ip_change_interval_minutes: rotationInterval,
           }),
         });
 
@@ -249,6 +264,18 @@ function CheckoutPageContent() {
                     className="mt-2"
                   />
                 </div>
+                {promoCode && (
+                  <div>
+                    <p className="text-sm text-muted-foreground">Promo Code</p>
+                    <p className="font-medium text-primary">{promoCode}</p>
+                  </div>
+                )}
+                {rotationInterval > 0 && (
+                  <div>
+                    <p className="text-sm text-muted-foreground">Auto Rotation</p>
+                    <p className="font-medium">Every {rotationInterval} minutes</p>
+                  </div>
+                )}
                 <div className="pt-4 border-t">
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">
@@ -301,31 +328,51 @@ function CheckoutPageContent() {
                   // Paid Plan UI
                   <>
                     <div>
-                      <Label>Select Cryptocurrency</Label>
-                      <div className="grid grid-cols-2 gap-3 mt-2">
-                        {POPULAR_CRYPTOS.map((crypto) => (
-                          <button
-                            key={crypto.code}
-                            onClick={() => setSelectedCrypto(crypto.code)}
-                            className={`
-                              p-3 rounded-lg border-2 transition-all
-                              ${
-                                selectedCrypto === crypto.code
-                                  ? "border-primary bg-primary/10"
-                                  : "border-border hover:border-primary/50"
-                              }
-                            `}
-                          >
-                            <div className="text-2xl mb-1">{crypto.icon}</div>
-                            <div className="text-sm font-medium">
-                              {crypto.name}
-                            </div>
-                            <div className="text-xs text-muted-foreground uppercase">
-                              {crypto.code}
-                            </div>
-                          </button>
-                        ))}
-                      </div>
+                      <Label htmlFor="crypto">Select Cryptocurrency</Label>
+                      <Select value={selectedCrypto} onValueChange={setSelectedCrypto}>
+                        <SelectTrigger id="crypto" className="mt-2">
+                          <SelectValue placeholder="Select cryptocurrency" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {POPULAR_CRYPTOS.map((crypto) => (
+                            <SelectItem key={crypto.code} value={crypto.code}>
+                              {crypto.icon} {crypto.name} ({crypto.code.toUpperCase()})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="promoCode">Promo Code (Optional)</Label>
+                      <Input
+                        id="promoCode"
+                        type="text"
+                        value={promoCode}
+                        onChange={(e) => setPromoCode(e.target.value)}
+                        placeholder="Enter promo code"
+                        className="mt-2"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="rotationInterval">
+                        Auto Rotation Interval (minutes)
+                      </Label>
+                      <Input
+                        id="rotationInterval"
+                        type="number"
+                        min="0"
+                        value={rotationInterval}
+                        onChange={(e) =>
+                          setRotationInterval(Math.max(0, parseInt(e.target.value) || 0))
+                        }
+                        placeholder="0 = disabled"
+                        className="mt-2"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Set to 0 to disable auto rotation, or enter minutes for automatic IP changes
+                      </p>
                     </div>
 
                     <div className="p-4 bg-muted rounded-lg">
