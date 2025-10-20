@@ -20,14 +20,14 @@ import { Button } from '@/components/ui/button';
 import {
   LayoutDashboard,
   Server,
-  Package,
+  Users,
   LogOut,
   User,
-  CreditCard,
   Settings,
   Bell,
-  Search,
-  Wallet,
+  Shield,
+  Package,
+  CreditCard,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -39,33 +39,35 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
-const DashboardSidebar = () => {
+const AdminSidebar = () => {
   const { state } = useSidebar();
   const pathname = usePathname();
 
   const navItems = [
-    { title: 'Overview', url: '/dashboard', icon: LayoutDashboard },
-    { title: 'Billing', url: '/dashboard/Billing', icon: Wallet },
-    { title: 'Plans & rates', url: '/dashboard/plan&rates', icon: Package },
+    { title: 'Dashboard', url: '/admin', icon: LayoutDashboard },
+    { title: 'Connections', url: '/admin/connections', icon: Server },
+    { title: 'Users', url: '/admin/users', icon: Users },
+    { title: 'Orders', url: '/admin/orders', icon: Package },
+    { title: 'Billing', url: '/admin/billing', icon: CreditCard },
   ];
 
   return (
     <Sidebar collapsible="icon">
       <SidebarContent className="bg-sidebar">
         {/* Logo Section */}
-        <div className="flex  h-16 items-center border-b px-4" style={{ borderColor: 'hsl(var(--border))' }}>
+        <div className="flex h-16 items-center border-b px-4" style={{ borderColor: 'hsl(var(--border))' }}>
           {state === 'expanded' ? (
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center">
-                <Server className="h-4 w-4 text-primary-foreground" />
+                <Shield className="h-4 w-4 text-primary-foreground" />
               </div>
               <h2 className="font-bold text-lg [background-image:var(--gradient-primary)] bg-clip-text text-transparent">
-                iProxy
+                Admin Panel
               </h2>
             </div>
           ) : (
             <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center mx-auto">
-              <Server className="h-4 w-4 text-primary-foreground" />
+              <Shield className="h-4 w-4 text-primary-foreground" />
             </div>
           )}
         </div>
@@ -73,7 +75,7 @@ const DashboardSidebar = () => {
         {/* Navigation */}
         <SidebarGroup className="mt-4">
           <SidebarGroupLabel className={state === 'collapsed' ? 'sr-only' : ''}>
-            Navigation
+            Admin Menu
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -110,7 +112,7 @@ const DashboardSidebar = () => {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Bottom Section - Settings */}
+        {/* Bottom Section - Back to Dashboard */}
         <div className="mt-auto border-t" style={{ borderColor: 'hsl(var(--border))' }}>
           <SidebarGroup>
             <SidebarGroupContent>
@@ -120,7 +122,18 @@ const DashboardSidebar = () => {
                     asChild
                     className={state === 'collapsed' ? 'justify-center' : ''}
                   >
-                    <Link href="/dashboard/settings" className="flex items-center gap-3 w-full">
+                    <Link href="/dashboard" className="flex items-center gap-3 w-full">
+                      <LayoutDashboard className={`h-5 w-5 ${state === 'collapsed' ? 'mx-auto' : ''}`} />
+                      {state === 'expanded' && <span>Back to Dashboard</span>}
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    className={state === 'collapsed' ? 'justify-center' : ''}
+                  >
+                    <Link href="/admin/settings" className="flex items-center gap-3 w-full">
                       <Settings className={`h-5 w-5 ${state === 'collapsed' ? 'mx-auto' : ''}`} />
                       {state === 'expanded' && <span>Settings</span>}
                     </Link>
@@ -135,7 +148,7 @@ const DashboardSidebar = () => {
   );
 };
 
-export const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
+export const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const { user, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
@@ -147,11 +160,13 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
 
   // Get page title based on pathname
   const getPageTitle = () => {
-    if (pathname === '/dashboard') return 'Overview';
-    if (pathname.includes('/proxies')) return 'My Proxies';
-    if (pathname.includes('/orders')) return 'Orders';
-    if (pathname.includes('/settings')) return 'Settings';
-    return 'Dashboard';
+    if (pathname === '/admin') return 'Admin Dashboard';
+    if (pathname.includes('/connections')) return 'Connection Management';
+    if (pathname.includes('/users')) return 'User Management';
+    if (pathname.includes('/orders')) return 'Order Management';
+    if (pathname.includes('/billing')) return 'Billing Management';
+    if (pathname.includes('/settings')) return 'Admin Settings';
+    return 'Admin Panel';
   };
 
   // Get user initials for avatar
@@ -159,13 +174,13 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
     if (user?.email) {
       return user.email.substring(0, 2).toUpperCase();
     }
-    return 'U';
+    return 'A';
   };
 
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="min-h-screen flex w-full bg-background">
-        <DashboardSidebar />
+        <AdminSidebar />
         <div className="flex-1 flex flex-col">
           {/* Modern Header */}
           <header className="sticky top-0 z-40 h-16 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60" style={{ borderColor: 'hsl(var(--border))' }}>
@@ -203,22 +218,18 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
                   <DropdownMenuContent align="end" className="w-56">
                     <DropdownMenuLabel>
                       <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">My Account</p>
+                        <p className="text-sm font-medium leading-none">Admin Account</p>
                         <p className="text-xs leading-none text-muted-foreground truncate">
                           {user?.email}
                         </p>
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => router.push('/dashboard/profile')}>
-                      <User className="mr-2 h-4 w-4" />
-                      Profile
+                    <DropdownMenuItem onClick={() => router.push('/dashboard')}>
+                      <LayoutDashboard className="mr-2 h-4 w-4" />
+                      User Dashboard
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => router.push('/dashboard/orders')}>
-                      <CreditCard className="mr-2 h-4 w-4" />
-                      Billing
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => router.push('/dashboard/settings')}>
+                    <DropdownMenuItem onClick={() => router.push('/admin/settings')}>
                       <Settings className="mr-2 h-4 w-4" />
                       Settings
                     </DropdownMenuItem>

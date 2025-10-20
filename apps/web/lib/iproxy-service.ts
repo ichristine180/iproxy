@@ -543,6 +543,62 @@ export class IProxyService {
       };
     }
   }
+
+  /**
+   * Create action link for proxy
+   * Note: This is a placeholder - actual API endpoint may differ
+   */
+  async createActionLink(
+    connectionId: string,
+    action: string,
+    label: string
+  ): Promise<{
+    success: boolean;
+    actionLink?: { id: string; link: string };
+    error?: string;
+  }> {
+    try {
+      // TODO: Implement actual API call when endpoint is available
+      console.warn('createActionLink is not yet implemented in iProxy API');
+      return {
+        success: false,
+        error: 'Action link creation is not yet implemented',
+      };
+    } catch (error) {
+      console.error('Error creating action link:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  }
+
+  /**
+   * Delete action link
+   * Note: This is a placeholder - actual API endpoint may differ
+   */
+  async deleteActionLink(
+    connectionId: string,
+    actionLinkId: string
+  ): Promise<{
+    success: boolean;
+    error?: string;
+  }> {
+    try {
+      // TODO: Implement actual API call when endpoint is available
+      console.warn('deleteActionLink is not yet implemented in iProxy API');
+      return {
+        success: false,
+        error: 'Action link deletion is not yet implemented',
+      };
+    } catch (error) {
+      console.error('Error deleting action link:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  }
 }
 
 // Export singleton instance

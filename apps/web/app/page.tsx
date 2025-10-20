@@ -39,8 +39,12 @@ export default function LoginPage() {
       if (data.success) {
         // Refresh the user context to pick up the new session
         await refreshUser();
-        // Redirect to dashboard
-        router.push("/dashboard");
+        // Redirect based on user role
+        if (data.user?.role === 'admin') {
+          router.push("/admin");
+        } else {
+          router.push("/dashboard");
+        }
       } else {
         setError(data.error || "Login failed");
         // If email needs verification, offer to resend

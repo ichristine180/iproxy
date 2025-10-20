@@ -158,6 +158,8 @@ const Sidebar = React.forwardRef<
   ) => {
     const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
 
+    const calculatedWidth = state === "expanded" ? "250px" : "72px";
+
     if (collapsible === "none") {
       return (
         <div
@@ -206,12 +208,15 @@ const Sidebar = React.forwardRef<
       <div
         ref={ref}
         className={cn(
-          "group sticky top-0 flex h-screen flex-col border-r bg-background transition-[width] duration-300 ease-in-out",
+          "group sticky top-0 flex-shrink-0 h-screen flex-col border-r bg-background transition-[width] duration-300 ease-in-out",
+          "flex", 
           className
         )}
         style={{
           borderColor: 'hsl(var(--border))',
-          width: state === "expanded" ? "250px" : "4.5rem"
+          width: calculatedWidth,
+          minWidth: calculatedWidth,
+          maxWidth: calculatedWidth
         }}
         {...props}
       >

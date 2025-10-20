@@ -41,6 +41,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Fetch user profile to get role
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', data.user.id)
+      .single();
+
     return NextResponse.json({
       success: true,
       message: 'Login successful',
@@ -48,6 +55,7 @@ export async function POST(request: NextRequest) {
         id: data.user.id,
         email: data.user.email,
         name: data.user.user_metadata?.name,
+        role: profile?.role || 'user',
       },
       session: {
         access_token: data.session?.access_token,

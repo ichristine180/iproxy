@@ -15,12 +15,20 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Fetch user profile to get role
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
     return NextResponse.json({
       success: true,
       user: {
         id: user.id,
         email: user.email,
         name: user.user_metadata?.name,
+        role: profile?.role || 'user',
         emailVerified: !!user.email_confirmed_at,
         createdAt: user.created_at,
       },
