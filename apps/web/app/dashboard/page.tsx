@@ -41,6 +41,7 @@ interface Proxy {
   channel: string;
   plan_name: string;
   rotation_api: boolean;
+  rotation_mode?: 'manual' | 'api' | 'scheduled';
   status: string;
   expires_at: string;
   // Additional fields for comprehensive UI

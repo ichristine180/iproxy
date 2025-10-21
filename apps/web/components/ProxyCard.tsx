@@ -32,6 +32,7 @@ interface Proxy {
   channel: string;
   plan_name: string;
   rotation_api: boolean;
+  rotation_mode?: 'manual' | 'api' | 'scheduled';
   status: string;
   expires_at: string;
   serial_number?: number;
@@ -150,18 +151,25 @@ export function ProxyCard({ proxy, index }: ProxyCardProps) {
         </div>
 
         <div className="flex md:flex-col items-start gap-2 md:text-right">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium bg-green-500/10 text-green-600 border border-green-500/20">
               {proxy.status === "active" ? "Active" : proxy.status}
             </span>
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-8 w-8 p-0"
-              onClick={() => router.push(`/dashboard/proxies/${proxy.id}/settings`)}
-            >
-              <Settings className="h-4 w-4" />
-            </Button>
+            {proxy.rotation_mode && (
+              <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium border ${
+                proxy.rotation_mode === 'scheduled'
+                  ? 'bg-blue-500/10 text-blue-600 border-blue-500/20'
+                  : proxy.rotation_mode === 'api'
+                  ? 'bg-purple-500/10 text-purple-600 border-purple-500/20'
+                  : 'bg-gray-500/10 text-gray-600 border-gray-500/20'
+              }`}>
+                {proxy.rotation_mode === 'scheduled'
+                  ? `Auto ${proxy.rotation_interval_min}min`
+                  : proxy.rotation_mode === 'api'
+                  ? 'API Rotation'
+                  : 'Manual'}
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <Calendar className="h-3 w-3" />
@@ -375,15 +383,24 @@ export function ProxyCard({ proxy, index }: ProxyCardProps) {
       )}
 
       {/* Rotation Section */}
-      {proxy.rotation_api && (
+      {(proxy.rotation_api || proxy.rotation_mode) && (
         <div className="space-y-3 pt-4 border-t">
           <div className="flex items-center gap-2">
             <RefreshCw className="h-4 w-4 text-primary" />
             <h5 className="font-medium text-sm">IP Rotation</h5>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground">Auto-Rotation Interval</label>
+              <label className="text-xs font-medium text-muted-foreground">Rotation Mode</label>
+              <div className="flex items-center gap-2">
+                <code className="flex-1 rounded bg-muted px-2.5 py-1.5 text-xs font-mono capitalize">
+                  {proxy.rotation_mode || 'manual'}
+                </code>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground">Rotation Interval</label>
               <div className="flex items-center gap-2">
                 <code className="flex-1 rounded bg-muted px-2.5 py-1.5 text-xs font-mono">
                   {proxy.rotation_interval_min ? `${proxy.rotation_interval_min} min` : "Manual"}

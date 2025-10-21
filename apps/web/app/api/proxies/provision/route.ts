@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { iproxyService } from '@/lib/iproxy-service';
+import { encryptPassword, decryptPassword } from '@/lib/encryption';
 
 /**
  * POST /api/proxies/provision
@@ -100,6 +101,9 @@ export async function POST(request: NextRequest) {
       const result = await iproxyService.createProxy(connection_id, proxyConfig);
 
       if (result.success && result.proxy) {
+        // Encrypt password before storing
+        const encryptedPassword = encryptPassword(result.proxy.password);
+
         // Store in database
         const { data: newProxy, error: insertError } = await supabase
           .from('proxies')
@@ -110,7 +114,7 @@ export async function POST(request: NextRequest) {
             port_http: result.proxy.port_http,
             port_socks5: result.proxy.port_socks5 || null,
             username: result.proxy.username,
-            password_hash: result.proxy.password, // Store securely
+            password_hash: encryptedPassword,
             country: plan.channel, // Use channel as country for now
             status: 'active',
             iproxy_change_url: result.proxy.change_url || null,
@@ -123,7 +127,12 @@ export async function POST(request: NextRequest) {
         if (insertError) {
           errors.push(`Failed to save proxy ${i + 1}: ${insertError.message}`);
         } else {
-          createdProxies.push(newProxy);
+          // Decrypt password before returning to client
+          const proxyWithDecryptedPassword = {
+            ...newProxy,
+            password: decryptPassword(newProxy.password_hash),
+          };
+          createdProxies.push(proxyWithDecryptedPassword);
         }
       } else {
         errors.push(`Failed to create proxy ${i + 1}: ${result.error}`);

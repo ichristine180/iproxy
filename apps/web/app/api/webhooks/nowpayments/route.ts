@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import crypto from "crypto";
 import { iproxyService } from "@/lib/iproxy-service";
+import { encryptPassword } from "@/lib/encryption";
 
 const NOWPAYMENTS_IPS = [
   // Current NOWPayments webhook IPs (2025)
@@ -530,6 +531,52 @@ async function provisionProxyForOrder(
     }
   }
 
+  // Step 5.5: Fetch connection details to get rotation settings
+  console.log("Fetching connection details:", availableConnection.connection_id);
+  const connectionDetailsResult = await iproxyService.getConnection(
+    availableConnection.connection_id
+  );
+
+  let rotationMode: 'manual' | 'api' | 'scheduled' = 'manual';
+  let rotationIntervalMin: number | null = null;
+  let proxyCountry: string | null = null;
+
+  if (connectionDetailsResult.success && connectionDetailsResult.connection) {
+    const connectionDetails = connectionDetailsResult.connection;
+    console.log("Connection details fetched successfully");
+
+    // Extract rotation settings from connection settings
+    const connectionSettings = connectionDetails.settings;
+    if (connectionSettings) {
+      const ipChangeEnabled = connectionSettings.ip_change_enabled || false;
+      const ipChangeIntervalMinutes = connectionSettings.ip_change_interval_minutes || 0;
+
+      if (ipChangeEnabled && ipChangeIntervalMinutes > 0) {
+        rotationMode = 'scheduled';
+        rotationIntervalMin = ipChangeIntervalMinutes;
+        console.log(
+          "Rotation settings from connection:",
+          { rotationMode, rotationIntervalMin }
+        );
+      }
+    }
+
+    // Extract geo information from basic_info.server_geo
+    const serverGeo = connectionDetails.basic_info?.server_geo;
+    if (serverGeo) {
+      proxyCountry = serverGeo.country?.toUpperCase() || null;
+      console.log(
+        "Geo information from connection:",
+        { country: proxyCountry, city: serverGeo.city }
+      );
+    }
+  } else {
+    console.error(
+      "Failed to fetch connection details (non-critical):",
+      connectionDetailsResult.error
+    );
+  }
+
   // Step 6: Format proxy access as IP:PORT:LOGIN:PASSWORD
   const proxyAccessString = `${proxyAccess.ip}:${proxyAccess.port}:${proxyAccess.auth.login}:${proxyAccess.auth.password}`;
 
@@ -558,6 +605,9 @@ async function provisionProxyForOrder(
   );
 
   // Step 8: Save to proxies table for backward compatibility
+  // Encrypt the password before storing
+  const encryptedPassword = encryptPassword(proxyAccess.auth.password);
+
   const { data: savedProxy, error: saveError } = await supabase
     .from("proxies")
     .insert({
@@ -568,12 +618,15 @@ async function provisionProxyForOrder(
       port_http: proxyAccess.listen_service === "http" ? proxyAccess.port : null,
       port_socks5: proxyAccess.listen_service === "socks5" ? proxyAccess.port : null,
       username: proxyAccess.auth.login,
-      password_hash: proxyAccess.auth.password,
+      password_hash: encryptedPassword,
       status: "active",
+      country: proxyCountry,
       iproxy_connection_id: availableConnection.connection_id,
       expires_at: expiresAt,
-      connection_data: proxyAccess,
+      connection_data: connectionDetailsResult?.connection,
       last_ip: proxyAccess.ip,
+      rotation_mode: rotationMode,
+      rotation_interval_min: rotationIntervalMin,
     })
     .select()
     .single();

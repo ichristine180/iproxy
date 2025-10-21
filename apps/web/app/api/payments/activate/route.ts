@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { iproxyService } from '@/lib/iproxy-service';
 import crypto from 'crypto';
+import { encryptPassword } from '@/lib/encryption';
 
 // POST - Manually activate a payment (for testing/development ONLY)
 export async function POST(request: NextRequest) {
@@ -222,6 +223,9 @@ export async function POST(request: NextRequest) {
       console.log('Connection info updated and marked as occupied:', availableConnection.id);
 
       // Step 6: Save to proxies table for backward compatibility
+      // Encrypt the password before storing
+      const encryptedPassword = encryptPassword(proxyAccess.auth.password);
+
       const { data: savedProxy, error: saveError } = await supabaseAdmin
         .from('proxies')
         .insert({
@@ -232,7 +236,7 @@ export async function POST(request: NextRequest) {
           port_http: proxyAccess.listen_service === 'http' ? proxyAccess.port : null,
           port_socks5: proxyAccess.listen_service === 'socks5' ? proxyAccess.port : null,
           username: proxyAccess.auth.login,
-          password_hash: proxyAccess.auth.password,
+          password_hash: encryptedPassword,
           status: 'active',
           iproxy_connection_id: availableConnection.connection_id,
           expires_at: expiryDate.toISOString(),

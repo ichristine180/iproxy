@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { decryptPassword } from '@/lib/encryption';
 
 // GET - Fetch user's proxies via RLS
 export async function GET(request: NextRequest) {
@@ -29,10 +30,30 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Decrypt passwords before sending to client
+    const proxiesWithDecryptedPasswords = (proxies || []).map((proxy) => {
+      try {
+        const decryptedPassword = proxy.password_hash
+          ? decryptPassword(proxy.password_hash)
+          : '';
+
+        return {
+          ...proxy,
+          password: decryptedPassword,
+        };
+      } catch (decryptError) {
+        console.error('Error decrypting password for proxy:', proxy.id, decryptError);
+        return {
+          ...proxy,
+          password: '', // Return empty password if decryption fails
+        };
+      }
+    });
+
     return NextResponse.json({
       success: true,
-      proxies: proxies || [],
-      total: proxies?.length || 0,
+      proxies: proxiesWithDecryptedPasswords,
+      total: proxiesWithDecryptedPasswords.length,
     });
   } catch (error) {
     console.error('Error in proxies GET API:', error);
