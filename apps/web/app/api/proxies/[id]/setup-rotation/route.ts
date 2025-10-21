@@ -63,7 +63,7 @@ export async function POST(
     const actionLinkResult = await iproxyService.createActionLink(
       proxy.iproxy_connection_id,
       'changeip',
-      `Rotation link for ${proxy.label || proxy.username}`
+      'IP rotation link'
     );
 
     if (!actionLinkResult.success || !actionLinkResult.actionLink) {
@@ -77,11 +77,27 @@ export async function POST(
       );
     }
 
-    // Update proxy with action link ID
+    const actionLinkId = actionLinkResult.actionLink.id;
+
+    // Get the full action link URL
+    const getActionLinksResult = await iproxyService.getActionLinks(proxy.iproxy_connection_id);
+    let actionLinkUrl: string | null = null;
+
+    if (getActionLinksResult.success && getActionLinksResult.actionLinks) {
+      const changeIpLink = getActionLinksResult.actionLinks.find(
+        (link) => link.id === actionLinkId
+      );
+      if (changeIpLink) {
+        actionLinkUrl = changeIpLink.link;
+      }
+    }
+
+    // Update proxy with action link ID and URL
     const { error: updateError } = await supabase
       .from('proxies')
       .update({
-        iproxy_action_link_id: actionLinkResult.actionLink.id,
+        iproxy_action_link_id: actionLinkId,
+        iproxy_change_url: actionLinkUrl,
       })
       .eq('id', id);
 
@@ -92,7 +108,7 @@ export async function POST(
       try {
         await iproxyService.deleteActionLink(
           proxy.iproxy_connection_id,
-          actionLinkResult.actionLink.id
+          actionLinkId
         );
       } catch (cleanupError) {
         console.error('Failed to cleanup action link:', cleanupError);
@@ -110,8 +126,8 @@ export async function POST(
       success: true,
       message: 'Rotation configured successfully',
       action_link: {
-        id: actionLinkResult.actionLink.id,
-        link: actionLinkResult.actionLink.link,
+        id: actionLinkId,
+        link: actionLinkUrl,
       },
     });
   } catch (error) {
