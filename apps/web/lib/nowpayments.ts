@@ -149,10 +149,18 @@ export class NowPaymentsAPI {
     }
   }
 
-  // Get payment status
+  // Get payment status (works for both payments and invoices)
   async getPaymentStatus(paymentId: string): Promise<PaymentResponse> {
     try {
-      const response = await fetch(`${NOWPAYMENTS_API_URL}/payment/${paymentId}`, {
+      // Try invoice status first (if ID looks like invoice ID - numeric string)
+      const isInvoiceId = !isNaN(Number(paymentId));
+      const endpoint = isInvoiceId
+        ? `${NOWPAYMENTS_API_URL}/invoice/${paymentId}`
+        : `${NOWPAYMENTS_API_URL}/payment/${paymentId}`;
+
+      console.log('Checking payment status at:', endpoint);
+
+      const response = await fetch(endpoint, {
         method: 'GET',
         headers: {
           'x-api-key': this.apiKey,

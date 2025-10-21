@@ -195,23 +195,41 @@ export function CryptoPaymentModal({
   };
 
   const checkPaymentStatus = async () => {
-    if (!paymentData?.payment_id) return;
+    // Use invoice ID (stored in 'id' field) for invoice-based payments
+    const paymentId = paymentData?.id || paymentData?.payment_id;
+    if (!paymentId) return;
 
     try {
-      const status = await nowPayments.getPaymentStatus(paymentData.payment_id);
+      const status = await nowPayments.getPaymentStatus(paymentId);
+      console.log('Payment status check:', status.payment_status, 'for ID:', paymentId);
 
-      if (status.payment_status === 'finished' || status.payment_status === 'confirmed') {
-        setStep('processing');
-        toast({
-          title: 'Payment Successful',
-          description: 'Your balance will be updated shortly',
-        });
+      // Check for all possible success statuses
+      if (
+        status.payment_status === 'finished' ||
+        status.payment_status === 'confirmed' ||
+        status.payment_status === 'sending' ||
+        status.payment_status === 'confirming'
+      ) {
+        if (status.payment_status === 'finished' || status.payment_status === 'confirmed') {
+          setStep('processing');
+          toast({
+            title: 'Payment Successful',
+            description: 'Your balance has been updated!',
+          });
 
-        // Update balance in database here
-        setTimeout(() => {
-          onSuccess?.();
-          handleClose();
-        }, 2000);
+          // Call success callback and close modal
+          setTimeout(() => {
+            onSuccess?.();
+            handleClose();
+          }, 2000);
+        } else {
+          // Payment is being processed
+          setStep('processing');
+          toast({
+            title: 'Payment Received',
+            description: 'Processing your payment...',
+          });
+        }
       }
     } catch (error) {
       console.error('Error checking payment status:', error);

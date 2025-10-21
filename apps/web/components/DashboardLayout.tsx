@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useRouter, usePathname } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
+import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Sidebar,
   SidebarContent,
@@ -15,8 +15,8 @@ import {
   SidebarProvider,
   SidebarTrigger,
   useSidebar,
-} from '@/components/ui/sidebar';
-import { Button } from '@/components/ui/button';
+} from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard,
   Server,
@@ -28,7 +28,7 @@ import {
   Bell,
   Search,
   Wallet,
-} from 'lucide-react';
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,25 +36,28 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 const DashboardSidebar = () => {
   const { state } = useSidebar();
   const pathname = usePathname();
 
   const navItems = [
-    { title: 'Overview', url: '/dashboard', icon: LayoutDashboard },
-    { title: 'Balance', url: '/dashboard/balance', icon: Wallet },
-    { title: 'Plans & rates', url: '/dashboard/plan&rates', icon: Package },
+    { title: "Overview", url: "/dashboard", icon: LayoutDashboard },
+    { title: "Wallet & topup", url: "/dashboard/balance", icon: Wallet },
+    { title: "Plans & rates", url: "/dashboard/plan&rates", icon: Package },
   ];
 
   return (
     <Sidebar collapsible="icon">
       <SidebarContent className="bg-sidebar">
         {/* Logo Section */}
-        <div className="flex  h-16 items-center border-b px-4" style={{ borderColor: 'hsl(var(--border))' }}>
-          {state === 'expanded' ? (
+        <div
+          className="flex  h-16 items-center border-b px-4"
+          style={{ borderColor: "hsl(var(--border))" }}
+        >
+          {state === "expanded" ? (
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center">
                 <Server className="h-4 w-4 text-primary-foreground" />
@@ -72,7 +75,7 @@ const DashboardSidebar = () => {
 
         {/* Navigation */}
         <SidebarGroup className="mt-4">
-          <SidebarGroupLabel className={state === 'collapsed' ? 'sr-only' : ''}>
+          <SidebarGroupLabel className={state === "collapsed" ? "sr-only" : ""}>
             Navigation
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -86,18 +89,26 @@ const DashboardSidebar = () => {
                       isActive={isActive}
                       className={`
                         group relative
-                        ${isActive
-                          ? 'bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary'
-                          : 'hover:bg-muted'
+                        ${
+                          isActive
+                            ? "bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary"
+                            : "hover:bg-muted"
                         }
-                        ${state === 'collapsed' ? 'justify-center' : ''}
+                        ${state === "collapsed" ? "justify-center" : ""}
                       `}
-                      tooltip={state === 'collapsed' ? item.title : undefined}
+                      tooltip={state === "collapsed" ? item.title : undefined}
                     >
-                      <Link href={item.url} className="flex items-center gap-3 w-full">
-                        <item.icon className={`h-5 w-5 ${isActive ? 'text-primary' : ''} ${state === 'collapsed' ? 'mx-auto' : ''}`} />
-                        {state === 'expanded' && (
-                          <span className={`${isActive ? 'font-semibold' : ''}`}>
+                      <Link
+                        href={item.url}
+                        className="flex items-center gap-3 w-full"
+                      >
+                        <item.icon
+                          className={`h-5 w-5 ${isActive ? "text-primary" : ""} ${state === "collapsed" ? "mx-auto" : ""}`}
+                        />
+                        {state === "expanded" && (
+                          <span
+                            className={`${isActive ? "font-semibold" : ""}`}
+                          >
                             {item.title}
                           </span>
                         )}
@@ -111,18 +122,26 @@ const DashboardSidebar = () => {
         </SidebarGroup>
 
         {/* Bottom Section - Settings */}
-        <div className="mt-auto border-t" style={{ borderColor: 'hsl(var(--border))' }}>
+        <div
+          className="mt-auto border-t"
+          style={{ borderColor: "hsl(var(--border))" }}
+        >
           <SidebarGroup>
             <SidebarGroupContent>
               <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     asChild
-                    className={state === 'collapsed' ? 'justify-center' : ''}
+                    className={state === "collapsed" ? "justify-center" : ""}
                   >
-                    <Link href="/dashboard/settings" className="flex items-center gap-3 w-full">
-                      <Settings className={`h-5 w-5 ${state === 'collapsed' ? 'mx-auto' : ''}`} />
-                      {state === 'expanded' && <span>Settings</span>}
+                    <Link
+                      href="/dashboard/settings"
+                      className="flex items-center gap-3 w-full"
+                    >
+                      <Settings
+                        className={`h-5 w-5 ${state === "collapsed" ? "mx-auto" : ""}`}
+                      />
+                      {state === "expanded" && <span>Settings</span>}
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -135,23 +154,27 @@ const DashboardSidebar = () => {
   );
 };
 
-export const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
+export const DashboardLayout = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
   const { user, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
   const handleLogout = async () => {
     await logout();
-    router.push('/');
+    router.push("/");
   };
 
   // Get page title based on pathname
   const getPageTitle = () => {
-    if (pathname === '/dashboard') return 'Overview';
-    if (pathname.includes('/proxies')) return 'My Proxies';
-    if (pathname.includes('/orders')) return 'Orders';
-    if (pathname.includes('/settings')) return 'Settings';
-    return 'Dashboard';
+    if (pathname === "/dashboard") return "Overview";
+    if (pathname.includes("/proxies")) return "My Proxies";
+    if (pathname.includes("/orders")) return "Orders";
+    if (pathname.includes("/settings")) return "Settings";
+    return "Dashboard";
   };
 
   // Get user initials for avatar
@@ -159,7 +182,7 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
     if (user?.email) {
       return user.email.substring(0, 2).toUpperCase();
     }
-    return 'U';
+    return "U";
   };
 
   return (
@@ -168,20 +191,29 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
         <DashboardSidebar />
         <div className="flex-1 flex flex-col">
           {/* Modern Header */}
-          <header className="sticky top-0 z-40 h-16 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60" style={{ borderColor: 'hsl(var(--border))' }}>
+          <header
+            className="sticky top-0 z-40 h-16 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+            style={{ borderColor: "hsl(var(--border))" }}
+          >
             <div className="flex h-full items-center justify-between px-6 gap-4">
               {/* Left Section */}
               <div className="flex items-center gap-4">
                 <SidebarTrigger className="hover:bg-muted" />
                 <div className="hidden md:flex items-center gap-2">
-                  <h1 className="text-xl font-semibold tracking-tight">{getPageTitle()}</h1>
+                  <h1 className="text-xl font-semibold tracking-tight">
+                    {getPageTitle()}
+                  </h1>
                 </div>
               </div>
 
               {/* Right Section */}
               <div className="flex items-center gap-1 md:gap-2">
                 {/* Notifications */}
-                <Button variant="ghost" size="icon" className="relative h-9 w-9">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="relative h-9 w-9"
+                >
                   <Bell className="h-4 w-4" />
                   <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-primary" />
                 </Button>
@@ -203,27 +235,38 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
                   <DropdownMenuContent align="end" className="w-56">
                     <DropdownMenuLabel>
                       <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">My Account</p>
+                        <p className="text-sm font-medium leading-none">
+                          My Account
+                        </p>
                         <p className="text-xs leading-none text-muted-foreground truncate">
                           {user?.email}
                         </p>
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => router.push('/dashboard/profile')}>
+                    <DropdownMenuItem
+                      onClick={() => router.push("/dashboard/profile")}
+                    >
                       <User className="mr-2 h-4 w-4" />
                       Profile
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => router.push('/dashboard/orders')}>
+                    <DropdownMenuItem
+                      onClick={() => router.push("/dashboard/orders")}
+                    >
                       <CreditCard className="mr-2 h-4 w-4" />
                       Billing
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => router.push('/dashboard/settings')}>
+                    <DropdownMenuItem
+                      onClick={() => router.push("/dashboard/settings")}
+                    >
                       <Settings className="mr-2 h-4 w-4" />
                       Settings
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
+                    <DropdownMenuItem
+                      onClick={handleLogout}
+                      className="text-destructive focus:text-destructive"
+                    >
                       <LogOut className="mr-2 h-4 w-4" />
                       Logout
                     </DropdownMenuItem>
