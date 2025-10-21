@@ -157,27 +157,54 @@ export async function POST(request: NextRequest) {
 
       console.log('Found available connection:', availableConnection.connection_id);
 
-      // Step 2: Grant proxy access to the connection
-      const proxyAccessRequest = {
+      // Step 2: Grant proxy access to the connection (HTTP and SOCKS5)
+      console.log('Granting proxy access to connection:', availableConnection.connection_id);
+
+      // Generate shared credentials for both HTTP and SOCKS5
+      const sharedUsername = `user_${user.id.substring(0, 8)}`;
+      const sharedPassword = generateSecurePassword();
+
+      // Step 2a: Grant HTTP proxy access
+      const httpProxyRequest = {
         listen_service: 'http' as const,
         auth_type: 'userpass' as const,
         auth: {
-          login: `user_${user.id.substring(0, 8)}`,
-          password: generateSecurePassword(),
+          login: sharedUsername,
+          password: sharedPassword,
         },
-        description: `Proxy for ${userEmail} - Order ${order_id}`,
+        description: `HTTP Proxy for ${userEmail} - Order ${order_id}`,
         expires_at: expiryDate.toISOString(),
       };
 
-      console.log('Granting proxy access to connection:', availableConnection.connection_id);
-      const { success: proxySuccess, proxy: proxyAccess, error: proxyError } =
-        await iproxyService.grantProxyAccess(availableConnection.connection_id, proxyAccessRequest);
+      const { success: httpSuccess, proxy: httpProxyAccess, error: httpError } =
+        await iproxyService.grantProxyAccess(availableConnection.connection_id, httpProxyRequest);
 
-      if (!proxySuccess || !proxyAccess) {
-        throw new Error(`Failed to grant proxy access: ${proxyError || 'Unknown error'}`);
+      if (!httpSuccess || !httpProxyAccess) {
+        throw new Error(`Failed to grant HTTP proxy access: ${httpError || 'Unknown error'}`);
       }
 
-      console.log('Proxy access granted:', proxyAccess.id);
+      console.log('HTTP proxy access granted:', httpProxyAccess.id);
+
+      // Step 2b: Grant SOCKS5 proxy access
+      const socks5ProxyRequest = {
+        listen_service: 'socks5' as const,
+        auth_type: 'userpass' as const,
+        auth: {
+          login: sharedUsername,
+          password: sharedPassword,
+        },
+        description: `SOCKS5 Proxy for ${userEmail} - Order ${order_id}`,
+        expires_at: expiryDate.toISOString(),
+      };
+
+      const { success: socks5Success, proxy: socks5ProxyAccess, error: socks5Error } =
+        await iproxyService.grantProxyAccess(availableConnection.connection_id, socks5ProxyRequest);
+
+      if (!socks5Success || !socks5ProxyAccess) {
+        throw new Error(`Failed to grant SOCKS5 proxy access: ${socks5Error || 'Unknown error'}`);
+      }
+
+      console.log('SOCKS5 proxy access granted:', socks5ProxyAccess.id);
 
       // Step 3: Update connection settings if IP change is enabled
       if (ipChangeEnabled && ipChangeIntervalMinutes > 0) {
@@ -198,21 +225,67 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      // Step 4: Format proxy access as IP:PORT:LOGIN:PASSWORD
-      const proxyAccessString = `${proxyAccess.ip}:${proxyAccess.port}:${proxyAccess.auth.login}:${proxyAccess.auth.password}`;
+      // Step 3.5: Fetch connection details to get rotation settings and geo info
+      console.log('Fetching connection details:', availableConnection.connection_id);
+      const connectionDetailsResult = await iproxyService.getConnection(
+        availableConnection.connection_id
+      );
 
-      // Step 5: Update connection_info with details and mark as occupied
+      let rotationMode: 'manual' | 'scheduled' = 'manual';
+      let rotationIntervalMin: number | null = null;
+      let proxyCountry: string | null = null;
+
+      if (connectionDetailsResult.success && connectionDetailsResult.connection) {
+        const connectionDetails = connectionDetailsResult.connection;
+        console.log('Connection details fetched successfully');
+
+        // Extract rotation settings from connection settings
+        const connectionSettings = connectionDetails.settings;
+        if (connectionSettings) {
+          const ipChangeEnabled = connectionSettings.ip_change_enabled || false;
+          const ipChangeIntervalMinutes = connectionSettings.ip_change_interval_minutes || 0;
+
+          if (ipChangeEnabled && ipChangeIntervalMinutes > 0) {
+            rotationMode = 'scheduled';
+            rotationIntervalMin = ipChangeIntervalMinutes;
+            console.log('Rotation settings from connection:', { rotationMode, rotationIntervalMin });
+          }
+        }
+
+        // Extract geo information from basic_info.server_geo
+        const serverGeo = connectionDetails.basic_info?.server_geo;
+        if (serverGeo) {
+          proxyCountry = serverGeo.country?.toUpperCase() || null;
+          console.log('Geo information from connection:', { country: proxyCountry, city: serverGeo.city });
+        }
+      } else {
+        console.error('Failed to fetch connection details (non-critical):', connectionDetailsResult.error);
+      }
+
+      // Step 4: Format proxy access as IP:PORT:LOGIN:PASSWORD for both HTTP and SOCKS5
+      const httpProxyAccessString = `${httpProxyAccess.ip}:${httpProxyAccess.port}:${httpProxyAccess.auth.login}:${httpProxyAccess.auth.password}`;
+      const socks5ProxyAccessString = `${socks5ProxyAccess.ip}:${socks5ProxyAccess.port}:${socks5ProxyAccess.auth.login}:${socks5ProxyAccess.auth.password}`;
+
+      // Step 5: Get current proxy_id and proxy_access arrays to append to them
+      const currentProxyIds = availableConnection.proxy_id || [];
+      const currentProxyAccess = availableConnection.proxy_access || [];
+
+      // Append new values to arrays (both HTTP and SOCKS5)
+      const updatedProxyIds = [...currentProxyIds, httpProxyAccess.id, socks5ProxyAccess.id];
+      const updatedProxyAccess = [...currentProxyAccess, httpProxyAccessString, socks5ProxyAccessString];
+
+      // Step 6: Update connection_info with details and mark as occupied
       const { error: updateError } = await supabaseAdmin
         .from('connection_info')
         .update({
           client_email: userEmail,
           user_id: user.id,
           order_id: order_id,
-          proxy_access: proxyAccessString,
+          proxy_access: updatedProxyAccess,
           is_occupied: true,
           expires_at: expiryDate.toISOString(),
           updated_at: new Date().toISOString(),
-          proxy_id:proxyAccess.id
+          proxy_id: updatedProxyIds
         })
         .eq('id', availableConnection.id);
 
@@ -222,9 +295,44 @@ export async function POST(request: NextRequest) {
 
       console.log('Connection info updated and marked as occupied:', availableConnection.id);
 
-      // Step 6: Save to proxies table for backward compatibility
-      // Encrypt the password before storing
-      const encryptedPassword = encryptPassword(proxyAccess.auth.password);
+      // Step 7: Create action link for IP rotation
+      console.log('Creating action link for IP rotation');
+      let changeIpUrl: string | null = null;
+      let actionLinkId: string | null = null;
+
+      const createActionLinkResult = await iproxyService.createActionLink(
+        availableConnection.connection_id,
+        'changeip',
+        'IP rotation link'
+      );
+
+
+      if (createActionLinkResult.success && createActionLinkResult.actionLink) {
+        actionLinkId = createActionLinkResult.actionLink.id;
+        console.log('Action link created:', actionLinkId);
+
+        // Get the full action link URL
+        const getActionLinksResult = await iproxyService.getActionLinks(
+          availableConnection.connection_id
+        );
+
+        if (getActionLinksResult.success && getActionLinksResult.actionLinks) {
+          const changeIpLink = getActionLinksResult.actionLinks.find(
+            (link) => link.id === actionLinkId
+          );
+
+          if (changeIpLink) {
+            changeIpUrl = changeIpLink.link;
+            console.log('Action link URL retrieved:', changeIpUrl);
+          }
+        }
+      } else {
+        console.error('Failed to create action link (non-critical):', createActionLinkResult.error);
+      }
+
+      // Step 8: Save to proxies table for backward compatibility
+      // Encrypt the password before storing (same password for both HTTP and SOCKS5)
+      const encryptedPassword = encryptPassword(sharedPassword);
 
       const { data: savedProxy, error: saveError } = await supabaseAdmin
         .from('proxies')
@@ -232,16 +340,21 @@ export async function POST(request: NextRequest) {
           user_id: user.id,
           order_id: order_id,
           label: `${order.plan?.name || 'Plan'} - ${userEmail}`,
-          host: proxyAccess.hostname,
-          port_http: proxyAccess.listen_service === 'http' ? proxyAccess.port : null,
-          port_socks5: proxyAccess.listen_service === 'socks5' ? proxyAccess.port : null,
-          username: proxyAccess.auth.login,
+          host: httpProxyAccess.hostname,
+          port_http: httpProxyAccess.port,
+          port_socks5: socks5ProxyAccess.port,
+          username: sharedUsername,
           password_hash: encryptedPassword,
           status: 'active',
+          country: proxyCountry,
           iproxy_connection_id: availableConnection.connection_id,
+          iproxy_change_url: changeIpUrl,
+          iproxy_action_link_id: actionLinkId,
           expires_at: expiryDate.toISOString(),
-          connection_data: proxyAccess,
-          last_ip: proxyAccess.ip,
+          connection_data: connectionDetailsResult?.connection,
+          last_ip: httpProxyAccess.ip,
+          rotation_mode: rotationMode,
+          rotation_interval_min: rotationIntervalMin,
         })
         .select()
         .single();
@@ -256,7 +369,10 @@ export async function POST(request: NextRequest) {
         connection_info_id: availableConnection.id,
         proxy_id: savedProxy?.id,
         connection_id: availableConnection.connection_id,
-        proxy_access: proxyAccessString,
+        http_proxy_access: httpProxyAccessString,
+        socks5_proxy_access: socks5ProxyAccessString,
+        http_proxy_id: httpProxyAccess.id,
+        socks5_proxy_id: socks5ProxyAccess.id,
       };
     } catch (connectionError: any) {
       console.error('Error provisioning connection:', connectionError);

@@ -145,6 +145,117 @@ export interface Database {
           updated_at?: string
         }
       }
+      connection_info: {
+        Row: {
+          id: string
+          connection_id: string
+          client_email: string | null
+          user_id: string | null
+          order_id: string | null
+          proxy_id: string[] | null
+          proxy_access: string[] | null
+          is_occupied: boolean
+          expires_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          connection_id: string
+          client_email?: string | null
+          user_id?: string | null
+          order_id?: string | null
+          proxy_id?: string[] | null
+          proxy_access?: string[] | null
+          is_occupied?: boolean
+          expires_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          connection_id?: string
+          client_email?: string | null
+          user_id?: string | null
+          order_id?: string | null
+          proxy_id?: string[] | null
+          proxy_access?: string[] | null
+          is_occupied?: boolean
+          expires_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      user_wallet: {
+        Row: {
+          id: string
+          user_id: string
+          balance: number
+          currency: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          balance?: number
+          currency?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          balance?: number
+          currency?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      wallet_transactions: {
+        Row: {
+          id: string
+          user_id: string
+          wallet_id: string
+          type: 'deposit' | 'withdrawal' | 'refund' | 'payment'
+          amount: number
+          balance_before: number
+          balance_after: number
+          description: string | null
+          reference_type: string | null
+          reference_id: string | null
+          metadata: Json | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          wallet_id: string
+          type: 'deposit' | 'withdrawal' | 'refund' | 'payment'
+          amount: number
+          balance_before: number
+          balance_after: number
+          description?: string | null
+          reference_type?: string | null
+          reference_id?: string | null
+          metadata?: Json | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          wallet_id?: string
+          type?: 'deposit' | 'withdrawal' | 'refund' | 'payment'
+          amount?: number
+          balance_before?: number
+          balance_after?: number
+          description?: string | null
+          reference_type?: string | null
+          reference_id?: string | null
+          metadata?: Json | null
+          created_at?: string
+        }
+      }
       orders: {
         Row: {
           id: string

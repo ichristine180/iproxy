@@ -251,7 +251,7 @@ function CheckoutPageContent() {
                   <p className="text-sm text-muted-foreground">Type</p>
                   <p className="font-medium capitalize">{plan.channel}</p>
                 </div>
-                {/* <div>
+                <div>
                   <Label htmlFor="quantity">Quantity</Label>
                   <Input
                     id="quantity"
@@ -263,7 +263,7 @@ function CheckoutPageContent() {
                     }
                     className="mt-2"
                   />
-                </div> */}
+                </div>
                 {promoCode && (
                   <div>
                     <p className="text-sm text-muted-foreground">Promo Code</p>

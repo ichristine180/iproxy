@@ -45,7 +45,7 @@ const DashboardSidebar = () => {
 
   const navItems = [
     { title: 'Overview', url: '/dashboard', icon: LayoutDashboard },
-    { title: 'Billing', url: '/dashboard/Billing', icon: Wallet },
+    { title: 'Balance', url: '/dashboard/balance', icon: Wallet },
     { title: 'Plans & rates', url: '/dashboard/plan&rates', icon: Package },
   ];
 

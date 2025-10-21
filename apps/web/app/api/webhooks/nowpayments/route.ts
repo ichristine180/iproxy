@@ -255,6 +255,9 @@ async function processWebhook(
     );
   }
 
+  // Check if this is a wallet top-up payment
+  const isTopup = webhook.order_id.startsWith("topup-");
+
   // Map payment status using state machine
   const { paymentStatus, orderStatus, isFinal } = mapPaymentStatus(
     webhook.payment_status
@@ -265,6 +268,7 @@ async function processWebhook(
     payment_status: paymentStatus,
     order_status: orderStatus,
     is_final: isFinal,
+    is_topup: isTopup,
   });
 
   // Find or create payment record
@@ -326,6 +330,53 @@ async function processWebhook(
 
     payment = newPayment;
     console.log("Payment created:", payment.id);
+  }
+
+  // Handle wallet top-up payments
+  if (isTopup && isFinal && paymentStatus === "paid") {
+    console.log("Processing wallet top-up for user:", userId, "amount:", webhook.price_amount);
+
+    // Get or create user wallet using SECURITY DEFINER function
+    const { data: walletData, error: walletError } = await supabase
+      .rpc("get_or_create_user_wallet", { p_user_id: userId })
+      .single();
+
+    if (walletError || !walletData) {
+      console.error("Error getting/creating wallet:", walletError);
+      throw new Error(`Failed to get or create wallet: ${walletError?.message || 'Unknown error'}`);
+    }
+
+    const wallet = walletData;
+    console.log("Wallet retrieved/created for user:", userId, "Wallet ID:", wallet.id);
+
+    // Use the atomic record_wallet_transaction function
+    const { data: transactionId, error: walletTxError } = await supabase.rpc(
+      "record_wallet_transaction",
+      {
+        p_user_id: userId,
+        p_wallet_id: wallet.id,
+        p_type: "deposit",
+        p_amount: webhook.price_amount,
+        p_description: `Crypto top-up: $${webhook.price_amount} via ${webhook.pay_currency.toUpperCase()}`,
+        p_reference_type: "payment",
+        p_reference_id: payment.id,
+        p_metadata: {
+          payment_id: webhook.payment_id,
+          order_id: webhook.order_id,
+          pay_currency: webhook.pay_currency,
+          pay_amount: webhook.pay_amount,
+        },
+      }
+    );
+
+    if (walletTxError) {
+      console.error("Error recording wallet transaction:", walletTxError);
+      throw walletTxError;
+    }
+
+    console.log("Wallet transaction recorded:", transactionId);
+
+    return; // Exit early for top-up payments
   }
 
   // Update order status if payment is final and successful (paid or paid_over)
@@ -450,7 +501,8 @@ async function provisionProxyForOrder(
 
   // Extract rotation settings from order metadata
   const ipChangeEnabled = order.metadata?.ip_change_enabled || false;
-  const ipChangeIntervalMinutes = order.metadata?.ip_change_interval_minutes || 0;
+  const ipChangeIntervalMinutes =
+    order.metadata?.ip_change_interval_minutes || 0;
 
   // Step 2: Get user details to fetch email
   const { data: profile } = await supabase
@@ -475,38 +527,73 @@ async function provisionProxyForOrder(
 
   console.log("Found available connection:", availableConnection.connection_id);
 
-  // Step 4: Grant proxy access to the connection
-  const proxyAccessRequest = {
-    listen_service: "http" as const,
-    auth_type: "userpass" as const,
-    auth: {
-      login: `user_${userId.substring(0, 8)}`,
-      password: generateSecurePassword(),
-    },
-    description: `Proxy for ${userEmail} - Order ${orderId}`,
-    expires_at: expiresAt,
-  };
-
+  // Step 4: Grant proxy access to the connection (HTTP and SOCKS5)
   console.log(
     "Granting proxy access to connection:",
     availableConnection.connection_id
   );
+
+  // Generate shared credentials for both HTTP and SOCKS5
+  const sharedUsername = `user_${userId.substring(0, 8)}`;
+  const sharedPassword = generateSecurePassword();
+
+  // Step 4a: Grant HTTP proxy access
+  const httpProxyRequest = {
+    listen_service: "http" as const,
+    auth_type: "userpass" as const,
+    auth: {
+      login: sharedUsername,
+      password: sharedPassword,
+    },
+    description: `HTTP Proxy for ${userEmail} - Order ${orderId}`,
+    expires_at: expiresAt,
+  };
+
   const {
-    success: proxySuccess,
-    proxy: proxyAccess,
-    error: proxyError,
+    success: httpSuccess,
+    proxy: httpProxyAccess,
+    error: httpError,
   } = await iproxyService.grantProxyAccess(
     availableConnection.connection_id,
-    proxyAccessRequest
+    httpProxyRequest
   );
 
-  if (!proxySuccess || !proxyAccess) {
+  if (!httpSuccess || !httpProxyAccess) {
     throw new Error(
-      `Failed to grant proxy access: ${proxyError || "Unknown error"}`
+      `Failed to grant HTTP proxy access: ${httpError || "Unknown error"}`
     );
   }
 
-  console.log("Proxy access granted:", proxyAccess.id);
+  console.log("HTTP proxy access granted:", httpProxyAccess.id);
+
+  // Step 4b: Grant SOCKS5 proxy access
+  const socks5ProxyRequest = {
+    listen_service: "socks5" as const,
+    auth_type: "userpass" as const,
+    auth: {
+      login: sharedUsername,
+      password: sharedPassword,
+    },
+    description: `SOCKS5 Proxy for ${userEmail} - Order ${orderId}`,
+    expires_at: expiresAt,
+  };
+
+  const {
+    success: socks5Success,
+    proxy: socks5ProxyAccess,
+    error: socks5Error,
+  } = await iproxyService.grantProxyAccess(
+    availableConnection.connection_id,
+    socks5ProxyRequest
+  );
+
+  if (!socks5Success || !socks5ProxyAccess) {
+    throw new Error(
+      `Failed to grant SOCKS5 proxy access: ${socks5Error || "Unknown error"}`
+    );
+  }
+
+  console.log("SOCKS5 proxy access granted:", socks5ProxyAccess.id);
 
   // Step 5: Update connection settings if IP change is enabled
   if (ipChangeEnabled && ipChangeIntervalMinutes > 0) {
@@ -524,7 +611,10 @@ async function provisionProxyForOrder(
     );
 
     if (!settingsResult.success) {
-      console.error("Failed to update connection settings:", settingsResult.error);
+      console.error(
+        "Failed to update connection settings:",
+        settingsResult.error
+      );
       // Non-critical error, continue with provisioning
     } else {
       console.log("Connection settings updated successfully");
@@ -532,12 +622,15 @@ async function provisionProxyForOrder(
   }
 
   // Step 5.5: Fetch connection details to get rotation settings
-  console.log("Fetching connection details:", availableConnection.connection_id);
+  console.log(
+    "Fetching connection details:",
+    availableConnection.connection_id
+  );
   const connectionDetailsResult = await iproxyService.getConnection(
     availableConnection.connection_id
   );
 
-  let rotationMode: 'manual' | 'api' | 'scheduled' = 'manual';
+  let rotationMode: "manual" | "scheduled" = "manual";
   let rotationIntervalMin: number | null = null;
   let proxyCountry: string | null = null;
 
@@ -549,15 +642,16 @@ async function provisionProxyForOrder(
     const connectionSettings = connectionDetails.settings;
     if (connectionSettings) {
       const ipChangeEnabled = connectionSettings.ip_change_enabled || false;
-      const ipChangeIntervalMinutes = connectionSettings.ip_change_interval_minutes || 0;
+      const ipChangeIntervalMinutes =
+        connectionSettings.ip_change_interval_minutes || 0;
 
       if (ipChangeEnabled && ipChangeIntervalMinutes > 0) {
-        rotationMode = 'scheduled';
+        rotationMode = "scheduled";
         rotationIntervalMin = ipChangeIntervalMinutes;
-        console.log(
-          "Rotation settings from connection:",
-          { rotationMode, rotationIntervalMin }
-        );
+        console.log("Rotation settings from connection:", {
+          rotationMode,
+          rotationIntervalMin,
+        });
       }
     }
 
@@ -565,10 +659,10 @@ async function provisionProxyForOrder(
     const serverGeo = connectionDetails.basic_info?.server_geo;
     if (serverGeo) {
       proxyCountry = serverGeo.country?.toUpperCase() || null;
-      console.log(
-        "Geo information from connection:",
-        { country: proxyCountry, city: serverGeo.city }
-      );
+      console.log("Geo information from connection:", {
+        country: proxyCountry,
+        city: serverGeo.city,
+      });
     }
   } else {
     console.error(
@@ -577,21 +671,38 @@ async function provisionProxyForOrder(
     );
   }
 
-  // Step 6: Format proxy access as IP:PORT:LOGIN:PASSWORD
-  const proxyAccessString = `${proxyAccess.ip}:${proxyAccess.port}:${proxyAccess.auth.login}:${proxyAccess.auth.password}`;
+  // Step 6: Format proxy access as IP:PORT:LOGIN:PASSWORD for both HTTP and SOCKS5
+  const httpProxyAccessString = `${httpProxyAccess.ip}:${httpProxyAccess.port}:${httpProxyAccess.auth.login}:${httpProxyAccess.auth.password}`;
+  const socks5ProxyAccessString = `${socks5ProxyAccess.ip}:${socks5ProxyAccess.port}:${socks5ProxyAccess.auth.login}:${socks5ProxyAccess.auth.password}`;
 
-  // Step 7: Update connection_info with details and mark as occupied
+  // Step 7: Get current proxy_id and proxy_access arrays to append to them
+  const currentProxyIds = availableConnection.proxy_id || [];
+  const currentProxyAccess = availableConnection.proxy_access || [];
+
+  // Append new values to arrays (both HTTP and SOCKS5)
+  const updatedProxyIds = [
+    ...currentProxyIds,
+    httpProxyAccess.id,
+    socks5ProxyAccess.id,
+  ];
+  const updatedProxyAccess = [
+    ...currentProxyAccess,
+    httpProxyAccessString,
+    socks5ProxyAccessString,
+  ];
+
+  // Step 8: Update connection_info with details and mark as occupied
   const { error: updateError } = await supabase
     .from("connection_info")
     .update({
       client_email: userEmail,
       user_id: userId,
       order_id: orderId,
-      proxy_access: proxyAccessString,
+      proxy_access: updatedProxyAccess,
       is_occupied: true,
       expires_at: expiresAt,
       updated_at: new Date().toISOString(),
-      proxy_id: proxyAccess.id,
+      proxy_id: updatedProxyIds,
     })
     .eq("id", availableConnection.id);
 
@@ -604,9 +715,67 @@ async function provisionProxyForOrder(
     availableConnection.id
   );
 
-  // Step 8: Save to proxies table for backward compatibility
-  // Encrypt the password before storing
-  const encryptedPassword = encryptPassword(proxyAccess.auth.password);
+  // Step 9: Get or create action link for IP rotation
+  console.log("Getting/creating action link for IP rotation");
+  let changeIpUrl: string | null = null;
+  let actionLinkId: string | null = null;
+
+  // First, check if action links already exist
+  const existingLinksResult = await iproxyService.getActionLinks(
+    availableConnection.connection_id
+  );
+
+  if (existingLinksResult.success && existingLinksResult.actionLinks) {
+    // Find existing changeip link
+    const existingChangeIpLink = existingLinksResult.actionLinks.find(
+      (link) => link.action === "changeip"
+    );
+
+    if (existingChangeIpLink) {
+      actionLinkId = existingChangeIpLink.id;
+      changeIpUrl = existingChangeIpLink.link;
+      console.log("Using existing action link:", actionLinkId);
+    }
+  }
+
+  // If no existing link found, create a new one
+  if (!actionLinkId) {
+    const createActionLinkResult = await iproxyService.createActionLink(
+      availableConnection.connection_id,
+      'changeip',
+      `IP rotation link`
+    );
+
+    if (createActionLinkResult.success && createActionLinkResult.actionLink) {
+      actionLinkId = createActionLinkResult.actionLink.id;
+      console.log("Action link created:", actionLinkId);
+
+      // Get the full action link URL
+      const getActionLinksResult = await iproxyService.getActionLinks(
+        availableConnection.connection_id
+      );
+
+      if (getActionLinksResult.success && getActionLinksResult.actionLinks) {
+        const changeIpLink = getActionLinksResult.actionLinks.find(
+          (link) => link.id === actionLinkId
+        );
+
+        if (changeIpLink) {
+          changeIpUrl = changeIpLink.link;
+          console.log("Action link URL retrieved:", changeIpUrl);
+        }
+      }
+    } else {
+      console.error(
+        "Failed to create action link (non-critical):",
+        createActionLinkResult.error
+      );
+    }
+  }
+
+  // Step 10: Save to proxies table for backward compatibility
+  // Encrypt the password before storing (same password for both HTTP and SOCKS5)
+  const encryptedPassword = encryptPassword(sharedPassword);
 
   const { data: savedProxy, error: saveError } = await supabase
     .from("proxies")
@@ -614,23 +783,47 @@ async function provisionProxyForOrder(
       user_id: userId,
       order_id: orderId,
       label: `${order.plan?.name || "Plan"} - ${userEmail}`,
-      host: proxyAccess.hostname,
-      port_http: proxyAccess.listen_service === "http" ? proxyAccess.port : null,
-      port_socks5: proxyAccess.listen_service === "socks5" ? proxyAccess.port : null,
-      username: proxyAccess.auth.login,
+      host: httpProxyAccess.hostname,
+      port_http: httpProxyAccess.port,
+      username: sharedUsername,
       password_hash: encryptedPassword,
       status: "active",
       country: proxyCountry,
       iproxy_connection_id: availableConnection.connection_id,
+      iproxy_change_url: changeIpUrl,
+      iproxy_action_link_id: actionLinkId,
       expires_at: expiresAt,
       connection_data: connectionDetailsResult?.connection,
-      last_ip: proxyAccess.ip,
+      last_ip: httpProxyAccess.ip,
       rotation_mode: rotationMode,
       rotation_interval_min: rotationIntervalMin,
     })
     .select()
     .single();
 
+  await supabase
+    .from("proxies")
+    .insert({
+      user_id: userId,
+      order_id: orderId,
+      label: `${order.plan?.name || "Plan"} - ${userEmail}`,
+      host: socks5ProxyAccess.hostname,
+      port_socks5: socks5ProxyAccess.port,
+      username: sharedUsername,
+      password_hash: encryptedPassword,
+      status: "active",
+      country: proxyCountry,
+      iproxy_connection_id: availableConnection.connection_id,
+      iproxy_change_url: changeIpUrl,
+      iproxy_action_link_id: actionLinkId,
+      expires_at: expiresAt,
+      connection_data: connectionDetailsResult?.connection,
+      last_ip: socks5ProxyAccess.ip,
+      rotation_mode: rotationMode,
+      rotation_interval_min: rotationIntervalMin,
+    })
+    .select()
+    .single();
   if (saveError) {
     console.error(
       "Failed to save to proxies table (non-critical):",
@@ -644,7 +837,10 @@ async function provisionProxyForOrder(
     connection_info_id: availableConnection.id,
     proxy_id: savedProxy?.id,
     connection_id: availableConnection.connection_id,
-    proxy_access: proxyAccessString,
+    http_proxy_access: httpProxyAccessString,
+    socks5_proxy_access: socks5ProxyAccessString,
+    http_proxy_id: httpProxyAccess.id,
+    socks5_proxy_id: socks5ProxyAccess.id,
   };
 }
 
@@ -709,14 +905,24 @@ function verifyWebhookSignature(
 }
 
 function extractUserIdFromOrderId(orderId: string): string | null {
-  if (!orderId.startsWith("payment-")) {
+  // Handle topup payments (format: topup-timestamp-userId)
+  if (orderId.startsWith("topup-")) {
+    const withoutPrefix = orderId.substring(6);
+    const timestampMatch = withoutPrefix.match(/^(\d+)-(.+)$/);
+    if (timestampMatch) {
+      return timestampMatch[2] ?? null;
+    }
     return null;
   }
-  const withoutPrefix = orderId.substring(8);
-  const timestampMatch = withoutPrefix.match(/^(\d+)-(.+)$/);
 
-  if (timestampMatch) {
-    return timestampMatch[2] ?? null;
+  // Handle regular payment orders (format: payment-timestamp-userId)
+  if (orderId.startsWith("payment-")) {
+    const withoutPrefix = orderId.substring(8);
+    const timestampMatch = withoutPrefix.match(/^(\d+)-(.+)$/);
+    if (timestampMatch) {
+      return timestampMatch[2] ?? null;
+    }
+    return null;
   }
 
   return null;

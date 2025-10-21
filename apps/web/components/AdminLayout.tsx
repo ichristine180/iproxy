@@ -164,7 +164,7 @@ export const AdminLayout = ({ children }: { children: React.ReactNode }) => {
     if (pathname.includes('/connections')) return 'Connection Management';
     if (pathname.includes('/users')) return 'User Management';
     if (pathname.includes('/orders')) return 'Order Management';
-    if (pathname.includes('/billing')) return 'Billing Management';
+    if (pathname.includes('/balance')) return 'Wallet Management';
     if (pathname.includes('/settings')) return 'Admin Settings';
     return 'Admin Panel';
   };

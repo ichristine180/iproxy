@@ -111,18 +111,14 @@ export class IProxyService {
   private apiUrl: string;
   private apiKey: string;
 
-
   constructor() {
     this.apiUrl = "https://iproxy.online/api/console/v1";
     this.apiKey = process.env.IPROXY_API_KEY || "";
-    
 
     if (!this.apiKey) {
       console.warn("IPROXY_API_KEY not set in environment variables");
     }
-   
   }
-
 
   /**
    * Create a new proxy under a connection
@@ -278,9 +274,6 @@ export class IProxyService {
     }
   }
 
-
-
-
   /**
    * Get list of connections from Console API
    * GET /api/console/v1/connections
@@ -371,9 +364,7 @@ export class IProxyService {
    * Create a new connection
    * POST /api/console/v1/connections
    */
-  async createConnection(
-    request: CreateConnectionRequest
-  ): Promise<{
+  async createConnection(request: CreateConnectionRequest): Promise<{
     success: boolean;
     connection?: CreateConnectionResponse;
     error?: string;
@@ -413,21 +404,22 @@ export class IProxyService {
    * Get full connection details by ID
    * GET /api/console/v1/connections/{conn_id}
    */
-  async getConnection(
-    connectionId: string
-  ): Promise<{
+  async getConnection(connectionId: string): Promise<{
     success: boolean;
     connection?: ConsoleConnection;
     error?: string;
   }> {
     try {
-      const response = await fetch(`${this.apiUrl}/connections/${connectionId}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${this.apiKey}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        `${this.apiUrl}/connections/${connectionId}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${this.apiKey}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       const data = await response.json();
 
@@ -454,9 +446,7 @@ export class IProxyService {
    * Create a new connection and retrieve its full details
    * Combines POST /api/console/v1/connections and GET /api/console/v1/connections/{conn_id}
    */
-  async createAndGetConnection(
-    request: CreateConnectionRequest
-  ): Promise<{
+  async createAndGetConnection(request: CreateConnectionRequest): Promise<{
     success: boolean;
     connection?: ConsoleConnection;
     error?: string;
@@ -478,7 +468,9 @@ export class IProxyService {
       if (!getResult.success || !getResult.connection) {
         return {
           success: false,
-          error: getResult.error || "Connection created but failed to retrieve details",
+          error:
+            getResult.error ||
+            "Connection created but failed to retrieve details",
         };
       }
 
@@ -545,37 +537,113 @@ export class IProxyService {
   }
 
   /**
-   * Create action link for proxy
-   * Note: This is a placeholder - actual API endpoint may differ
+   * Create action link for connection
+   * POST /api/console/v1/connections/{conn_id}/actionlinks
    */
   async createActionLink(
     connectionId: string,
-    action: string,
-    label: string
+    action: "changeip" | "reboot",
+    comment?: string
   ): Promise<{
     success: boolean;
-    actionLink?: { id: string; link: string };
+    actionLink?: { id: string };
     error?: string;
   }> {
     try {
-      // TODO: Implement actual API call when endpoint is available
-      console.warn('createActionLink is not yet implemented in iProxy API');
+      const url = `${this.apiUrl}/connections/${connectionId}/actionlinks`;
+      const payload = { action, comment };
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${this.apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error("Action link creation failed:", {
+          url,
+          payload,
+          status: response.status,
+          statusText: response.statusText,
+          responseData: data,
+          error: data.error,
+          message: data.message,
+        });
+        throw new Error(
+          data.error || data.message || `HTTP ${response.status}: Failed to create action link`
+        );
+      }
+
       return {
-        success: false,
-        error: 'Action link creation is not yet implemented',
+        success: true,
+        actionLink: { id: data.id },
       };
     } catch (error) {
-      console.error('Error creating action link:', error);
+      console.error("Error creating action link:", error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
+    }
+  }
+
+  /**
+   * Get list of action links for a connection
+   * GET /api/console/v1/connections/{conn_id}/actionlinks
+   */
+  async getActionLinks(connectionId: string): Promise<{
+    success: boolean;
+    actionLinks?: Array<{
+      id: string;
+      link: string;
+      action: string;
+      connection_id: string;
+      comment: string;
+      created_at: string;
+    }>;
+    error?: string;
+  }> {
+    try {
+      const response = await fetch(
+        `${this.apiUrl}/connections/${connectionId}/actionlinks`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${this.apiKey}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error || data.message || "Failed to get action links"
+        );
+      }
+
+      return {
+        success: true,
+        actionLinks: data.action_links || [],
+      };
+    } catch (error) {
+      console.error("Error getting action links:", error);
+      return {
+        success: false,
+        actionLinks: [],
+        error: error instanceof Error ? error.message : "Unknown error",
       };
     }
   }
 
   /**
    * Delete action link
-   * Note: This is a placeholder - actual API endpoint may differ
+   * DELETE /api/console/v1/connections/{conn_id}/actionlinks/{link_id}
    */
   async deleteActionLink(
     connectionId: string,
@@ -585,17 +653,32 @@ export class IProxyService {
     error?: string;
   }> {
     try {
-      // TODO: Implement actual API call when endpoint is available
-      console.warn('deleteActionLink is not yet implemented in iProxy API');
+      const response = await fetch(
+        `${this.apiUrl}/connections/${connectionId}/actionlinks/${actionLinkId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${this.apiKey}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(
+          data.error || data.message || "Failed to delete action link"
+        );
+      }
+
       return {
-        success: false,
-        error: 'Action link deletion is not yet implemented',
+        success: true,
       };
     } catch (error) {
-      console.error('Error deleting action link:', error);
+      console.error("Error deleting action link:", error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
       };
     }
   }
