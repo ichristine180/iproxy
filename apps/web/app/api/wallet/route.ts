@@ -25,18 +25,19 @@ export async function GET(request: NextRequest) {
     }
 
     // Get or create wallet using SECURITY DEFINER function
-    const { data: wallet, error } = await supabase
+    const { data, error } = await supabase
       .rpc('get_or_create_user_wallet', { p_user_id: user.id })
-      .returns<WalletRow>()
       .single();
 
-    if (error || !wallet) {
+    if (error || !data) {
       console.error('Error getting/creating wallet:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to get wallet' },
         { status: 500 }
       );
     }
+
+    const wallet = data as WalletRow;
 
     return NextResponse.json({
       success: true,
