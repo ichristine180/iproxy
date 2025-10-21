@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { createClient as createServiceClient } from '@supabase/supabase-js';
 
 interface WalletRow {
   id: string;
@@ -24,20 +25,47 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get or create wallet using SECURITY DEFINER function
-    const { data, error } = await supabase
-      .rpc('get_or_create_user_wallet', { p_user_id: user.id })
+    // Use service role client to bypass RLS
+    const serviceClient = createServiceClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
+    // Try to get existing wallet
+    let { data: wallet, error } = await serviceClient
+      .from('user_wallet')
+      .select('*')
+      .eq('user_id', user.id)
       .single();
 
-    if (error || !data) {
-      console.error('Error getting/creating wallet:', error);
+    // If wallet doesn't exist, create it
+    if (error?.code === 'PGRST116') {
+      const { data: newWallet, error: createError } = await serviceClient
+        .from('user_wallet')
+        .insert({
+          user_id: user.id,
+          balance: '0.00',
+          currency: 'USD',
+        })
+        .select()
+        .single();
+
+      if (createError) {
+        console.error('Error creating wallet:', createError);
+        return NextResponse.json(
+          { success: false, error: 'Failed to create wallet' },
+          { status: 500 }
+        );
+      }
+
+      wallet = newWallet;
+    } else if (error) {
+      console.error('Error fetching wallet:', error);
       return NextResponse.json(
-        { success: false, error: 'Failed to get wallet' },
+        { success: false, error: 'Failed to fetch wallet' },
         { status: 500 }
       );
     }
-
-    const wallet = data as WalletRow;
 
     return NextResponse.json({
       success: true,

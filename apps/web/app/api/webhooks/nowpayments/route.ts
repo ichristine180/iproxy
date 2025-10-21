@@ -336,45 +336,85 @@ async function processWebhook(
   if (isTopup && isFinal && paymentStatus === "paid") {
     console.log("Processing wallet top-up for user:", userId, "amount:", webhook.price_amount);
 
-    // Get or create user wallet using SECURITY DEFINER function
-    const { data: walletData, error: walletError } = await supabase
-      .rpc("get_or_create_user_wallet", { p_user_id: userId })
+    // Get or create user wallet
+    let { data: wallet, error: walletError } = await supabase
+      .from("user_wallet")
+      .select("*")
+      .eq("user_id", userId)
       .single();
 
-    if (walletError || !walletData) {
-      console.error("Error getting/creating wallet:", walletError);
-      throw new Error(`Failed to get or create wallet: ${walletError?.message || 'Unknown error'}`);
+    // If wallet doesn't exist, create it
+    if (walletError?.code === 'PGRST116') {
+      const { data: newWallet, error: createError } = await supabase
+        .from("user_wallet")
+        .insert({
+          user_id: userId,
+          balance: '0.00',
+          currency: 'USD',
+        })
+        .select()
+        .single();
+
+      if (createError) {
+        console.error("Error creating wallet:", createError);
+        throw createError;
+      }
+
+      wallet = newWallet;
+      console.log("Wallet created for user:", userId);
+    } else if (walletError) {
+      console.error("Error getting wallet:", walletError);
+      throw walletError;
     }
 
-    const wallet = walletData;
-    console.log("Wallet retrieved/created for user:", userId, "Wallet ID:", wallet.id);
+    console.log("Wallet found for user:", userId, "Wallet ID:", wallet.id, "Current balance:", wallet.balance);
 
-    // Use the atomic record_wallet_transaction function
-    const { data: transactionId, error: walletTxError } = await supabase.rpc(
-      "record_wallet_transaction",
-      {
-        p_user_id: userId,
-        p_wallet_id: wallet.id,
-        p_type: "deposit",
-        p_amount: webhook.price_amount,
-        p_description: `Crypto top-up: $${webhook.price_amount} via ${webhook.pay_currency.toUpperCase()}`,
-        p_reference_type: "payment",
-        p_reference_id: payment.id,
-        p_metadata: {
+    // Update wallet balance
+    const currentBalance = parseFloat(wallet.balance);
+    const newBalance = currentBalance + webhook.price_amount;
+
+    const { error: updateError } = await supabase
+      .from("user_wallet")
+      .update({
+        balance: newBalance.toFixed(2),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", wallet.id);
+
+    if (updateError) {
+      console.error("Error updating wallet balance:", updateError);
+      throw updateError;
+    }
+
+    console.log("Wallet balance updated:", currentBalance, "→", newBalance);
+
+    // Create wallet transaction record
+    const { error: txError } = await supabase
+      .from("wallet_transactions")
+      .insert({
+        user_id: userId,
+        wallet_id: wallet.id,
+        type: "deposit",
+        amount: webhook.price_amount,
+        balance_before: currentBalance.toFixed(2),
+        balance_after: newBalance.toFixed(2),
+        description: `Crypto top-up: $${webhook.price_amount} via ${webhook.pay_currency.toUpperCase()}`,
+        reference_type: "payment",
+        reference_id: payment.id,
+        metadata: {
           payment_id: webhook.payment_id,
           order_id: webhook.order_id,
           pay_currency: webhook.pay_currency,
           pay_amount: webhook.pay_amount,
         },
-      }
-    );
+      });
 
-    if (walletTxError) {
-      console.error("Error recording wallet transaction:", walletTxError);
-      throw walletTxError;
+    if (txError) {
+      console.error("Error creating wallet transaction:", txError);
+      // Don't throw - wallet was already updated
+    } else {
+      console.log("Wallet transaction recorded");
     }
-
-    console.log("Wallet transaction recorded:", transactionId);
 
     return; // Exit early for top-up payments
   }
