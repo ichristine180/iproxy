@@ -1,6 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
+interface WalletRow {
+  id: string;
+  user_id: string;
+  balance: string;
+  currency: string;
+  created_at: string;
+  updated_at: string;
+}
+
 // GET - Fetch user's wallet balance
 export async function GET(request: NextRequest) {
   try {
@@ -18,6 +27,7 @@ export async function GET(request: NextRequest) {
     // Get or create wallet using SECURITY DEFINER function
     const { data: wallet, error } = await supabase
       .rpc('get_or_create_user_wallet', { p_user_id: user.id })
+      .returns<WalletRow>()
       .single();
 
     if (error || !wallet) {
