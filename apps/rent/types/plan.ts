@@ -3,6 +3,7 @@ export interface Plan {
   name: string;
   channel: 'mobile' | 'residential' | 'datacenter';
   price_usd_month: number;
+  duration_days: number;
   rotation_api: boolean;
   description: string | null;
   features: string[];
@@ -14,6 +15,7 @@ export interface Plan {
 export interface PlanDisplay {
   name: string;
   price: string;
+  priceUnit: string;
   description: string;
   features: string[];
   cta: string;

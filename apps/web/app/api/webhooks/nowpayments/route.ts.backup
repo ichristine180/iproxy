@@ -3,7 +3,6 @@ import { createClient } from "@supabase/supabase-js";
 import crypto from "crypto";
 import { iproxyService } from "@/lib/iproxy-service";
 import { provisionProxyAccess } from "@/lib/provision-proxy";
-import { getAvailableConnection } from "@/lib/get-available-connection";
 
 const NOWPAYMENTS_IPS = [
   // Current NOWPayments webhook IPs (2025)
@@ -521,6 +520,167 @@ async function processWebhook(
   }
 }
 
+/**
+ * Get an available connection based on priority order
+ * Priority 1: Connections with app_data and plan_info but no proxies
+ * Priority 2: Connections with plan, app_data and proxies (not on stopList)
+ * Priority 3: Connections with app_data but no plan - add plan
+ * Priority 4: Create new connection and add plan
+ */
+async function getAvailableConnection(
+  supabase: any,
+): Promise<{
+  success: boolean;
+  connection?: any;
+  error?: string;
+}> {
+  try {
+    console.log("Getting available connection with priority system");
+
+    // Get all connections from iProxy
+    const { success, connections, error } =
+      await iproxyService.getConsoleConnections();
+
+    if (!success || !connections) {
+      throw new Error(`Failed to get connections from iProxy: ${error}`);
+    }
+
+    console.log(`Found ${connections.length} connections from iProxy`);
+
+    // Get stopList from database (connections to skip)
+    const { data: stopListData } = await supabase
+      .from("connection_stoplist")
+      .select("connection_id");
+
+    const stopList = new Set(
+      stopListData?.map((item: any) => item.connection_id) || []
+    );
+    console.log(`StopList has ${stopList.size} connections`);
+
+    // Priority 1: Connections with app_data and plan_info but no proxies
+    console.log(
+      "Checking Priority 1: Connections with app_data and plan_info but no proxies"
+    );
+    for (const conn of connections) {
+      if (conn.app_data && conn.plan_info) {
+        // Check if connection has proxies
+        const proxiesResult = await iproxyService.getProxiesByConnection(
+          conn.id
+        );
+
+        if (proxiesResult.success && proxiesResult.proxies.length === 0) {
+          console.log(`Priority 1 match found: ${conn.id}`);
+          return { success: true, connection: { ...conn, isActive: true } };
+        }
+      }
+    }
+
+    // Priority 2: Connections with plan, app_data and proxies (not on stopList and not active in our connection_info table)
+    for (const conn of connections) {
+      if (conn.app_data && conn.plan_info && !stopList.has(conn.id)) {
+        // Check if connection has proxies
+        const proxiesResult = await iproxyService.getProxiesByConnection(
+          conn.id
+        );
+
+        if (proxiesResult.success && proxiesResult.proxies.length > 0) {
+          console.log(
+            `Priority 2 match found: ${conn.id} with ${proxiesResult.proxies.length} existing proxies`
+          );
+
+          // Check if this connection exists in our connection_info table
+          const { data: connectionInfo } = await supabase
+            .from("connection_info")
+            .select("*")
+            .eq("connection_id", conn.id)
+            .maybeSingle();
+
+          if (connectionInfo) {
+            console.log(`Connection ${conn.id} found in connection_info table`);
+
+            // Check if it's expired
+            const now = new Date();
+            const expiresAt = connectionInfo.expires_at ? new Date(connectionInfo.expires_at) : null;
+
+            if (expiresAt && expiresAt > now) {
+              // Not expired, skip this connection
+              console.log(`Connection ${conn.id} is not expired (expires: ${expiresAt.toISOString()}), skipping...`);
+              continue;
+            } else {
+              console.log(`Connection ${conn.id} is expired or has no expiry date, proceeding with deletion`);
+            }
+          } else {
+            console.log(`Connection ${conn.id} not found in connection_info table, proceeding with deletion`);
+          }
+
+          // Delete all old proxies before reusing the connection
+          console.log("Deleting old proxies...");
+          let deletedCount = 0;
+          let failedCount = 0;
+
+          for (const proxy of proxiesResult.proxies) {
+            const deleteResult = await iproxyService.deleteProxyAccess(
+              conn.id,
+              proxy.id
+            );
+            if (deleteResult.success) {
+              deletedCount++;
+              console.log(`Deleted proxy: ${proxy.id}`);
+            } else {
+              failedCount++;
+              console.error(
+                `Failed to delete proxy ${proxy.id}:`,
+                deleteResult.error
+              );
+            }
+          }
+
+          console.log(`Deleted ${deletedCount} proxies, ${failedCount} failed`);
+
+          return { success: true, connection: { ...conn, isActive: true } };
+        }
+      }
+    }
+
+    // Priority 3: Connections with app_data but no plan - add plan
+    console.log("Checking Priority 3: Connections with app_data but no plan");
+    for (const conn of connections) {
+      if (conn.app_data && !conn.plan_info) {
+        console.log(`Priority 3 match found: ${conn.id} - adding plan`);
+
+        return { success: true, connection: { ...conn, isActive: false } };
+      }
+    }
+
+    // Priority 4: Create new connection
+    console.log("Priority 4: Creating new connection");
+
+    // Create new connection
+    const createResult = await iproxyService.createConnection({
+      name: `Auto-provisioned ${new Date().toISOString()}`,
+      description: "Automatically provisioned connection",
+      city: "nyc",
+      country: "us",
+    });
+
+    if (!createResult.success || !createResult.connection) {
+      throw new Error(`Failed to create connection: ${createResult.error}`);
+    }
+
+    console.log(`New connection created: ${createResult.connection.id}`);
+
+    return {
+      success: true,
+      connection: { ...createResult.connection, isActive: false },
+    };
+  } catch (error) {
+    console.error("Error getting available connection:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
 
 async function provisionProxyForOrder(
   supabase: any,
@@ -610,10 +770,7 @@ async function provisionProxyForOrder(
       message: "Your order is being processed. You will be notified when it's ready.",
     };
   }
-if(selectedConnection.notConfigured){
-  //TODO/////////////////////
-  console.log("Notify admin that this connection is sold it needs to be configured")
-}
+
   // Step 4: Provision proxy access using shared utility
   const provisionResult = await provisionProxyAccess({
     supabase,
@@ -634,6 +791,296 @@ if(selectedConnection.notConfigured){
   return provisionResult;
 }
 
+// Helper function to generate secure password - MOVED TO provision-proxy.ts but keeping for backward compatibility
+function generateSecurePassword(): string {
+    listen_service: "http" as const,
+    auth_type: "userpass" as const,
+    auth: {
+      login: sharedUsername,
+      password: sharedPassword,
+    },
+    description: `HTTP Proxy for ${userEmail} - Order ${orderId}`,
+    expires_at: expiresAt,
+  };
+
+  const {
+    success: httpSuccess,
+    proxy: httpProxyAccess,
+    error: httpError,
+  } = await iproxyService.grantProxyAccess(
+    selectedConnection.id,
+    httpProxyRequest
+  );
+
+  if (!httpSuccess || !httpProxyAccess) {
+    throw new Error(
+      `Failed to grant HTTP proxy access: ${httpError || "Unknown error"}`
+    );
+  }
+
+  console.log("HTTP proxy access granted:", httpProxyAccess.id);
+
+  // Step 4b: Grant SOCKS5 proxy access
+  const socks5ProxyRequest = {
+    listen_service: "socks5" as const,
+    auth_type: "userpass" as const,
+    auth: {
+      login: sharedUsername,
+      password: sharedPassword,
+    },
+    description: `SOCKS5 Proxy for ${userEmail} - Order ${orderId}`,
+    expires_at: expiresAt,
+  };
+
+  const {
+    success: socks5Success,
+    proxy: socks5ProxyAccess,
+    error: socks5Error,
+  } = await iproxyService.grantProxyAccess(
+    selectedConnection.id,
+    socks5ProxyRequest
+  );
+
+  if (!socks5Success || !socks5ProxyAccess) {
+    throw new Error(
+      `Failed to grant SOCKS5 proxy access: ${socks5Error || "Unknown error"}`
+    );
+  }
+
+  console.log("SOCKS5 proxy access granted:", socks5ProxyAccess.id);
+
+  // Step 5: Update connection settings if IP change is enabled
+  if (ipChangeEnabled && ipChangeIntervalMinutes > 0) {
+    console.log(
+      "Updating connection settings for auto IP rotation:",
+      ipChangeIntervalMinutes,
+      "minutes"
+    );
+    const settingsResult = await iproxyService.updateConnectionSettings(
+      selectedConnection.id,
+      {
+        ip_change_enabled: true,
+        ip_change_interval_minutes: ipChangeIntervalMinutes,
+      }
+    );
+
+    if (!settingsResult.success) {
+      console.error(
+        "Failed to update connection settings:",
+        settingsResult.error
+      );
+      // Non-critical error, continue with provisioning
+    } else {
+      console.log("Connection settings updated successfully");
+    }
+  }
+
+  // Step 5.5: Fetch connection details to get rotation settings
+  console.log(
+    "Fetching connection details:",
+    selectedConnection.id
+  );
+  const connectionDetailsResult = await iproxyService.getConnection(
+    selectedConnection.id
+  );
+
+  let rotationMode: "manual" | "scheduled" = "manual";
+  let rotationIntervalMin: number | null = null;
+  let proxyCountry: string | null = null;
+
+  if (connectionDetailsResult.success && connectionDetailsResult.connection) {
+    const connectionDetails = connectionDetailsResult.connection;
+    console.log("Connection details fetched successfully");
+
+    // Extract rotation settings from connection settings
+    const connectionSettings = connectionDetails.settings;
+    if (connectionSettings) {
+      const ipChangeEnabled = connectionSettings.ip_change_enabled || false;
+      const ipChangeIntervalMinutes =
+        connectionSettings.ip_change_interval_minutes || 0;
+
+      if (ipChangeEnabled && ipChangeIntervalMinutes > 0) {
+        rotationMode = "scheduled";
+        rotationIntervalMin = ipChangeIntervalMinutes;
+        console.log("Rotation settings from connection:", {
+          rotationMode,
+          rotationIntervalMin,
+        });
+      }
+    }
+
+    // Extract geo information from basic_info.server_geo
+    const serverGeo = connectionDetails.basic_info?.server_geo;
+    if (serverGeo) {
+      proxyCountry = serverGeo.country?.toUpperCase() || null;
+      console.log("Geo information from connection:", {
+        country: proxyCountry,
+        city: serverGeo.city,
+      });
+    }
+  } else {
+    console.error(
+      "Failed to fetch connection details (non-critical):",
+      connectionDetailsResult.error
+    );
+  }
+
+  // Step 6: Format proxy access as IP:PORT:LOGIN:PASSWORD for both HTTP and SOCKS5
+  const httpProxyAccessString = `${httpProxyAccess.ip}:${httpProxyAccess.port}:${httpProxyAccess.auth.login}:${httpProxyAccess.auth.password}`;
+  const socks5ProxyAccessString = `${socks5ProxyAccess.ip}:${socks5ProxyAccess.port}:${socks5ProxyAccess.auth.login}:${socks5ProxyAccess.auth.password}`;
+
+  // Step 7: Store connection tracking info in database (optional - for backward compatibility)
+  // Note: We're now working directly with iProxy connections, so connection_info table updates are optional
+  // You may want to remove this section if not needed
+  const { error: trackingError } = await supabase
+    .from("connection_info")
+    .upsert({
+      connection_id: selectedConnection.id,
+      client_email: userEmail,
+      user_id: userId,
+      order_id: orderId,
+      proxy_access: [httpProxyAccessString, socks5ProxyAccessString],
+      is_occupied: true,
+      expires_at: expiresAt,
+      updated_at: new Date().toISOString(),
+      proxy_id: [httpProxyAccess.id, socks5ProxyAccess.id],
+    }, { onConflict: "connection_id" });
+
+  if (trackingError) {
+    console.warn("Failed to update connection tracking (non-critical):", trackingError.message);
+    // Don't throw - this is just for tracking purposes
+  } else {
+    console.log("Connection tracking updated:", selectedConnection.id);
+  }
+
+  // Step 9: Get or create action link for IP rotation
+  console.log("Getting/creating action link for IP rotation");
+  let changeIpUrl: string | null = null;
+  let actionLinkId: string | null = null;
+
+  // First, check if action links already exist
+  const existingLinksResult = await iproxyService.getActionLinks(
+    selectedConnection.id
+  );
+
+  if (existingLinksResult.success && existingLinksResult.actionLinks) {
+    // Find existing changeip link
+    const existingChangeIpLink = existingLinksResult.actionLinks.find(
+      (link) => link.action === "changeip"
+    );
+
+    if (existingChangeIpLink) {
+      actionLinkId = existingChangeIpLink.id;
+      changeIpUrl = existingChangeIpLink.link;
+      console.log("Using existing action link:", actionLinkId);
+    }
+  }
+
+  // If no existing link found, create a new one
+  if (!actionLinkId) {
+    const createActionLinkResult = await iproxyService.createActionLink(
+      selectedConnection.id,
+      'changeip',
+      `IP rotation link`
+    );
+
+    if (createActionLinkResult.success && createActionLinkResult.actionLink) {
+      actionLinkId = createActionLinkResult.actionLink.id;
+      console.log("Action link created:", actionLinkId);
+
+      // Get the full action link URL
+      const getActionLinksResult = await iproxyService.getActionLinks(
+        selectedConnection.id
+      );
+
+      if (getActionLinksResult.success && getActionLinksResult.actionLinks) {
+        const changeIpLink = getActionLinksResult.actionLinks.find(
+          (link) => link.id === actionLinkId
+        );
+
+        if (changeIpLink) {
+          changeIpUrl = changeIpLink.link;
+          console.log("Action link URL retrieved:", changeIpUrl);
+        }
+      }
+    } else {
+      console.error(
+        "Failed to create action link (non-critical):",
+        createActionLinkResult.error
+      );
+    }
+  }
+
+  // Step 10: Save to proxies table for backward compatibility
+  // Encrypt the password before storing (same password for both HTTP and SOCKS5)
+  const encryptedPassword = encryptPassword(sharedPassword);
+
+  const { data: savedProxy, error: saveError } = await supabase
+    .from("proxies")
+    .insert({
+      user_id: userId,
+      order_id: orderId,
+      label: `${order.plan?.name || "Plan"} - ${userEmail}`,
+      host: httpProxyAccess.hostname,
+      port_http: httpProxyAccess.port,
+      username: sharedUsername,
+      password_hash: encryptedPassword,
+      status: "active",
+      country: proxyCountry,
+      iproxy_connection_id: selectedConnection.id,
+      iproxy_change_url: changeIpUrl,
+      iproxy_action_link_id: actionLinkId,
+      expires_at: expiresAt,
+      connection_data: connectionDetailsResult?.connection,
+      last_ip: httpProxyAccess.ip,
+      rotation_mode: rotationMode,
+      rotation_interval_min: rotationIntervalMin,
+    })
+    .select()
+    .single();
+
+  await supabase
+    .from("proxies")
+    .insert({
+      user_id: userId,
+      order_id: orderId,
+      label: `${order.plan?.name || "Plan"} - ${userEmail}`,
+      host: socks5ProxyAccess.hostname,
+      port_socks5: socks5ProxyAccess.port,
+      username: sharedUsername,
+      password_hash: encryptedPassword,
+      status: "active",
+      country: proxyCountry,
+      iproxy_connection_id: selectedConnection.id,
+      iproxy_change_url: changeIpUrl,
+      iproxy_action_link_id: actionLinkId,
+      expires_at: expiresAt,
+      connection_data: connectionDetailsResult?.connection,
+      last_ip: socks5ProxyAccess.ip,
+      rotation_mode: rotationMode,
+      rotation_interval_min: rotationIntervalMin,
+    })
+    .select()
+    .single();
+  if (saveError) {
+    console.error(
+      "Failed to save to proxies table (non-critical):",
+      saveError.message
+    );
+  } else {
+    console.log("Proxy saved to proxies table:", savedProxy.id);
+  }
+
+  return {
+    connection_id: selectedConnection.id,
+    proxy_id: savedProxy?.id,
+    http_proxy_access: httpProxyAccessString,
+    socks5_proxy_access: socks5ProxyAccessString,
+    http_proxy_id: httpProxyAccess.id,
+    socks5_proxy_id: socks5ProxyAccess.id,
+  };
+  
+}
 
 // Helper function to generate secure password
 function generateSecurePassword(): string {

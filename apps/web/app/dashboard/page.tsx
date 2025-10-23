@@ -135,18 +135,20 @@ function DashboardPageContent() {
     fetchData();
   }, [fetchData]);
 
-  // Poll for proxy updates when there are pending orders
+  // Poll for proxy updates when there are pending or processing orders
   useEffect(() => {
-    const pendingOrdersExist = orders.some(order => order.status === 'pending');
+    const pendingOrProcessingOrdersExist = orders.some(order =>
+      order.status === 'pending' || order.status === 'processing'
+    );
 
-    if (!pendingOrdersExist || isLoading) {
+    if (!pendingOrProcessingOrdersExist || isLoading) {
       setIsPolling(false);
       return;
     }
 
     // Only poll for orders created in the last 10 minutes
     const recentPendingOrders = orders.filter(order => {
-      if (order.status !== 'pending') return false;
+      if (order.status !== 'pending' && order.status !== 'processing') return false;
       const createdAt = new Date(order.start_at || 0).getTime();
       const tenMinutesAgo = Date.now() - (10 * 60 * 1000);
       return createdAt > tenMinutesAgo;
@@ -217,6 +219,7 @@ function DashboardPageContent() {
 
   const activeOrders = orders.filter((order) => order.status === "active");
   const pendingOrders = orders.filter((order) => order.status === "pending");
+  const processingOrders = orders.filter((order) => order.status === "processing");
 
   const freeTrialOrder = orders.find((order) => isFreeTrial(order) && order.status === "active");
   const hasPaidPlan = activeOrders.some((order) => order.total_amount > 0);
@@ -332,6 +335,23 @@ function DashboardPageContent() {
                 </CardContent>
               </Card>
 
+              {processingOrders.length > 0 && (
+                <Card className="shadow-sm bg-card/50 backdrop-blur">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Processing Orders</CardTitle>
+                    <div className="h-8 w-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                      <Loader2 className="h-4 w-4 text-blue-600 animate-spin" />
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl md:text-3xl font-bold">{processingOrders.length}</div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Being provisioned
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+
               <Card className="shadow-sm bg-card/50 backdrop-blur">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
@@ -378,6 +398,50 @@ function DashboardPageContent() {
                 )}
               </CardContent>
             </Card>
+
+            {/* Processing Orders */}
+            {processingOrders.length > 0 && (
+              <Card className="border-0 shadow-sm bg-card/50 backdrop-blur">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle>Processing Orders</CardTitle>
+                      <CardDescription>
+                        Your orders are being set up and will be activated soon
+                      </CardDescription>
+                    </div>
+                    <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {processingOrders.map((order) => (
+                      <div
+                        key={order.id}
+                        className="flex items-center justify-between p-3 border rounded-lg bg-blue-500/5"
+                      >
+                        <div>
+                          <p className="font-medium">{order.plan.name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            ${order.total_amount} • Being provisioned
+                          </p>
+                          {order.metadata?.pending_reason && (
+                            <p className="text-xs text-blue-600 mt-1">
+                              {order.metadata.pending_reason}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-500/10 text-blue-600 border border-blue-500/20">
+                            Processing
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Pending Orders */}
             {pendingOrders.length > 0 && (

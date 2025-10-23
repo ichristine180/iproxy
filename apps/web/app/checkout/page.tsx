@@ -20,7 +20,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, ArrowLeft, CreditCard } from "lucide-react";
+import { Loader2, ArrowLeft, CreditCard, Wallet } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface Plan {
   id: string;
@@ -55,6 +56,9 @@ function CheckoutPageContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<"crypto" | "wallet">("crypto");
+  const [walletBalance, setWalletBalance] = useState<number>(0);
+  const [isLoadingWallet, setIsLoadingWallet] = useState(true);
 
   useEffect(() => {
     if (!planId) {
@@ -83,11 +87,26 @@ function CheckoutPageContent() {
         return;
       }
 
-      // Fetch plan details
-      await fetchPlanDetails();
+      // Fetch plan details and wallet balance in parallel
+      await Promise.all([fetchPlanDetails(), fetchWalletBalance()]);
     } catch (err) {
       console.error("Failed to check auth:", err);
       router.push("/");
+    }
+  };
+
+  const fetchWalletBalance = async () => {
+    try {
+      const response = await fetch("/api/wallet");
+      const data = await response.json();
+
+      if (data.success) {
+        setWalletBalance(data.wallet.balance);
+      }
+    } catch (err) {
+      console.error("Failed to fetch wallet balance:", err);
+    } finally {
+      setIsLoadingWallet(false);
     }
   };
 
@@ -147,8 +166,42 @@ function CheckoutPageContent() {
           setError(data.error || "Failed to activate free trial");
           setIsProcessing(false);
         }
+      } else if (paymentMethod === "wallet") {
+        // Wallet payment
+        const totalAmount = parseFloat(calculateTotal());
+
+        // Check if user has enough balance
+        if (walletBalance < totalAmount) {
+          setError(`Insufficient wallet balance. You have $${walletBalance.toFixed(2)} but need $${totalAmount.toFixed(2)}`);
+          setIsProcessing(false);
+          return;
+        }
+
+        const response = await fetch("/api/orders/wallet-payment", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            plan_id: plan.id,
+            quantity,
+            promo_code: promoCode || undefined,
+            ip_change_enabled: rotationInterval > 0,
+            ip_change_interval_minutes: rotationInterval,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          // Redirect to dashboard after successful wallet payment
+          router.push("/dashboard?payment=success");
+        } else {
+          setError(data.error || "Failed to process wallet payment");
+          setIsProcessing(false);
+        }
       } else {
-        // Regular paid plan - process payment
+        // Regular crypto payment - process payment
         const response = await fetch("/api/orders", {
           method: "POST",
           headers: {
@@ -182,7 +235,7 @@ function CheckoutPageContent() {
   };
 
   const calculateTotal = () => {
-    if (!plan) return 0;
+    if (!plan) return "0";
     return (parseFloat(plan.price_usd_month.toString()) * quantity).toFixed(2);
   };
 
@@ -300,7 +353,7 @@ function CheckoutPageContent() {
                 <CardDescription>
                   {plan.price_usd_month === 0
                     ? "Activate your free trial instantly"
-                    : "Choose your cryptocurrency"}
+                    : "Choose your payment method"}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -327,21 +380,79 @@ function CheckoutPageContent() {
                 ) : (
                   // Paid Plan UI
                   <>
-                    <div>
-                      <Label htmlFor="crypto">Select Cryptocurrency</Label>
-                      <Select value={selectedCrypto} onValueChange={setSelectedCrypto}>
-                        <SelectTrigger id="crypto" className="mt-2">
-                          <SelectValue placeholder="Select cryptocurrency" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {POPULAR_CRYPTOS.map((crypto) => (
-                            <SelectItem key={crypto.code} value={crypto.code}>
-                              {crypto.icon} {crypto.name} ({crypto.code.toUpperCase()})
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                    {/* Payment Method Selection */}
+                    <div className="space-y-3">
+                      <Label>Select Payment Method</Label>
+                      <RadioGroup
+                        value={paymentMethod}
+                        onValueChange={(value) => setPaymentMethod(value as "crypto" | "wallet")}
+                        className="space-y-3"
+                      >
+                        <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-accent cursor-pointer">
+                          <RadioGroupItem value="crypto" id="crypto-payment" />
+                          <Label htmlFor="crypto-payment" className="flex items-center cursor-pointer flex-1">
+                            <CreditCard className="w-4 h-4 mr-2" />
+                            Cryptocurrency Payment
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-accent cursor-pointer">
+                          <RadioGroupItem value="wallet" id="wallet-payment" />
+                          <Label htmlFor="wallet-payment" className="flex items-center cursor-pointer flex-1">
+                            <Wallet className="w-4 h-4 mr-2" />
+                            Wallet Balance
+                            <span className="ml-auto font-semibold text-primary">
+                              {isLoadingWallet ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
+                                `$${walletBalance.toFixed(2)}`
+                              )}
+                            </span>
+                          </Label>
+                        </div>
+                      </RadioGroup>
                     </div>
+
+                    {/* Crypto Payment Options */}
+                    {paymentMethod === "crypto" && (
+                      <div>
+                        <Label htmlFor="crypto">Select Cryptocurrency</Label>
+                        <Select value={selectedCrypto} onValueChange={setSelectedCrypto}>
+                          <SelectTrigger id="crypto" className="mt-2">
+                            <SelectValue placeholder="Select cryptocurrency" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {POPULAR_CRYPTOS.map((crypto) => (
+                              <SelectItem key={crypto.code} value={crypto.code}>
+                                {crypto.icon} {crypto.name} ({crypto.code.toUpperCase()})
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+
+                    {/* Wallet Payment Info */}
+                    {paymentMethod === "wallet" && (
+                      <div className="p-4 bg-muted rounded-lg">
+                        <div className="flex items-start gap-2">
+                          <Wallet className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                          <div className="text-sm text-muted-foreground">
+                            <p className="font-medium text-foreground mb-1">
+                              Wallet Balance: ${walletBalance.toFixed(2)}
+                            </p>
+                            <p>
+                              {walletBalance >= parseFloat(calculateTotal()) ? (
+                                <>Payment will be deducted from your wallet balance instantly.</>
+                              ) : (
+                                <span className="text-destructive">
+                                  Insufficient balance. Please top up your wallet or choose cryptocurrency payment.
+                                </span>
+                              )}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                     <div>
                       <Label htmlFor="promoCode">Promo Code (Optional)</Label>
@@ -375,20 +486,22 @@ function CheckoutPageContent() {
                       </p>
                     </div>
 
-                    <div className="p-4 bg-muted rounded-lg">
-                      <div className="flex items-start gap-2">
-                        <CreditCard className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                        <div className="text-sm text-muted-foreground">
-                          <p className="font-medium text-foreground mb-1">
-                            Secure Payment
-                          </p>
-                          <p>
-                            You'll be redirected to NowPayments to complete your
-                            purchase securely.
-                          </p>
+                    {paymentMethod === "crypto" && (
+                      <div className="p-4 bg-muted rounded-lg">
+                        <div className="flex items-start gap-2">
+                          <CreditCard className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                          <div className="text-sm text-muted-foreground">
+                            <p className="font-medium text-foreground mb-1">
+                              Secure Payment
+                            </p>
+                            <p>
+                              You'll be redirected to NowPayments to complete your
+                              purchase securely.
+                            </p>
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    )}
                   </>
                 )}
               </CardContent>
@@ -397,7 +510,7 @@ function CheckoutPageContent() {
                   className="w-full"
                   size="lg"
                   onClick={handleCheckout}
-                  disabled={isProcessing}
+                  disabled={isProcessing || (paymentMethod === "wallet" && walletBalance < parseFloat(calculateTotal()))}
                 >
                   {isProcessing ? (
                     <>
@@ -406,6 +519,12 @@ function CheckoutPageContent() {
                     </>
                   ) : plan.price_usd_month === 0 ? (
                     "Activate Free Trial"
+                  ) : paymentMethod === "wallet" ? (
+                    walletBalance < parseFloat(calculateTotal()) ? (
+                      "Insufficient Balance"
+                    ) : (
+                      `Pay $${calculateTotal()} with Wallet`
+                    )
                   ) : (
                     `Pay $${calculateTotal()} with ${selectedCrypto.toUpperCase()}`
                   )}

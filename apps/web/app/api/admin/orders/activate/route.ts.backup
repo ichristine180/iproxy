@@ -1,0 +1,384 @@
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { provisionProxyAccess } from "@/lib/provision-proxy";
+
+// POST - Manually activate a processing order (admin only)
+export async function POST(request: NextRequest) {
+  try {
+    const supabase = await createClient();
+
+    // Check if user is admin
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check if user has admin role
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (profile?.role !== "admin") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    // Parse request body
+    const body = await request.json();
+    const { order_id } = body;
+
+    if (!order_id) {
+      return NextResponse.json(
+        { error: "order_id is required" },
+        { status: 400 }
+      );
+    }
+
+    const supabaseAdmin = createSupabaseClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
+    // Fetch the order
+    const { data: order, error: orderError } = await supabaseAdmin
+      .from("orders")
+      .select("*, plan:plans(*)")
+      .eq("id", order_id)
+      .single();
+
+    if (orderError || !order) {
+      return NextResponse.json(
+        { error: "Order not found" },
+        { status: 404 }
+      );
+    }
+
+    // Check if order is in processing status
+    if (order.status !== "processing") {
+      return NextResponse.json(
+        { error: `Order status is ${order.status}, not processing` },
+        { status: 400 }
+      );
+    }
+
+    // Get the connection ID from metadata
+    const connectionId = order.metadata?.connection_id;
+    if (!connectionId) {
+      return NextResponse.json(
+        { error: "No connection ID found in order metadata" },
+        { status: 400 }
+      );
+    }
+
+    // Get user profile for email
+    const { data: userProfile } = await supabaseAdmin
+      .from("profiles")
+      .select("email")
+      .eq("id", order.user_id)
+      .single();
+
+    const userEmail = userProfile?.email || order.user_id;
+
+    // Generate shared credentials for both HTTP and SOCKS5
+    const sharedUsername = `user_${order.user_id.substring(0, 8)}`;
+    const sharedPassword = generateSecurePassword();
+
+    // Extract rotation settings from order metadata
+    const ipChangeEnabled = order.metadata?.ip_change_enabled || false;
+    const ipChangeIntervalMinutes =
+      order.metadata?.ip_change_interval_minutes || 0;
+
+    console.log("Activating processing order:", order_id);
+    console.log("Connection ID:", connectionId);
+    console.log("User Email:", userEmail);
+
+    // Step 1: Grant HTTP proxy access
+    const httpProxyRequest = {
+      listen_service: "http" as const,
+      auth_type: "userpass" as const,
+      auth: {
+        login: sharedUsername,
+        password: sharedPassword,
+      },
+      description: `HTTP Proxy for ${userEmail} - Order ${order_id}`,
+      expires_at: order.expires_at,
+    };
+
+    const {
+      success: httpSuccess,
+      proxy: httpProxyAccess,
+      error: httpError,
+    } = await iproxyService.grantProxyAccess(connectionId, httpProxyRequest);
+
+    if (!httpSuccess || !httpProxyAccess) {
+      throw new Error(
+        `Failed to grant HTTP proxy access: ${httpError || "Unknown error"}`
+      );
+    }
+
+    console.log("HTTP proxy access granted:", httpProxyAccess.id);
+
+    // Step 2: Grant SOCKS5 proxy access
+    const socks5ProxyRequest = {
+      listen_service: "socks5" as const,
+      auth_type: "userpass" as const,
+      auth: {
+        login: sharedUsername,
+        password: sharedPassword,
+      },
+      description: `SOCKS5 Proxy for ${userEmail} - Order ${order_id}`,
+      expires_at: order.expires_at,
+    };
+
+    const {
+      success: socks5Success,
+      proxy: socks5ProxyAccess,
+      error: socks5Error,
+    } = await iproxyService.grantProxyAccess(connectionId, socks5ProxyRequest);
+
+    if (!socks5Success || !socks5ProxyAccess) {
+      // Clean up HTTP proxy if SOCKS5 fails
+      await iproxyService.deleteProxyAccess(connectionId, httpProxyAccess.id);
+      throw new Error(
+        `Failed to grant SOCKS5 proxy access: ${socks5Error || "Unknown error"}`
+      );
+    }
+
+    console.log("SOCKS5 proxy access granted:", socks5ProxyAccess.id);
+
+    // Step 3: Get connection details for rotation info
+    let proxyCountry = null;
+    let rotationMode = null;
+    let rotationIntervalMin = null;
+
+    const connectionDetailsResult =
+      await iproxyService.getConnection(connectionId);
+
+    if (connectionDetailsResult.success && connectionDetailsResult.connection) {
+      const connectionDetails = connectionDetailsResult.connection;
+
+      // Check for rotation settings
+      if (ipChangeEnabled && ipChangeIntervalMinutes > 0) {
+        rotationMode = "scheduled";
+        rotationIntervalMin = ipChangeIntervalMinutes;
+      } else if (connectionDetails.basic_info?.app_data?.ip_change) {
+        const ipChange = connectionDetails.basic_info.app_data.ip_change;
+        rotationMode = "scheduled";
+        rotationIntervalMin = ipChangeIntervalMinutes;
+      }
+
+      // Extract geo information
+      const serverGeo = connectionDetails.basic_info?.server_geo;
+      if (serverGeo) {
+        proxyCountry = serverGeo.country?.toUpperCase() || null;
+      }
+    }
+
+    // Step 4: Format proxy access strings
+    const httpProxyAccessString = `${httpProxyAccess.ip}:${httpProxyAccess.port}:${httpProxyAccess.auth.login}:${httpProxyAccess.auth.password}`;
+    const socks5ProxyAccessString = `${socks5ProxyAccess.ip}:${socks5ProxyAccess.port}:${socks5ProxyAccess.auth.login}:${socks5ProxyAccess.auth.password}`;
+
+    // Step 5: Update connection_info table
+    const { error: trackingError } = await supabaseAdmin
+      .from("connection_info")
+      .upsert(
+        {
+          connection_id: connectionId,
+          client_email: userEmail,
+          user_id: order.user_id,
+          order_id: order_id,
+          proxy_access: [httpProxyAccessString, socks5ProxyAccessString],
+          is_occupied: true,
+          expires_at: order.expires_at,
+          updated_at: new Date().toISOString(),
+          proxy_id: [httpProxyAccess.id, socks5ProxyAccess.id],
+        },
+        { onConflict: "connection_id" }
+      );
+
+    if (trackingError) {
+      console.warn(
+        "Failed to update connection tracking (non-critical):",
+        trackingError.message
+      );
+    }
+
+    // Step 6: Get or create action link for IP rotation
+    let changeIpUrl: string | null = null;
+    let actionLinkId: string | null = null;
+
+    const existingLinksResult =
+      await iproxyService.getActionLinks(connectionId);
+
+    if (existingLinksResult.success && existingLinksResult.actionLinks) {
+      const existingChangeIpLink = existingLinksResult.actionLinks.find(
+        (link) => link.action === "changeip"
+      );
+
+      if (existingChangeIpLink) {
+        actionLinkId = existingChangeIpLink.id;
+        changeIpUrl = existingChangeIpLink.link;
+      }
+    }
+
+    if (!actionLinkId) {
+      const createActionLinkResult = await iproxyService.createActionLink(
+        connectionId,
+        "changeip",
+        `IP rotation link`
+      );
+
+      if (
+        createActionLinkResult.success &&
+        createActionLinkResult.actionLink
+      ) {
+        actionLinkId = createActionLinkResult.actionLink.id;
+
+        const getActionLinksResult =
+          await iproxyService.getActionLinks(connectionId);
+
+        if (
+          getActionLinksResult.success &&
+          getActionLinksResult.actionLinks
+        ) {
+          const changeIpLink = getActionLinksResult.actionLinks.find(
+            (link) => link.id === actionLinkId
+          );
+
+          if (changeIpLink) {
+            changeIpUrl = changeIpLink.link;
+          }
+        }
+      }
+    }
+
+    // Step 7: Save to proxies table
+    const encryptedPassword = encryptPassword(sharedPassword);
+
+    const { data: savedHttpProxy, error: saveHttpError } = await supabaseAdmin
+      .from("proxies")
+      .insert({
+        user_id: order.user_id,
+        order_id: order_id,
+        label: `${order.plan?.name || "Plan"} - ${userEmail}`,
+        host: httpProxyAccess.hostname,
+        port_http: httpProxyAccess.port,
+        username: sharedUsername,
+        password_hash: encryptedPassword,
+        status: "active",
+        country: proxyCountry,
+        iproxy_connection_id: connectionId,
+        iproxy_change_url: changeIpUrl,
+        iproxy_action_link_id: actionLinkId,
+        expires_at: order.expires_at,
+        connection_data: connectionDetailsResult?.connection,
+        last_ip: httpProxyAccess.ip,
+        rotation_mode: rotationMode,
+        rotation_interval_min: rotationIntervalMin,
+      })
+      .select()
+      .single();
+
+    if (saveHttpError) {
+      console.error("Failed to save HTTP proxy:", saveHttpError.message);
+    }
+
+    const { data: savedSocks5Proxy, error: saveSocks5Error } =
+      await supabaseAdmin
+        .from("proxies")
+        .insert({
+          user_id: order.user_id,
+          order_id: order_id,
+          label: `${order.plan?.name || "Plan"} - ${userEmail}`,
+          host: socks5ProxyAccess.hostname,
+          port_socks5: socks5ProxyAccess.port,
+          username: sharedUsername,
+          password_hash: encryptedPassword,
+          status: "active",
+          country: proxyCountry,
+          iproxy_connection_id: connectionId,
+          iproxy_change_url: changeIpUrl,
+          iproxy_action_link_id: actionLinkId,
+          expires_at: order.expires_at,
+          connection_data: connectionDetailsResult?.connection,
+          last_ip: socks5ProxyAccess.ip,
+          rotation_mode: rotationMode,
+          rotation_interval_min: rotationIntervalMin,
+        })
+        .select()
+        .single();
+
+    if (saveSocks5Error) {
+      console.error("Failed to save SOCKS5 proxy:", saveSocks5Error.message);
+    }
+
+    // Step 8: Update order status to active
+    const { error: updateError } = await supabaseAdmin
+      .from("orders")
+      .update({
+        status: "active",
+        metadata: {
+          ...order.metadata,
+          manual_provisioning_required: false,
+          manually_activated_by: user.id,
+          manually_activated_at: new Date().toISOString(),
+        },
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", order_id);
+
+    if (updateError) {
+      console.error("Error updating order:", updateError);
+      return NextResponse.json(
+        { error: "Failed to update order status" },
+        { status: 500 }
+      );
+    }
+
+    console.log("Order activated successfully:", order_id);
+
+    return NextResponse.json({
+      success: true,
+      message: "Order activated successfully",
+      order_id: order_id,
+      connection_id: connectionId,
+      proxies: {
+        http: savedHttpProxy?.id,
+        socks5: savedSocks5Proxy?.id,
+      },
+    });
+  } catch (error) {
+    console.error("Error activating order:", error);
+    return NextResponse.json(
+      {
+        success: false,
+        error:
+          error instanceof Error ? error.message : "Internal server error",
+      },
+      { status: 500 }
+    );
+  }
+}
+
+// Helper function to generate secure password
+function generateSecurePassword(): string {
+  const length = 16;
+  const charset =
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+  let password = "";
+  const randomBytes = crypto.randomBytes(length);
+
+  for (let i = 0; i < length; i++) {
+    const byte = randomBytes[i];
+    if (byte !== undefined) {
+      password += charset[byte % charset.length];
+    }
+  }
+
+  return password;
+}

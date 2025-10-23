@@ -4,7 +4,15 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Check, Loader2 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Check, Loader2, AlertTriangle } from "lucide-react";
 
 interface Plan {
   id: string;
@@ -26,6 +34,8 @@ export default function PricingPage() {
   const [error, setError] = useState("");
   const [user, setUser] = useState<any>(null);
   const [hasOrders, setHasOrders] = useState(false);
+  const [showQuotaDialog, setShowQuotaDialog] = useState(false);
+  const [isCheckingQuota, setIsCheckingQuota] = useState(false);
 
   useEffect(() => {
     checkAuthAndFetchPlans();
@@ -89,8 +99,35 @@ export default function PricingPage() {
     }
   };
 
-  const handleSelectPlan = (planId: string) => {
-    router.push(`/checkout?plan_id=${planId}`);
+  const handleSelectPlan = async (planId: string) => {
+    setIsCheckingQuota(true);
+    setError("");
+
+    try {
+      // Check available quota before proceeding
+      const quotaResponse = await fetch("/api/admin/quota");
+      const quotaData = await quotaResponse.json();
+
+      if (quotaData.success && quotaData.quota) {
+        const availableQuota = quotaData.quota.available_connection_number;
+
+        if (availableQuota <= 0) {
+          // No quota available
+          setShowQuotaDialog(true);
+          setIsCheckingQuota(false);
+          return;
+        }
+      }
+
+      // Quota is available or not configured, proceed to checkout
+      router.push(`/checkout?plan_id=${planId}`);
+    } catch (err) {
+      console.error("Failed to check quota:", err);
+      // If quota check fails, still allow proceeding (fail open)
+      router.push(`/checkout?plan_id=${planId}`);
+    } finally {
+      setIsCheckingQuota(false);
+    }
   };
 
   const getChannelBadgeColor = (channel: string) => {
@@ -216,8 +253,16 @@ export default function PricingPage() {
                       className="w-full"
                       size="lg"
                       onClick={() => handleSelectPlan(plan.id)}
+                      disabled={isCheckingQuota}
                     >
-                      Select Plan
+                      {isCheckingQuota ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Checking...
+                        </>
+                      ) : (
+                        "Select Plan"
+                      )}
                     </Button>
                   </CardFooter>
                 </Card>
@@ -226,6 +271,41 @@ export default function PricingPage() {
           )}
         </div>
       </main>
+
+      {/* Quota Unavailable Dialog */}
+      <Dialog open={showQuotaDialog} onOpenChange={setShowQuotaDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="h-10 w-10 rounded-full bg-yellow-500/10 flex items-center justify-center">
+                <AlertTriangle className="h-5 w-5 text-yellow-600" />
+              </div>
+              <DialogTitle>We are currently out of stock</DialogTitle>
+            </div>
+            <DialogDescription>
+              We apologize, but there are currently no available proxy connections.
+              Our team has been notified and is working to add more capacity.
+              Please try again later or contact support for assistance.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowQuotaDialog(false)}
+            >
+              Close
+            </Button>
+            <Button
+              onClick={() => {
+                setShowQuotaDialog(false);
+                router.push("/dashboard");
+              }}
+            >
+              Go to Dashboard
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

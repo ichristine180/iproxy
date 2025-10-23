@@ -10,6 +10,7 @@ export interface IProxyConnection {
 export interface ConsoleConnection {
   id: string;
   basic_info: {
+    app_data: any;
     name: string;
     description: string;
     created_at: string;
@@ -676,6 +677,169 @@ export class IProxyService {
       };
     } catch (error) {
       console.error("Error deleting action link:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
+    }
+  }
+
+  /**
+   * Change connection tariff/plan
+   * POST /api/console/v1/connections/{conn_id}/change-plan
+   */
+  async changePlan(
+    connectionId: string,
+    planId: string,
+    activePlan?: {
+      id: string;
+      started_at: string;
+      expires_at: string;
+    },
+    couponCode?: string
+  ): Promise<{
+    success: boolean;
+    error?: string;
+  }> {
+    try {
+      const body: any = {
+        plan_id: planId,
+      };
+
+      if (activePlan) {
+        body.active_plan = activePlan;
+      }
+
+      if (couponCode) {
+        body.coupon_code = couponCode;
+      }
+
+      const response = await fetch(
+        `${this.apiUrl}/connections/${connectionId}/change-plan`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${this.apiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(body),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error || data.message || "Failed to change plan"
+        );
+      }
+
+      return {
+        success: true,
+      };
+    } catch (error) {
+      console.error("Error changing plan:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
+    }
+  }
+
+  /**
+   * Get proxies for a connection (proxy-access list)
+   * GET /api/console/v1/connections/{conn_id}/proxy-access
+   */
+  async getProxiesByConnection(connectionId: string): Promise<{
+    success: boolean;
+    proxies: ConsoleProxyAccessResponse[];
+    error?: string;
+  }> {
+    try {
+      const response = await fetch(
+        `${this.apiUrl}/connections/${connectionId}/proxy-access`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${this.apiKey}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error || data.message || "Failed to get proxies by connection"
+        );
+      }
+
+      return {
+        success: true,
+        proxies: data.proxy_accesses || [],
+      };
+    } catch (error) {
+      console.error("Error getting proxies by connection:", error);
+      return {
+        success: false,
+        proxies: [],
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
+    }
+  }
+
+  /**
+   * Delete proxy access from a connection
+   * DELETE /api/console/v1/connections/{conn_id}/proxy-access/{proxy_id}
+   * NOTE: Currently simulating deletion for testing - not actually deleting
+   */
+  async deleteProxyAccess(
+    connectionId: string,
+    proxyId: string
+  ): Promise<{
+    success: boolean;
+    deletedId?: string;
+    error?: string;
+  }> {
+    try {
+      // // SIMULATING DELETION - NOT ACTUALLY DELETING FOR NOW
+      // console.log(`[SIMULATED] Would delete proxy ${proxyId} from connection ${connectionId}`);
+
+      // // Simulate success response
+      // return {
+      //   success: true,
+      //   deletedId: proxyId,
+      // };
+
+      
+      // Actual deletion code - commented out for testing
+      const response = await fetch(
+        `${this.apiUrl}/connections/${connectionId}/proxy-access/${proxyId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${this.apiKey}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error || data.message || "Failed to delete proxy access"
+        );
+      }
+
+      return {
+        success: true,
+        deletedId: data.id,
+      };
+      
+    } catch (error) {
+      console.error("Error deleting proxy access:", error);
       return {
         success: false,
         error: error instanceof Error ? error.message : "Unknown error",

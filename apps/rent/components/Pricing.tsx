@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import type { Plan } from "@/types/plan";
 
 interface PlanDisplay {
+  priceUnit: string;
   name: string;
   price: string;
   description: string;
@@ -19,6 +20,21 @@ const Pricing = () => {
   const [plans, setPlans] = useState<PlanDisplay[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Helper function to get the price unit based on duration_days
+  const getPriceUnit = (durationDays: number): string => {
+    if (durationDays < 1) {
+      return "/hour";
+    } else if (durationDays === 1) {
+      return "/day";
+    } else if (durationDays === 7) {
+      return "/week";
+    } else if (durationDays >= 28 && durationDays <= 31) {
+      return "/month";
+    } else {
+      return `/${durationDays} days`;
+    }
+  };
 
   useEffect(() => {
     async function fetchPlans() {
@@ -42,6 +58,7 @@ const Pricing = () => {
               plan.price_usd_month === 0
                 ? "Custom"
                 : `$${plan.price_usd_month}`,
+            priceUnit: getPriceUnit(plan.duration_days || 30),
             description: plan.description || "",
             features: plan.features || [],
             cta: plan.price_usd_month === 0 ? "Contact Sales" : "Get Started",
@@ -132,7 +149,7 @@ const Pricing = () => {
                 <div className="flex items-baseline gap-2">
                   <span className="text-4xl font-bold">{plan.price}</span>
                   {plan.price !== "Custom" && (
-                    <span className="text-muted-foreground">/month</span>
+                    <span className="text-muted-foreground">{plan.priceUnit}</span>
                   )}
                 </div>
               </div>
