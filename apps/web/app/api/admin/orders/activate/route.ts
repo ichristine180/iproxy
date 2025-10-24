@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { provisionProxyAccess } from "@/lib/provision-proxy";
+import { createQuotaManager } from "@/lib/quota-manager";
 
 // POST - Manually activate a processing order (admin only)
 export async function POST(request: NextRequest) {
@@ -92,6 +93,53 @@ export async function POST(request: NextRequest) {
     console.log("Activating processing order:", order_id);
     console.log("Connection ID:", connectionId);
     console.log("User Email:", userEmail);
+
+    // Initialize quota manager
+    const quotaManager = createQuotaManager(supabaseAdmin);
+
+    // Check if quota was already deducted (has reservation)
+    const existingReservation = await quotaManager.getReservationStatus(order_id);
+
+    if (!existingReservation || existingReservation.status !== "confirmed") {
+      // No confirmed reservation exists, need to deduct quota
+      console.log("No confirmed reservation found, deducting quota...");
+
+      // Check quota availability
+      const quotaCheck = await quotaManager.checkAvailability(order.quantity || 1);
+      if (!quotaCheck.success) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: quotaCheck.error || "Insufficient quota available",
+            available: quotaCheck.available,
+          },
+          { status: 400 }
+        );
+      }
+
+      // Deduct quota for this order
+      const deductResult = await quotaManager.deductQuota(
+        order_id,
+        order.user_id,
+        order.quantity || 1
+      );
+
+      if (!deductResult.success) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: deductResult.error || "Failed to deduct quota",
+          },
+          { status: 500 }
+        );
+      }
+
+      console.log(
+        `Quota deducted: ${deductResult.deducted_connections} connection(s), ${deductResult.remaining_quota} remaining`
+      );
+    } else {
+      console.log("Quota already confirmed via reservation:", existingReservation.id);
+    }
 
     // Provision proxy access using shared function
     const provisionResult = await provisionProxyAccess({

@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { provisionProxyAccess } from "@/lib/provision-proxy";
 import { getAvailableConnection } from "@/lib/get-available-connection";
+import { createQuotaManager } from "@/lib/quota-manager";
 
 // POST - Manually activate a payment (for testing/development ONLY)
 export async function POST(request: NextRequest) {
@@ -75,6 +76,43 @@ export async function POST(request: NextRequest) {
         order,
       });
     }
+
+    // Initialize quota manager
+    const quotaManager = createQuotaManager(supabaseAdmin);
+
+    // Check quota availability
+    const quotaCheck = await quotaManager.checkAvailability(order.quantity || 1);
+    if (!quotaCheck.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: quotaCheck.error || "Insufficient quota available",
+          available: quotaCheck.available,
+        },
+        { status: 400 }
+      );
+    }
+
+    // Deduct quota for this order
+    const deductResult = await quotaManager.deductQuota(
+      order_id,
+      user.id,
+      order.quantity || 1
+    );
+
+    if (!deductResult.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: deductResult.error || "Failed to deduct quota",
+        },
+        { status: 500 }
+      );
+    }
+
+    console.log(
+      `Quota deducted: ${deductResult.deducted_connections} connection(s), ${deductResult.remaining_quota} remaining`
+    );
 
     // If activating a paid plan, deactivate all free trial orders
     if (order.total_amount > 0) {

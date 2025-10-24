@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
+import { createQuotaManager } from '@/lib/quota-manager';
 
 const NOWPAYMENTS_API_URL = 'https://api.nowpayments.io/v1';
 
@@ -118,6 +119,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Initialize quota manager
+    const quotaManager = createQuotaManager(supabaseAdmin);
+
+    // Check quota availability before creating order
+    const quotaCheck = await quotaManager.checkAvailability(quantity);
+    if (!quotaCheck.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: quotaCheck.error || 'Insufficient quota available',
+          available: quotaCheck.available
+        },
+        { status: quotaCheck.available === 0 ? 503 : 400 }
+      );
+    }
+
     // Create order with initial dates
     const now = new Date().toISOString();
     const thirtyDaysFromNow = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
@@ -153,6 +170,31 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('Order created:', order.id);
+
+    // Reserve quota for this order (15 minutes)
+    const reservationResult = await quotaManager.reserveQuota(
+      order.id,
+      user.id,
+      quantity,
+      15
+    );
+
+    if (!reservationResult.success) {
+      console.error('Failed to reserve quota:', reservationResult.error);
+      // Rollback: Delete the order
+      await supabaseAdmin.from('orders').delete().eq('id', order.id);
+
+      return NextResponse.json(
+        {
+          success: false,
+          error: reservationResult.error || 'Failed to reserve quota',
+          available: reservationResult.available
+        },
+        { status: 400 }
+      );
+    }
+
+    console.log('Quota reserved:', reservationResult);
 
     // Generate unique order ID for NowPayments
     const nowpaymentsOrderId = `payment-${Date.now()}-${user.id}`;
@@ -224,7 +266,7 @@ export async function POST(request: NextRequest) {
       console.log('Payment record created:', payment.id);
     }
 
-    // Return success response with invoice_url
+    // Return success response with invoice_url and reservation info
     return NextResponse.json({
       success: true,
       invoice_url: invoiceData.invoice_url,
@@ -234,6 +276,13 @@ export async function POST(request: NextRequest) {
       invoice_id: invoiceData.id,
       price_amount: invoiceData.price_amount,
       price_currency: invoiceData.price_currency,
+      reservation: {
+        id: reservationResult.reservation_id,
+        expires_at: reservationResult.expires_at,
+        expires_in_seconds: reservationResult.expires_in_seconds,
+        reserved_connections: reservationResult.reserved_connections,
+        message: `Your connection(s) are reserved for ${Math.floor(reservationResult.expires_in_seconds / 60)} minutes. Please complete payment before the timer expires.`
+      }
     });
   } catch (error) {
     console.error('Error creating invoice:', error);

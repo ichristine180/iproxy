@@ -4,6 +4,7 @@ import crypto from "crypto";
 import { iproxyService } from "@/lib/iproxy-service";
 import { provisionProxyAccess } from "@/lib/provision-proxy";
 import { getAvailableConnection } from "@/lib/get-available-connection";
+import { createQuotaManager } from "@/lib/quota-manager";
 
 const NOWPAYMENTS_IPS = [
   // Current NOWPayments webhook IPs (2025)
@@ -335,7 +336,12 @@ async function processWebhook(
 
   // Handle wallet top-up payments
   if (isTopup && isFinal && paymentStatus === "paid") {
-    console.log("Processing wallet top-up for user:", userId, "amount:", webhook.price_amount);
+    console.log(
+      "Processing wallet top-up for user:",
+      userId,
+      "amount:",
+      webhook.price_amount
+    );
 
     // Get or create user wallet
     let { data: wallet, error: walletError } = await supabase
@@ -345,13 +351,13 @@ async function processWebhook(
       .single();
 
     // If wallet doesn't exist, create it
-    if (walletError?.code === 'PGRST116') {
+    if (walletError?.code === "PGRST116") {
       const { data: newWallet, error: createError } = await supabase
         .from("user_wallet")
         .insert({
           user_id: userId,
-          balance: '0.00',
-          currency: 'USD',
+          balance: "0.00",
+          currency: "USD",
         })
         .select()
         .single();
@@ -368,7 +374,14 @@ async function processWebhook(
       throw walletError;
     }
 
-    console.log("Wallet found for user:", userId, "Wallet ID:", wallet.id, "Current balance:", wallet.balance);
+    console.log(
+      "Wallet found for user:",
+      userId,
+      "Wallet ID:",
+      wallet.id,
+      "Current balance:",
+      wallet.balance
+    );
 
     // Update wallet balance
     const currentBalance = parseFloat(wallet.balance);
@@ -422,6 +435,17 @@ async function processWebhook(
 
   // Update order status if payment is final and successful (paid or paid_over)
   if (isFinal && paymentStatus === "paid" && payment.order_id) {
+    // Confirm quota reservation
+    const quotaManager = createQuotaManager(supabase);
+    const confirmResult = await quotaManager.confirmReservation(payment.order_id);
+
+    if (!confirmResult.success) {
+      console.error('Failed to confirm quota reservation:', confirmResult.error);
+      // Continue anyway - we can handle this manually
+    } else {
+      console.log('Quota reservation confirmed for order:', payment.order_id);
+    }
+
     // Get the order to check if it's a paid plan
     const { data: currentOrder } = await supabase
       .from("orders")
@@ -500,12 +524,22 @@ async function processWebhook(
     }
   }
 
-  // If payment failed or cancelled, update order status
+  // If payment failed or cancelled, update order status and release quota
   if (
     isFinal &&
     (paymentStatus === "failed" || paymentStatus === "cancelled") &&
     payment.order_id
   ) {
+    // Release quota reservation
+    const quotaManager = createQuotaManager(supabase);
+    const releaseResult = await quotaManager.releaseReservation(payment.order_id);
+
+    if (!releaseResult.success) {
+      console.error('Failed to release quota reservation:', releaseResult.error);
+    } else {
+      console.log('Quota reservation released for order:', payment.order_id);
+    }
+
     const { error: orderError } = await supabase
       .from("orders")
       .update({
@@ -520,7 +554,6 @@ async function processWebhook(
     }
   }
 }
-
 
 async function provisionProxyForOrder(
   supabase: any,
@@ -559,21 +592,22 @@ async function provisionProxyForOrder(
   const connectionResult = await getAvailableConnection(supabase);
 
   if (!connectionResult.success || !connectionResult.connection) {
-    throw new Error(`Failed to get available connection: ${connectionResult.error}`);
+    throw new Error(
+      `Failed to get available connection: ${connectionResult.error}`
+    );
   }
 
   const selectedConnection = connectionResult.connection;
   console.log("Selected connection:", selectedConnection.id);
 
   // Step 4: Grant proxy access to the connection (HTTP and SOCKS5)
-  console.log(
-    "Granting proxy access to connection:",
-    selectedConnection.id
-  );
+  console.log("Granting proxy access to connection:", selectedConnection.id);
 
   // Check if connection is active before proceeding with proxy access
   if (!selectedConnection.isActive) {
-    console.log("⚠️ ADMIN NOTIFICATION: Connection is not active, needs manual provisioning");
+    console.log(
+      "⚠️ ADMIN NOTIFICATION: Connection is not active, needs manual provisioning"
+    );
     console.log("Connection ID:", selectedConnection.id);
     console.log("Order ID:", orderId);
     console.log("User ID:", userId);
@@ -592,28 +626,27 @@ async function provisionProxyForOrder(
         },
         updated_at: new Date().toISOString(),
       })
-      .eq("id", orderId);
+      .eq("id", order.id);
 
     if (updateError) {
       console.error("Failed to update order status:", updateError);
     }
 
     // Return early with pending status
-    return {
+    return NextResponse.json({
+      success: true,
       connection_id: selectedConnection.id,
-      proxy_id: null,
-      http_proxy_access: null,
-      socks5_proxy_access: null,
-      http_proxy_id: null,
-      socks5_proxy_id: null,
       status: "pending_manual_provisioning",
-      message: "Your order is being processed. You will be notified when it's ready.",
-    };
+      message:
+        "Your order is being processed. You will be notified when it's ready.",
+    });
   }
-if(selectedConnection.notConfigured){
-  //TODO/////////////////////
-  console.log("Notify admin that this connection is sold it needs to be configured")
-}
+  if (selectedConnection.notConfigured) {
+    //TODO/////////////////////
+    console.log(
+      "Notify admin that this connection is sold it needs to be configured"
+    );
+  }
   // Step 4: Provision proxy access using shared utility
   const provisionResult = await provisionProxyAccess({
     supabase,
@@ -635,23 +668,6 @@ if(selectedConnection.notConfigured){
 }
 
 
-// Helper function to generate secure password
-function generateSecurePassword(): string {
-  const length = 16;
-  const charset =
-    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
-  let password = "";
-  const randomBytes = crypto.randomBytes(length);
-
-  for (let i = 0; i < length; i++) {
-    const byte = randomBytes[i];
-    if (byte !== undefined) {
-      password += charset[byte % charset.length];
-    }
-  }
-
-  return password;
-}
 
 async function findPaymentByOrderId(supabase: any, orderId: string) {
   const { data, error } = await supabase
