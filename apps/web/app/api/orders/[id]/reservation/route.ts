@@ -5,7 +5,7 @@ import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 // GET - Check reservation status for an order
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Get authenticated user
@@ -22,7 +22,7 @@ export async function GET(
       );
     }
 
-    const orderId = params.id;
+    const { id: orderId } = await params;
 
     const supabaseAdmin = createSupabaseClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -114,7 +114,7 @@ export async function GET(
 // DELETE - Manually cancel/release reservation
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Get authenticated user
@@ -131,7 +131,7 @@ export async function DELETE(
       );
     }
 
-    const orderId = params.id;
+    const { id: orderId } = await params;
 
     const supabaseAdmin = createSupabaseClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,

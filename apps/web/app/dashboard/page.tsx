@@ -29,6 +29,12 @@ interface Order {
   total_amount: number;
   start_at: string;
   expires_at: string;
+  metadata?: {
+    pending_reason?: string;
+    manual_provisioning_required?: boolean;
+    connection_id?: string;
+    [key: string]: any;
+  };
 }
 
 interface Proxy {

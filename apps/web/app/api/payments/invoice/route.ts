@@ -267,6 +267,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Return success response with invoice_url and reservation info
+    const expiresInMinutes = Math.floor((reservationResult.expires_in_seconds || 900) / 60);
+
     return NextResponse.json({
       success: true,
       invoice_url: invoiceData.invoice_url,
@@ -281,7 +283,7 @@ export async function POST(request: NextRequest) {
         expires_at: reservationResult.expires_at,
         expires_in_seconds: reservationResult.expires_in_seconds,
         reserved_connections: reservationResult.reserved_connections,
-        message: `Your connection(s) are reserved for ${Math.floor(reservationResult.expires_in_seconds / 60)} minutes. Please complete payment before the timer expires.`
+        message: `Your connection(s) are reserved for ${expiresInMinutes} minutes. Please complete payment before the timer expires.`
       }
     });
   } catch (error) {
