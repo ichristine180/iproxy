@@ -10,7 +10,7 @@ import {
   AlertTriangle,
   CheckCircle,
   Clock,
-  AlertCircle
+  AlertCircle,
 } from "lucide-react";
 import {
   Dialog,
@@ -64,7 +64,7 @@ interface Proxy {
   channel: string;
   plan_name: string;
   rotation_api: boolean;
-  rotation_mode?: 'manual' | 'api' | 'scheduled';
+  rotation_mode?: "manual" | "api" | "scheduled";
   status: string;
   expires_at: string;
   serial_number?: number;
@@ -107,7 +107,7 @@ function DashboardPageContent() {
   const [showProxyAddedMessage, setShowProxyAddedMessage] = useState(false);
 
   // Only show manual activation in development
-  const isDevelopment = process.env.NODE_ENV === 'development';
+  const isDevelopment = process.env.NODE_ENV === "development";
 
   // Success and trial message effects
   useEffect(() => {
@@ -185,8 +185,8 @@ function DashboardPageContent() {
 
   // Poll for proxy updates when there are pending or processing orders
   useEffect(() => {
-    const pendingOrProcessingOrdersExist = orders.some(order =>
-      order.status === 'pending' || order.status === 'processing'
+    const pendingOrProcessingOrdersExist = orders.some(
+      (order) => order.status === "pending" || order.status === "processing"
     );
 
     if (!pendingOrProcessingOrdersExist || isLoading) {
@@ -195,10 +195,11 @@ function DashboardPageContent() {
     }
 
     // Only poll for orders created in the last 10 minutes
-    const recentPendingOrders = orders.filter(order => {
-      if (order.status !== 'pending' && order.status !== 'processing') return false;
+    const recentPendingOrders = orders.filter((order) => {
+      if (order.status !== "pending" && order.status !== "processing")
+        return false;
       const createdAt = new Date(order.start_at || 0).getTime();
-      const tenMinutesAgo = Date.now() - (10 * 60 * 1000);
+      const tenMinutesAgo = Date.now() - 10 * 60 * 1000;
       return createdAt > tenMinutesAgo;
     });
 
@@ -211,7 +212,7 @@ function DashboardPageContent() {
 
     // Poll every 5 seconds
     const interval = setInterval(() => {
-      console.log('Polling for proxy updates...');
+      console.log("Polling for proxy updates...");
       fetchData();
     }, 5000);
 
@@ -304,9 +305,13 @@ function DashboardPageContent() {
   const selectedPlan = plans.find((p) => p.id === selectedPlanId);
   const activeOrders = orders.filter((order) => order.status === "active");
   const pendingOrders = orders.filter((order) => order.status === "pending");
-  const processingOrders = orders.filter((order) => order.status === "processing");
+  const processingOrders = orders.filter(
+    (order) => order.status === "processing"
+  );
 
-  const freeTrialOrder = orders.find((order) => isFreeTrial(order) && order.status === "active");
+  const freeTrialOrder = orders.find(
+    (order) => isFreeTrial(order) && order.status === "active"
+  );
   const hasPaidPlan = activeOrders.some((order) => order.total_amount > 0);
 
   // Only show free trial warning if user has free trial and no paid plans
@@ -337,8 +342,7 @@ function DashboardPageContent() {
             <p className="text-sm text-neutral-400">
               {isPolling
                 ? "Setting up your proxy connection... This page will update automatically."
-                : "Your order will be activated shortly once payment is confirmed."
-              }
+                : "Your order will be activated shortly once payment is confirmed."}
             </p>
           </div>
           {isPolling && (
@@ -353,7 +357,8 @@ function DashboardPageContent() {
           <div>
             <p className="font-semibold text-blue-600">Free Trial Activated!</p>
             <p className="text-sm text-neutral-400">
-              Your 7-day free trial has been activated. Enjoy full access to all features!
+              Your 7-day free trial has been activated. Enjoy full access to all
+              features!
             </p>
           </div>
         </div>
@@ -365,7 +370,8 @@ function DashboardPageContent() {
           <div>
             <p className="font-semibold text-green-600">Connection Ready!</p>
             <p className="text-sm text-neutral-400">
-              Your proxy connection has been successfully activated and is ready to use.
+              Your proxy connection has been successfully activated and is ready
+              to use.
             </p>
           </div>
         </div>
@@ -405,9 +411,12 @@ function DashboardPageContent() {
                   <Server className="h-4 w-4 text-[rgb(var(--brand-400))]" />
                 </div>
               </div>
-              <div className="text-3xl font-bold text-white">{proxies.length}</div>
+              <div className="text-3xl font-bold text-white">
+                {proxies.length}
+              </div>
               <p className="text-xs text-neutral-500 mt-1">
-                From {activeOrders.length} active order{activeOrders.length !== 1 ? "s" : ""}
+                From {activeOrders.length} active order
+                {activeOrders.length !== 1 ? "s" : ""}
               </p>
             </div>
 
@@ -418,20 +427,30 @@ function DashboardPageContent() {
                   <AlertCircle className="h-4 w-4 text-yellow-600" />
                 </div>
               </div>
-              <div className="text-3xl font-bold text-white">{pendingOrders.length}</div>
-              <p className="text-xs text-neutral-500 mt-1">Awaiting payment confirmation</p>
+              <div className="text-3xl font-bold text-white">
+                {pendingOrders.length}
+              </div>
+              <p className="text-xs text-neutral-500 mt-1">
+                Awaiting payment confirmation
+              </p>
             </div>
 
             {processingOrders.length > 0 && (
               <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-5">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-neutral-400">Processing Orders</span>
+                  <span className="text-sm text-neutral-400">
+                    Processing Orders
+                  </span>
                   <div className="h-8 w-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
                     <Loader2 className="h-4 w-4 text-blue-600 animate-spin" />
                   </div>
                 </div>
-                <div className="text-3xl font-bold text-white">{processingOrders.length}</div>
-                <p className="text-xs text-neutral-500 mt-1">Being provisioned</p>
+                <div className="text-3xl font-bold text-white">
+                  {processingOrders.length}
+                </div>
+                <p className="text-xs text-neutral-500 mt-1">
+                  Being provisioned
+                </p>
               </div>
             )}
 
@@ -442,7 +461,9 @@ function DashboardPageContent() {
                   <CheckCircle className="h-4 w-4 text-green-600" />
                 </div>
               </div>
-              <div className="text-3xl font-bold text-white">{orders.length}</div>
+              <div className="text-3xl font-bold text-white">
+                {orders.length}
+              </div>
               <p className="text-xs text-neutral-500 mt-1">All time orders</p>
             </div>
           </div>
@@ -451,8 +472,12 @@ function DashboardPageContent() {
           <div className="bg-neutral-900 rounded-xl p-6 border border-neutral-800">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h2 className="text-lg font-semibold text-white">Your Proxies</h2>
-                <p className="text-sm text-neutral-400">Active proxy credentials for your orders</p>
+                <h2 className="text-lg font-semibold text-white">
+                  Your Proxies
+                </h2>
+                <p className="text-sm text-neutral-400">
+                  Active proxy credentials for your orders
+                </p>
               </div>
               <Button
                 onClick={() => handleBuyNow(plans[0]?.id || "")}
@@ -481,7 +506,9 @@ function DashboardPageContent() {
             <div className="bg-neutral-900 rounded-xl p-6 border border-neutral-800">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h2 className="text-lg font-semibold text-white">Processing Orders</h2>
+                  <h2 className="text-lg font-semibold text-white">
+                    Processing Orders
+                  </h2>
                   <p className="text-sm text-neutral-400">
                     Your orders are being set up and will be activated soon
                   </p>
@@ -495,7 +522,9 @@ function DashboardPageContent() {
                     className="flex items-center justify-between p-3 border border-neutral-700 rounded-lg bg-blue-500/5"
                   >
                     <div>
-                      <p className="font-medium text-white">{order.plan.name}</p>
+                      <p className="font-medium text-white">
+                        {order.plan.name}
+                      </p>
                       <p className="text-sm text-neutral-400">
                         ${order.total_amount} • Being provisioned
                       </p>
@@ -521,12 +550,13 @@ function DashboardPageContent() {
             <div className="bg-neutral-900 rounded-xl p-6 border border-neutral-800">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h2 className="text-lg font-semibold text-white">Pending Orders</h2>
+                  <h2 className="text-lg font-semibold text-white">
+                    Pending Orders
+                  </h2>
                   <p className="text-sm text-neutral-400">
                     {isPolling
                       ? "Checking for activation updates..."
-                      : "Complete payment to activate these orders"
-                    }
+                      : "Complete payment to activate these orders"}
                   </p>
                 </div>
                 {isPolling && (
@@ -540,9 +570,12 @@ function DashboardPageContent() {
                     className="flex items-center justify-between p-3 border border-neutral-700 rounded-lg"
                   >
                     <div>
-                      <p className="font-medium text-white">{order.plan.name}</p>
+                      <p className="font-medium text-white">
+                        {order.plan.name}
+                      </p>
                       <p className="text-sm text-neutral-400">
-                        ${order.total_amount} • {isPolling ? "Awaiting activation" : "Awaiting payment"}
+                        ${order.total_amount} •{" "}
+                        {isPolling ? "Awaiting activation" : "Awaiting payment"}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
@@ -578,12 +611,14 @@ function DashboardPageContent() {
           {/* Show plans if no active proxies */}
           {plans.length === 0 ? (
             <div className="bg-neutral-900 rounded-xl p-12 border border-neutral-800 text-center">
-              <p className="text-neutral-400">No plans available. Please contact support.</p>
+              <p className="text-neutral-400">
+                No plans available. Please contact support.
+              </p>
             </div>
           ) : (
             <>
               {/* Proxy Selection Card */}
-              <div className="bg-neutral-900 rounded-xl p-8 border border-neutral-800">
+              <div className="bg-neutral-900 rounded-xl p-4 border border-neutral-800">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                   {/* Left Side - Plans List */}
                   <div className="space-y-3">
@@ -591,10 +626,10 @@ function DashboardPageContent() {
                       const isSelected = selectedPlanId === plan.id;
 
                       return (
-                        <button
+                        <div
                           key={plan.id}
                           onClick={() => setSelectedPlanId(plan.id)}
-                          className={`w-full flex items-center justify-between px-6 py-4 rounded-xl transition-all ${
+                          className={`w-full flex items-center justify-between px-4 py-4 rounded-full transition-all cursor-pointer ${
                             isSelected
                               ? "bg-gradient-to-r from-[rgb(var(--brand-400))] to-[rgb(var(--brand-300))] text-white"
                               : "bg-neutral-800/50 text-neutral-400 hover:bg-neutral-800 hover:text-white"
@@ -602,7 +637,7 @@ function DashboardPageContent() {
                         >
                           <div className="flex items-center gap-3">
                             <div
-                              className={`p-2 rounded-lg ${
+                              className={`p-2 rounded-full ${
                                 isSelected ? "bg-white/20" : "bg-neutral-700"
                               }`}
                             >
@@ -617,12 +652,15 @@ function DashboardPageContent() {
                                 handleBuyNow(plan.id);
                               }}
                               disabled={isCheckingQuota}
-                              className="text-sm px-4 py-1.5 border border-[rgb(var(--brand-400))] text-[rgb(var(--brand-400))] rounded-lg hover:bg-[rgb(var(--brand-400))]/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                              style={{
+                                border: "1px solid #73a3f1ff",
+                              }}
+                              className="text-sm px-2 py-1  text-[rgb(var(--brand-400))] rounded-sm hover:bg-[rgb(var(--brand-400))]/10 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               {isCheckingQuota ? "..." : "Buy now"}
                             </button>
                           )}
-                        </button>
+                        </div>
                       );
                     })}
                   </div>
@@ -640,7 +678,9 @@ function DashboardPageContent() {
                             <span className="text-3xl font-bold text-[rgb(var(--brand-400))]">
                               ${getPricePerHour(selectedPlan.price_usd_month)}
                             </span>
-                            <span className="text-sm text-neutral-400">/hour</span>
+                            <span className="text-sm text-neutral-400">
+                              /hour
+                            </span>
                           </div>
                           <div className="text-xs text-neutral-500 mt-1">
                             ${selectedPlan.price_usd_month}/month
@@ -653,19 +693,20 @@ function DashboardPageContent() {
                           </p>
                         )}
 
-                        {selectedPlan.features && selectedPlan.features.length > 0 && (
-                          <ul className="space-y-3 mb-6">
-                            {selectedPlan.features.map((feature, index) => (
-                              <li
-                                key={index}
-                                className="flex items-start gap-3 text-neutral-300"
-                              >
-                                <Check className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                                <span className="text-sm">{feature}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
+                        {selectedPlan.features &&
+                          selectedPlan.features.length > 0 && (
+                            <ul className="space-y-3 mb-6">
+                              {selectedPlan.features.map((feature, index) => (
+                                <li
+                                  key={index}
+                                  className="flex items-start gap-3 text-neutral-300"
+                                >
+                                  <Check className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                                  <span className="text-sm">{feature}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
 
                         <button
                           onClick={() => handleBuyNow(selectedPlan.id)}
@@ -692,12 +733,14 @@ function DashboardPageContent() {
               </div>
 
               {/* Orders Section */}
-              <div>
+              <div className="px-4">
                 <h2 className="text-sm font-semibold text-[rgb(var(--accent-400))] uppercase tracking-wider mb-4">
                   YOUR ORDERS
                 </h2>
                 <div className="bg-neutral-900 rounded-xl p-6 border border-neutral-800">
-                  <h3 className="text-lg font-semibold text-white mb-4">Most Recent</h3>
+                  <h3 className="text-lg font-semibold text-white mb-4">
+                    Most Recent
+                  </h3>
                   <div className="mb-4">
                     <label className="block text-sm text-neutral-400 mb-2">
                       Search by order ID or IP
@@ -734,16 +777,14 @@ function DashboardPageContent() {
               <DialogTitle>We are currently out of stock</DialogTitle>
             </div>
             <DialogDescription>
-              We apologize, but there are currently no available proxy connections.
-              Our team has been notified and is working to add more capacity.
-              Please try again later or contact support for assistance.
+              We apologize, but there are currently no available proxy
+              connections. Our team has been notified and is working to add more
+              capacity. Please try again later or contact support for
+              assistance.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setShowQuotaDialog(false)}
-            >
+            <Button variant="outline" onClick={() => setShowQuotaDialog(false)}>
               Close
             </Button>
           </DialogFooter>

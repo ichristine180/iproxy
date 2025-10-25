@@ -363,10 +363,10 @@ function CheckoutPageContent() {
       <DashboardLayout>
         <div className="p-6">
           <div className="bg-neutral-900 rounded-xl p-12 border border-neutral-800 text-center">
-            <p className="text-neutral-400">Plan not found. Please select a plan from the dashboard.</p>
+            <p className="text-neutral-400 text-xl">Plan not found. Please select a plan from the dashboard.</p>
             <button
               onClick={() => router.push("/dashboard")}
-              className="mt-4 px-6 py-3 bg-[rgb(var(--brand-400))] text-white font-semibold rounded-lg hover:bg-[rgb(var(--brand-500))] transition-colors"
+              className="mt-4 px-6 py-3 bg-[rgb(var(--brand-400))] text-white text-lg font-semibold rounded-lg hover:bg-[rgb(var(--brand-500))] transition-colors"
             >
               Go to Dashboard
             </button>
@@ -381,17 +381,17 @@ function CheckoutPageContent() {
       <div className="p-3 md:p-6">
         {/* Header */}
         <div className="mb-4 md:mb-6">
-          <h1 className="text-xl md:text-2xl font-bold text-white mb-4 md:mb-6">{plan.name}</h1>
+          <h1 className="text-3xl md:text-2xl font-bold text-white mb-4 md:mb-6">{plan.name}</h1>
 
           {/* Tabs */}
           <div className="flex gap-4 md:gap-8 border-b border-neutral-800 mb-4 md:mb-6 overflow-x-auto">
-            <button className="pb-3 px-1 text-[rgb(var(--brand-400))] border-b-2 border-[rgb(var(--brand-400))] font-medium text-xs md:text-sm whitespace-nowrap">
+            <button className="pb-3 px-1 text-[rgb(var(--brand-400))] border-b-2 border-[rgb(var(--brand-400))] font-medium text-base md:text-lg whitespace-nowrap">
               Buy now
             </button>
-            <button className="pb-3 px-1 text-neutral-400 hover:text-white transition-colors text-xs md:text-sm whitespace-nowrap">
+            <button className="pb-3 px-1 text-neutral-400 hover:text-white transition-colors text-base md:text-lg whitespace-nowrap">
               My orders
             </button>
-            <button className="pb-3 px-1 text-neutral-400 hover:text-white transition-colors text-xs md:text-sm whitespace-nowrap">
+            <button className="pb-3 px-1 text-neutral-400 hover:text-white transition-colors text-base md:text-lg whitespace-nowrap">
               Information
             </button>
           </div>
@@ -406,7 +406,7 @@ function CheckoutPageContent() {
                   : "border-neutral-800 text-neutral-500 hover:text-white"
               }`}
             >
-              <span className="text-xs">1. Order details</span>
+              <span className="text-base">1. Order details</span>
             </button>
             <ArrowRight className="h-4 w-4 text-neutral-600" />
             <button
@@ -417,7 +417,7 @@ function CheckoutPageContent() {
                   : "border-neutral-800 text-neutral-500"
               }`}
             >
-              <span className="text-xs">2. Payment</span>
+              <span className="text-base">2. Payment</span>
             </button>
           </div>
         </div>
@@ -434,11 +434,11 @@ function CheckoutPageContent() {
               }`}
             >
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-base md:text-lg font-semibold text-white">Step 1: Order Details</h2>
+                <h2 className="text-xl md:text-2xl font-semibold text-white">Step 1: Order Details</h2>
                 {currentStep === 2 && (
                   <button
                     onClick={handleBackToDetails}
-                    className="text-xs text-[rgb(var(--brand-400))] hover:text-[rgb(var(--brand-500))] transition-colors"
+                    className="text-base text-[rgb(var(--brand-400))] hover:text-[rgb(var(--brand-500))] transition-colors"
                   >
                     Edit
                   </button>
@@ -447,7 +447,7 @@ function CheckoutPageContent() {
 
               {/* Duration Selection */}
               <div className="mb-4 md:mb-5">
-                <h3 className="text-xs md:text-sm font-medium text-white mb-2 md:mb-3">Select billing period</h3>
+                <h3 className="text-base md:text-lg font-medium text-white mb-2 md:mb-3">Select billing period</h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                   {durationOptions.map((option) => (
                     <button
@@ -461,8 +461,8 @@ function CheckoutPageContent() {
                       } ${currentStep === 2 ? "opacity-50 cursor-not-allowed" : ""}`}
                     >
                       <div className="flex flex-col items-center gap-1">
-                        <span className="text-sm font-semibold">{option.label}</span>
-                        <span className="text-xs text-neutral-500">
+                        <span className="text-lg font-semibold">{option.label}</span>
+                        <span className="text-base text-neutral-500">
                           ${(hourlyPrice * option.multiplier).toFixed(2)}/{option.label.toLowerCase()}
                         </span>
                       </div>
@@ -473,18 +473,18 @@ function CheckoutPageContent() {
 
               {/* Duration Quantity Selection */}
               <div className="mb-5">
-                <h3 className="text-sm font-medium text-white mb-3">
+                <h3 className="text-lg font-medium text-white mb-3">
                   How many {durationOptions.find(d => d.value === duration)?.labelPlural.toLowerCase()}?
                 </h3>
                 <div className="flex items-center gap-3">
                   <div className="flex-1 bg-neutral-800 border border-neutral-700 rounded-lg px-4 py-3">
-                    <span className="text-lg font-bold text-white">
+                    <span className="text-2xl font-bold text-white">
                       {durationQuantity} {durationQuantity === 1
                         ? durationOptions.find(d => d.value === duration)?.label.toLowerCase()
                         : durationOptions.find(d => d.value === duration)?.labelPlural.toLowerCase()
                       }
                     </span>
-                    <span className="text-xs text-neutral-400 ml-2">
+                    <span className="text-base text-neutral-400 ml-2">
                       ({totalHours} hours total)
                     </span>
                   </div>
@@ -511,7 +511,7 @@ function CheckoutPageContent() {
 
               {/* IP Rotation Selection */}
               <div className="mb-4 md:mb-5">
-                <h3 className="text-xs md:text-sm font-medium text-white mb-2 md:mb-3">Select IP rotation time</h3>
+                <h3 className="text-base md:text-lg font-medium text-white mb-2 md:mb-3">Select IP rotation time</h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
                   {rotationOptions.map((option) => (
                     <button
@@ -527,14 +527,14 @@ function CheckoutPageContent() {
                       } ${currentStep === 2 ? "opacity-50 cursor-not-allowed" : ""}`}
                     >
                       <div className="flex flex-col items-center gap-1">
-                        <span className="text-xs font-medium">{option.label}</span>
+                        <span className="text-base font-medium">{option.label}</span>
                         {!option.isFree && (
-                          <span className="text-[10px] font-semibold text-yellow-400">
+                          <span className="text-sm font-semibold text-yellow-400">
                             {option.price}
                           </span>
                         )}
                         {option.isFree && (
-                          <span className="text-[10px] font-medium text-green-500">
+                          <span className="text-sm font-medium text-green-500">
                             Free
                           </span>
                         )}
@@ -550,7 +550,7 @@ function CheckoutPageContent() {
                 <button
                   type="button"
                   onClick={handleContinueToPayment}
-                  className="w-full mt-5 px-5 py-3 bg-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-500))] text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2 text-sm"
+                  className="w-full mt-5 px-5 py-3 bg-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-500))] text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2 text-lg"
                 >
                   Continue to payment
                   <ArrowRight className="h-4 w-4" />
@@ -565,7 +565,7 @@ function CheckoutPageContent() {
                 className="bg-neutral-900 border border-neutral-800 rounded-xl p-3 md:p-5 transition-all"
               >
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-base md:text-lg font-semibold text-white">Step 2: Payment Method</h2>
+                  <h2 className="text-xl md:text-2xl font-semibold text-white">Step 2: Payment Method</h2>
                 </div>
 
                 <div className="space-y-3">
@@ -591,9 +591,9 @@ function CheckoutPageContent() {
                         )}
                       </div>
                       <Wallet className="h-5 w-5" />
-                      <span className="text-sm font-semibold text-white">Account Balance</span>
+                      <span className="text-lg font-semibold text-white">Account Balance</span>
                     </div>
-                    <div className="ml-7 text-neutral-400 text-xs">
+                    <div className="ml-7 text-neutral-400 text-base">
                       Current balance: <span className="text-white font-semibold">
                         {isLoadingBalance ? "Loading..." : `$${walletBalance.toFixed(2)}`}
                       </span>
@@ -622,28 +622,28 @@ function CheckoutPageContent() {
                         )}
                       </div>
                       <Bitcoin className="h-5 w-5" />
-                      <span className="text-sm font-semibold text-white">Cryptocurrency</span>
+                      <span className="text-lg font-semibold text-white">Cryptocurrency</span>
                     </div>
 
                     {paymentMethod === "crypto" && (
                       <div className="ml-7 mt-3 space-y-2">
-                        <label className="block text-xs text-neutral-400 mb-2">
+                        <label className="block text-base text-neutral-400 mb-2">
                           Select cryptocurrency
                         </label>
 
                         {/* Search Input */}
                         <div className="relative">
-                          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3 w-3 text-neutral-500" />
+                          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-neutral-500" />
                           <input
                             placeholder="Search cryptocurrencies..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-9 pr-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-xs text-white placeholder:text-neutral-500 focus:outline-none focus:border-[rgb(var(--brand-400))] transition-colors"
+                            className="w-full pl-10 pr-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-base text-white placeholder:text-neutral-500 focus:outline-none focus:border-[rgb(var(--brand-400))] transition-colors"
                           />
                         </div>
 
                         <Select value={selectedCrypto} onValueChange={setSelectedCrypto}>
-                          <SelectTrigger className="bg-neutral-800 border-neutral-700 text-white">
+                          <SelectTrigger className="bg-neutral-800 border-neutral-700 text-white text-base">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent className="max-h-64">
@@ -652,16 +652,16 @@ function CheckoutPageContent() {
                               return (
                                 <SelectItem key={currency} value={currency}>
                                   <div className="flex items-center gap-2">
-                                    <span className="font-medium">{currency.toUpperCase()}</span>
+                                    <span className="font-medium text-base">{currency.toUpperCase()}</span>
                                     {currencyName && (
-                                      <span className="text-muted-foreground">{currencyName}</span>
+                                      <span className="text-muted-foreground text-sm">{currencyName}</span>
                                     )}
                                   </div>
                                 </SelectItem>
                               );
                             })}
                             {filteredCurrencies.length === 0 && searchQuery && (
-                              <div className="px-2 py-1 text-sm text-muted-foreground">
+                              <div className="px-2 py-1 text-base text-muted-foreground">
                                 No cryptocurrencies found
                               </div>
                             )}
@@ -669,7 +669,7 @@ function CheckoutPageContent() {
                         </Select>
 
                         {searchQuery && (
-                          <p className="text-xs text-neutral-400">
+                          <p className="text-base text-neutral-400">
                             Showing {filteredCurrencies.length} of {allCurrencies.length} currencies
                           </p>
                         )}
@@ -678,7 +678,7 @@ function CheckoutPageContent() {
                           <button
                             type="button"
                             onClick={() => setDisplayCurrencies(allCurrencies)}
-                            className="w-full text-xs text-[rgb(var(--brand-400))] hover:text-[rgb(var(--brand-300))] transition-colors"
+                            className="w-full text-base text-[rgb(var(--brand-400))] hover:text-[rgb(var(--brand-300))] transition-colors"
                           >
                             Show All {allCurrencies.length} Currencies
                           </button>
@@ -693,7 +693,7 @@ function CheckoutPageContent() {
                   <button
                     type="button"
                     onClick={handleBackToDetails}
-                    className="w-full px-5 py-2.5 bg-neutral-800 hover:bg-neutral-700 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2 text-sm"
+                    className="w-full px-5 py-2.5 bg-neutral-800 hover:bg-neutral-700 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2 text-lg"
                   >
                     <ArrowLeft className="h-4 w-4" />
                     Back to order details
@@ -702,7 +702,7 @@ function CheckoutPageContent() {
                     type="button"
                     onClick={handleCompletePayment}
                     disabled={isProcessingPayment}
-                    className="w-full px-5 py-3 bg-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-500))] text-white font-semibold rounded-lg transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full px-5 py-3 bg-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-500))] text-white font-semibold rounded-lg transition-colors text-lg disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isProcessingPayment ? (
                       <>
@@ -723,10 +723,10 @@ function CheckoutPageContent() {
           {/* Right Section - Order Summary (Sticky) */}
           <div className="lg:sticky lg:top-6 h-fit order-first lg:order-last">
             <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-3 md:p-5">
-              <h3 className="text-base md:text-lg font-semibold text-white mb-3 md:mb-4">Order summary</h3>
+              <h3 className="text-xl md:text-2xl font-semibold text-white mb-3 md:mb-4">Order summary</h3>
 
               <div className="space-y-3">
-                <div className="flex items-center justify-between text-xs">
+                <div className="flex items-center justify-between text-base">
                   <span className="text-neutral-400">Billing Period</span>
                   <span className="font-semibold text-white">
                     {durationQuantity} {durationQuantity === 1
@@ -736,12 +736,12 @@ function CheckoutPageContent() {
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between text-xs">
+                <div className="flex items-center justify-between text-base">
                   <span className="text-neutral-400">Total Hours</span>
                   <span className="font-semibold text-white">{totalHours} hours</span>
                 </div>
 
-                <div className="flex items-center justify-between text-xs">
+                <div className="flex items-center justify-between text-base">
                   <span className="text-neutral-400">IP Rotation</span>
                   <span className="font-semibold text-white">
                     {rotationMinutes === 0 ? "No rotation" : `${rotationMinutes} min`}
@@ -749,19 +749,19 @@ function CheckoutPageContent() {
                 </div>
 
                 <div className="border-t border-neutral-800 pt-3 space-y-2">
-                  <div className="flex items-center justify-between text-xs">
+                  <div className="flex items-center justify-between text-base">
                     <span className="text-neutral-400">Hourly Rate</span>
                     <span className="font-semibold text-white">${hourlyPrice.toFixed(4)}/hr</span>
                   </div>
 
-                  <div className="flex items-center justify-between text-xs">
+                  <div className="flex items-center justify-between text-base">
                     <span className="text-neutral-400">Base Cost ({totalHours} hrs)</span>
                     <span className="font-semibold text-white">${(hourlyPrice * totalHours).toFixed(2)}</span>
                   </div>
 
                   {rotationCostPerHour > 0 && (
                     <>
-                      <div className="flex items-center justify-between text-xs">
+                      <div className="flex items-center justify-between text-base">
                         <span className="text-neutral-400">Rotation (+${rotationCostPerHour}/hr)</span>
                         <span className="font-semibold text-yellow-500">+${totalRotationCost.toFixed(2)}</span>
                       </div>
@@ -771,12 +771,12 @@ function CheckoutPageContent() {
 
                 <div className="border-t border-neutral-800 pt-3">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-neutral-400 text-xs">Total Price</span>
-                    <span className="text-xl font-bold text-white">${finalPrice.toFixed(2)}</span>
+                    <span className="text-neutral-400 text-base">Total Price</span>
+                    <span className="text-3xl font-bold text-white">${finalPrice.toFixed(2)}</span>
                   </div>
 
                   {discount > 0 && (
-                    <div className="flex items-center justify-between text-xs mb-3">
+                    <div className="flex items-center justify-between text-base mb-3">
                       <span className="text-blue-400">Discount</span>
                       <span className="text-blue-400">-{discount}%</span>
                     </div>
@@ -788,7 +788,7 @@ function CheckoutPageContent() {
                   onClick={() => setShowCouponInput(!showCouponInput)}
                   className="w-full flex items-center justify-between px-3 py-2 bg-neutral-800 hover:bg-neutral-700 rounded-lg transition-colors"
                 >
-                  <span className="text-xs font-medium text-white">Have a coupon code?</span>
+                  <span className="text-base font-medium text-white">Have a coupon code?</span>
                   <Plus
                     className={`h-4 w-4 transition-transform ${showCouponInput ? "rotate-45" : ""}`}
                   />
@@ -801,9 +801,9 @@ function CheckoutPageContent() {
                       value={couponCode}
                       onChange={(e) => setCouponCode(e.target.value)}
                       placeholder="Enter code"
-                      className="flex-1 px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-xs text-white focus:outline-none focus:border-[rgb(var(--brand-400))]"
+                      className="flex-1 px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-base text-white focus:outline-none focus:border-[rgb(var(--brand-400))]"
                     />
-                    <button className="px-3 py-2 bg-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-500))] text-white text-xs font-medium rounded-lg transition-colors">
+                    <button className="px-3 py-2 bg-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-500))] text-white text-base font-medium rounded-lg transition-colors">
                       Apply
                     </button>
                   </div>

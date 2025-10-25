@@ -349,6 +349,12 @@ body {
   line-height: 28px !important;
   letter-spacing: 0;
 }
+.tp-headline-l {
+  font-size: 48px !important;
+  font-weight: 500 !important;
+  line-height: 58px !important;
+  letter-spacing: -0.02em !important;
+}
 /* Responsive Typography - Fluid text sizing */
 @media (max-width: 640px) {
   html {

@@ -60,18 +60,42 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-neutral-950 flex">
       {/* Left Side - Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-6 md:p-8">
         <div className="w-full max-w-[500px]">
           {/* Logo */}
-          <div className="mb-12">
-            <h1 className="text-2xl font-semibold text-white">iProxy</h1>
+          <div className="mb-8 md:mb-12">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <div className="w-10 h-10 bg-gradient-to-br from-[rgb(var(--brand-400))] to-[rgb(var(--brand-600))] rounded-lg flex items-center justify-center">
+                  <svg
+                    className="w-6 h-6 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 10V3L4 14h7v7l9-11h-7z"
+                    />
+                  </svg>
+                </div>
+                <div className="absolute -inset-1 bg-gradient-to-br from-[rgb(var(--brand-400))] to-[rgb(var(--brand-600))] rounded-lg blur opacity-30"></div>
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-[rgb(var(--brand-400))] via-[rgb(var(--brand-500))] to-purple-500 bg-clip-text text-transparent">
+                iProxy
+              </h1>
+            </div>
           </div>
 
           {/* Login Form */}
-          <div className="space-y-8">
+          <div className="space-y-6 md:space-y-8">
             <div>
-              <h2 className="text-4xl font-bold text-white mb-2">Log in</h2>
-              <p className="text-white/70">
+              <h2 className="text-3xl sm:text-4xl font-bold text-white mb-2 tp-headline-l">
+                Log in
+              </h2>
+              <p className="text-sm sm:text-base text-white/70">
                 Don't have an account yet?{" "}
                 <Link
                   href="/signup"
@@ -83,14 +107,14 @@ export default function LoginPage() {
             </div>
 
             {/* Social Login Buttons */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="flex flex-col sm:grid sm:grid-cols-2 gap-3 sm:gap-4">
               <button
-                className="flex items-center justify-center gap-3 px-6 py-3 bg-transparent rounded-lg text-white transition-all"
+                className="flex items-center justify-center gap-2 sm:gap-3 px-4 sm:px-6 py-3 bg-transparent rounded-lg text-white transition-all mb-3"
                 style={{
                   border: "1px solid #73a3f1ff",
                 }}
               >
-                <svg className="w-5 h-5" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
                   <path
                     fill="currentColor"
                     d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -114,13 +138,13 @@ export default function LoginPage() {
               </button>
 
               <button
-                className="flex items-center justify-center gap-3 px-6 py-3 bg-transparent rounded-lg text-white transition-all"
+                className="flex items-center justify-center gap-2 sm:gap-3 px-4 sm:px-6 py-3 bg-transparent rounded-lg text-white transition-all"
                 style={{
                   border: "1px solid #73a3f1ff",
                 }}
               >
                 <svg
-                  className="w-5 h-5"
+                  className="w-5 h-5 flex-shrink-0"
                   fill="currentColor"
                   viewBox="0 0 24 24"
                 >
@@ -133,17 +157,16 @@ export default function LoginPage() {
             </div>
 
             {/* OR Divider */}
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-white/20"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-neutral-950 text-white/70">OR</span>
-              </div>
+            <div className="flex items-center">
+              <div className="flex-grow h-px bg-white/20" aria-hidden="true" />
+              <span className="mx-4 px-2 bg-neutral-950 text-white/70 text-sm">
+                OR
+              </span>
+              <div className="flex-grow h-px bg-white/20" aria-hidden="true" />
             </div>
 
             {/* Login Form */}
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-5 md:space-y-6">
               {error && (
                 <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-md">
                   <p className="text-sm text-red-400">{error}</p>
@@ -165,7 +188,7 @@ export default function LoginPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
                   }
-                  className="w-full px-4 py-3 bg-neutral-900 border border-neutral-700 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:border-[rgb(var(--accent-400))] transition-colors"
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-neutral-900 border border-neutral-700 rounded-lg text-white text-sm sm:text-base placeholder:text-white/40 focus:outline-none focus:border-[rgb(var(--accent-400))] transition-colors"
                   required
                 />
               </div>
@@ -186,7 +209,7 @@ export default function LoginPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, password: e.target.value })
                     }
-                    className="w-full px-4 py-3 bg-neutral-900 border border-neutral-700 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:border-[rgb(var(--accent-400))] transition-colors"
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-neutral-900 border border-neutral-700 rounded-lg text-white text-sm sm:text-base placeholder:text-white/40 focus:outline-none focus:border-[rgb(var(--accent-400))] transition-colors"
                     required
                   />
                   <button
@@ -207,7 +230,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full px-6 py-3 bg-[rgb(var(--brand-400))] text-white font-semibold rounded-lg hover:bg-[rgb(var(--brand-300))] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-4 sm:px-6 py-2.5 sm:py-3 bg-[rgb(var(--brand-400))] text-white font-semibold text-sm sm:text-base rounded-lg hover:bg-[rgb(var(--brand-300))] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? "Signing in..." : "Sign In"}
               </button>
@@ -227,7 +250,7 @@ export default function LoginPage() {
       </div>
 
       {/* Right Side - Promotional Content */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden items-center justify-center p-12">
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden items-center justify-center p-8 xl:p-12">
         {/* Background Image */}
         <Image
           src="/blue-bg.png"
@@ -241,9 +264,9 @@ export default function LoginPage() {
         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-white/10 rounded-full blur-3xl"></div>
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-white/10 rounded-full blur-3xl"></div>
 
-        <div className="relative z-10 max-w-md space-y-8 text-white">
+        <div className="relative z-10 max-w-md space-y-6 lg:space-y-8 text-white">
           {/* Trust Badge */}
-          <div className="space-y-3">
+          <div className="space-y-2 lg:space-y-3">
             {/* Anonymous */}
             <div className="group inline-flex items-center gap-3 bg-white/5 backdrop-blur-sm px-4 py-3 rounded-xl border border-white/10 hover:bg-white/10 hover:border-[rgb(var(--brand-500))]/40 transition-all cursor-default">
               <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -348,11 +371,13 @@ export default function LoginPage() {
           </div>
 
           {/* Main Heading */}
-          <div className="space-y-4">
-            <h2 className="text-4xl font-bold leading-tight">
-              <span className="text-[24px]">Powerful proxies. Simple pricing</span>
+          <div className="space-y-3 lg:space-y-4">
+            <h2 className="text-3xl lg:text-4xl font-bold leading-tight">
+              <span className="text-[20px] lg:text-[24px]">
+                Powerful proxies. Simple pricing
+              </span>
             </h2>
-            <p className="text-white/90 leading-relaxed">
+            <p className="text-white/90 leading-relaxed text-sm lg:text-base">
               Low-latency IPs across hundreds of cities, HTTP/S and SOCKS
               support, programmatic access via API and flexible rate limits —
               built for scraping, testing, and secure browsing at scale.
@@ -360,16 +385,18 @@ export default function LoginPage() {
           </div>
 
           {/* Features List */}
-          <ul className="space-y-3">
+          <ul className="space-y-2 lg:space-y-3">
             {[
               "Low-latency IPs across hundreds of cities",
               "HTTP/S and SOCKS5 protocol support",
               "Programmatic access via REST API",
               "Custom rate limits & rotating sessions",
             ].map((feature) => (
-              <li key={feature} className="flex items-center gap-3">
-                <Check className="w-5 h-5 text-[rgb(var(--accent-300))]" />
-                <span className="text-white/90">{feature}</span>
+              <li key={feature} className="flex items-center gap-2 lg:gap-3">
+                <Check className="w-4 h-4 lg:w-5 lg:h-5 text-[rgb(var(--accent-300))] flex-shrink-0" />
+                <span className="text-white/90 text-sm lg:text-base">
+                  {feature}
+                </span>
               </li>
             ))}
           </ul>

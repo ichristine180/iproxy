@@ -109,6 +109,7 @@ export const DashboardLayout = ({
   const [channels, setChannels] = useState<any[]>([]);
   const [walletBalance, setWalletBalance] = useState<number>(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   useEffect(() => {
     fetchPlans();
@@ -165,26 +166,40 @@ export const DashboardLayout = ({
       )}
 
       {/* Sidebar */}
-      <aside className={`
-        w-64 bg-neutral-900 border border-neutral-800 rounded-xl flex flex-col h-full
+      <aside
+        className={`
+        w-64 ${sidebarCollapsed ? "lg:w-20" : "lg:w-64"} bg-neutral-900 border border-neutral-800 rounded-xl flex flex-col h-full
         fixed lg:relative z-50 lg:z-auto
-        transition-transform duration-300 ease-in-out
-        ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        transition-all duration-300 ease-in-out
+        ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
         left-0 lg:left-auto top-0 lg:top-auto
         m-2 lg:m-0
-      `}>
+      `}
+      >
         {/* Logo Section */}
         <div className="h-16 border-b border-neutral-800 flex items-center justify-between px-4 rounded-t-xl flex-shrink-0">
-          <div className="flex items-center gap-2">
-            <h2 className="font-bold text-white text-lg">iProxy</h2>
+          <div className="flex items-center gap-2 overflow-hidden">
+            <h2 className="font-bold text-white text-lg whitespace-nowrap lg:hidden">iProxy</h2>
+            <h2 className={`font-bold text-white text-lg whitespace-nowrap hidden lg:block ${sidebarCollapsed ? "hidden" : ""}`}>iProxy</h2>
+            <h2 className={`font-bold text-white text-lg hidden lg:block ${sidebarCollapsed ? "" : "hidden"}`}>iP</h2>
           </div>
-          {/* Close button for mobile */}
-          <button
-            onClick={() => setMobileMenuOpen(false)}
-            className="lg:hidden text-neutral-400 hover:text-white transition-colors"
-          >
-            <X className="h-5 w-5" />
-          </button>
+          {/* Toggle button for desktop, Close button for mobile */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setMobileMenuOpen(false)}
+              className="lg:hidden text-neutral-400 hover:text-white transition-colors"
+              title="Close menu"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <button
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              className="hidden lg:block text-neutral-400 hover:text-white transition-colors"
+              title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              <ChevronLeft className={`h-5 w-5 transition-transform ${sidebarCollapsed ? "rotate-180" : ""}`} />
+            </button>
+          </div>
         </div>
 
         {/* Navigation */}
@@ -192,48 +207,51 @@ export const DashboardLayout = ({
           {/* Dashboard */}
           <Link
             href="/dashboard"
-            className={`flex items-center gap-3 px-4 py-2.5 mx-2 rounded-lg transition-colors ${
+            className={`flex items-center gap-3 ${sidebarCollapsed ? "lg:justify-center" : ""} px-4 py-2.5 mx-2 rounded-lg transition-colors ${
               pathname === "/dashboard"
                 ? "bg-neutral-800 text-white"
                 : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
             }`}
+            title="Dashboard"
           >
-            <LayoutDashboard className="h-5 w-5" />
-            <span className="text-sm font-medium">Dashboard</span>
+            <LayoutDashboard className="h-5 w-5 flex-shrink-0" />
+            <span className={`text-sm font-medium lg:${sidebarCollapsed ? "hidden" : "block"}`}>Dashboard</span>
           </Link>
 
           {/* Invoices */}
           <Link
-          href={"#"}
-           // href="/dashboard/invoices"
-            className={`flex items-center gap-3 px-4 py-2.5 mx-2 rounded-lg transition-colors ${
+            href={"#"}
+            // href="/dashboard/invoices"
+            className={`flex items-center gap-3 ${sidebarCollapsed ? "lg:justify-center" : ""} px-4 py-2.5 mx-2 rounded-lg transition-colors ${
               pathname === "/dashboard/invoices"
                 ? "bg-neutral-800 text-white"
                 : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
             }`}
+            title="Invoices"
           >
-            <FileText className="h-5 w-5" />
-            <span className="text-sm font-medium">Invoices</span>
+            <FileText className="h-5 w-5 flex-shrink-0" />
+            <span className={`text-sm font-medium lg:${sidebarCollapsed ? "hidden" : "block"}`}>Invoices</span>
           </Link>
 
           {/* Deposit history */}
           <Link
             href="#"
-            className={`flex items-center gap-3 px-4 py-2.5 mx-2 rounded-lg transition-colors ${
+            className={`flex items-center gap-3 ${sidebarCollapsed ? "lg:justify-center" : ""} px-4 py-2.5 mx-2 rounded-lg transition-colors ${
               pathname === "/dashboard/deposit-history"
                 ? "bg-neutral-800 text-white"
                 : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
             }`}
+            title="Deposit history"
           >
-            <CreditCard className="h-5 w-5" />
-            <span className="text-sm font-medium">Deposit history</span>
+            <CreditCard className="h-5 w-5 flex-shrink-0" />
+            <span className={`text-sm font-medium lg:${sidebarCollapsed ? "hidden" : "block"}`}>Deposit history</span>
           </Link>
 
           {/* Proxies Section */}
           <div className="mt-6">
             <button
               onClick={() => setProxiesOpen(!proxiesOpen)}
-              className="flex items-center justify-between w-full px-4 py-2 text-neutral-500 hover:text-neutral-400 transition-colors"
+              className={`flex items-center justify-between w-full px-4 py-2 text-neutral-500 hover:text-neutral-400 transition-colors ${sidebarCollapsed ? "lg:hidden" : ""}`}
             >
               <span className="text-xs font-semibold uppercase tracking-wider">
                 Proxies
@@ -242,7 +260,10 @@ export const DashboardLayout = ({
                 className={`h-4 w-4 transition-transform ${proxiesOpen ? "rotate-180" : ""}`}
               />
             </button>
-            {proxiesOpen && (
+            <div className={`px-4 py-2 text-neutral-500 text-center hidden ${sidebarCollapsed ? "lg:block" : ""}`}>
+              <Server className="h-4 w-4 mx-auto" />
+            </div>
+            {(proxiesOpen || sidebarCollapsed) && (
               <div className="mt-1">
                 {channels.map((channelInfo) => {
                   const ChannelIcon = getIconForChannel(channelInfo.id) || Hash; // Fallback to Hash
@@ -250,16 +271,16 @@ export const DashboardLayout = ({
                   return (
                     <Link
                       key={channelInfo.id}
-                      //  href={`/dashboard/proxies/${channelInfo.id}`}
-                      href={"#"}
-                      className={`flex items-center gap-3 px-4 py-2.5 mx-2 rounded-lg transition-colors ${
+                      href={`/checkout?plan=${channelInfo.id}`}
+                      className={`flex items-center gap-3 ${sidebarCollapsed ? "lg:justify-center" : ""} px-4 py-2.5 mx-2 rounded-lg transition-colors ${
                         pathname === `/dashboard/proxies/${channelInfo.id}`
                           ? "bg-neutral-800 text-white"
                           : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
                       }`}
+                      title={channelInfo.name}
                     >
-                      <ChannelIcon className="h-4 w-4" />
-                      <span className="text-sm">{channelInfo.name}</span>
+                      <ChannelIcon className="h-4 w-4 flex-shrink-0" />
+                      <span className={`text-sm lg:${sidebarCollapsed ? "hidden" : "block"}`}>{channelInfo.name}</span>
                     </Link>
                   );
                 })}
@@ -271,7 +292,7 @@ export const DashboardLayout = ({
           <div className="mt-6">
             <button
               onClick={() => setResourcesOpen(!resourcesOpen)}
-              className="flex items-center justify-between w-full px-4 py-2 text-neutral-500 hover:text-neutral-400 transition-colors"
+              className={`flex items-center justify-between w-full px-4 py-2 text-neutral-500 hover:text-neutral-400 transition-colors ${sidebarCollapsed ? "lg:hidden" : ""}`}
             >
               <span className="text-xs font-semibold uppercase tracking-wider">
                 Resources
@@ -280,28 +301,34 @@ export const DashboardLayout = ({
                 className={`h-4 w-4 transition-transform ${resourcesOpen ? "rotate-180" : ""}`}
               />
             </button>
-            {resourcesOpen && (
+            <div className={`px-4 py-2 text-neutral-500 text-center hidden ${sidebarCollapsed ? "lg:block" : ""}`}>
+              <BookOpen className="h-4 w-4 mx-auto" />
+            </div>
+            {(resourcesOpen || sidebarCollapsed) && (
               <div className="mt-1">
                 <Link
                   href="/dashboard/support"
-                  className="flex items-center gap-3 px-4 py-2.5 mx-2 rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-800/50 transition-colors"
+                  className={`flex items-center gap-3 ${sidebarCollapsed ? "lg:justify-center" : ""} px-4 py-2.5 mx-2 rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-800/50 transition-colors`}
+                  title="Support"
                 >
-                  <HelpCircle className="h-4 w-4" />
-                  <span className="text-sm">Support</span>
+                  <HelpCircle className="h-4 w-4 flex-shrink-0" />
+                  <span className={`text-sm lg:${sidebarCollapsed ? "hidden" : "block"}`}>Support</span>
                 </Link>
                 <Link
                   href="/dashboard/community"
-                  className="flex items-center gap-3 px-4 py-2.5 mx-2 rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-800/50 transition-colors"
+                  className={`flex items-center gap-3 ${sidebarCollapsed ? "lg:justify-center" : ""} px-4 py-2.5 mx-2 rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-800/50 transition-colors`}
+                  title="Community"
                 >
-                  <Users className="h-4 w-4" />
-                  <span className="text-sm">Community</span>
+                  <Users className="h-4 w-4 flex-shrink-0" />
+                  <span className={`text-sm lg:${sidebarCollapsed ? "hidden" : "block"}`}>Community</span>
                 </Link>
                 <Link
                   href="/dashboard/help-center"
-                  className="flex items-center gap-3 px-4 py-2.5 mx-2 rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-800/50 transition-colors"
+                  className={`flex items-center gap-3 ${sidebarCollapsed ? "lg:justify-center" : ""} px-4 py-2.5 mx-2 rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-800/50 transition-colors`}
+                  title="Documentation"
                 >
-                  <BookOpen className="h-4 w-4" />
-                  <span className="text-sm">Documentation</span>
+                  <BookOpen className="h-4 w-4 flex-shrink-0" />
+                  <span className={`text-sm lg:${sidebarCollapsed ? "hidden" : "block"}`}>Documentation</span>
                 </Link>
               </div>
             )}
@@ -324,22 +351,37 @@ export const DashboardLayout = ({
                 <Menu className="h-5 w-5" />
               </button>
 
-              <button className="hidden sm:flex items-center gap-2 px-3 md:px-4 py-2 bg-[rgb(var(--brand-400))]/10 text-[rgb(var(--brand-400))] rounded-lg hover:bg-[rgb(var(--brand-400))]/20 transition-colors">
+              <button
+                style={{
+                  border: "1px solid #73a3f1ff",
+                }}
+                className="hidden sm:flex items-center gap-2 px-3 md:px-4 py-2  text-[rgb(var(--brand-400))] rounded-lg hover:bg-[rgb(var(--brand-400))]/20 transition-colors"
+              >
                 <User className="h-4 w-4" />
-                <span className="text-xs md:text-sm font-medium">My Profile</span>
+                <span className="text-xs md:text-sm font-medium">
+                  My Profile
+                </span>
               </button>
-              <button className="flex items-center gap-2 px-3 md:px-4 py-2 bg-[rgb(var(--brand-400))] text-white rounded-lg hover:bg-[rgb(var(--brand-300))] transition-colors">
+              <a
+              href="/dashboard/deposit"
+                style={{
+                  border: "1px solid #73a3f1ff",
+                }}
+                className="flex items-center gap-2 px-3 md:px-4 py-2 text-[rgb(var(--brand-400))] rounded-lg hover:bg-[rgb(var(--brand-300))] transition-colors"
+              >
                 <DollarSign className="h-4 w-4" />
                 <span className="text-xs md:text-sm font-medium">Deposit</span>
-              </button>
+              </a>
             </div>
 
             {/* Right Section */}
             <div className="flex items-center gap-2 md:gap-4">
               {/* Credits */}
-              <div className="text-neutral-400 hidden sm:block">
+              <div className="text-neutral-400 hidden sm:block bg-[#444] py-1 px-2 rounded-sm">
                 <span className="text-xs md:text-sm">Credits: </span>
-                <span className="text-white font-semibold text-xs md:text-sm">${walletBalance.toFixed(2)}</span>
+                <span className="text-white font-semibold text-xs md:text-sm">
+                  ${walletBalance.toFixed(2)}
+                </span>
               </div>
 
               {/* User Menu */}
@@ -350,7 +392,7 @@ export const DashboardLayout = ({
                       Hi, {user?.email?.split("@")[0]}
                     </span>
                     <Avatar className="h-7 w-7 md:h-8 md:w-8">
-                      <AvatarFallback className="bg-[rgb(var(--brand-400))] text-white text-xs font-semibold">
+                      <AvatarFallback className="bg-[rgb(var(--brand-400))] text-white text-md font-semibold">
                         {getUserInitials()}
                       </AvatarFallback>
                     </Avatar>
@@ -360,7 +402,10 @@ export const DashboardLayout = ({
                   {/* Show credits in dropdown on mobile */}
                   <div className="sm:hidden px-2 py-2 border-b border-neutral-700">
                     <div className="text-neutral-400 text-xs">
-                      Credits: <span className="text-white font-semibold">${walletBalance.toFixed(2)}</span>
+                      Credits:{" "}
+                      <span className="text-white font-semibold">
+                        ${walletBalance.toFixed(2)}
+                      </span>
                     </div>
                   </div>
                   <DropdownMenuItem onClick={handleLogout}>
