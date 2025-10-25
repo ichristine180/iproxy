@@ -1,10 +1,12 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
 @import "tailwindcss";
 
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. */
 /* Color palette from MarsProxies with SWAPPED orange/blue: where they use orange, we use blue and vice versa */
 
-:root, :after, :before {
+:root,
+:after,
+:before {
   /* Neutral colors (grayscale) - unchanged */
   --neutral-1000: 0, 0, 0;
   --neutral-900: 13, 15, 16;
@@ -151,10 +153,26 @@
 
 :root {
   /* Gradients - using swapped colors (blue brand + orange accent) */
-  --gradient-primary: linear-gradient(96.56deg, rgb(var(--brand-500)), rgb(var(--brand-400)));
-  --gradient-accent: linear-gradient(96.56deg, rgb(var(--accent-300)), rgb(var(--accent-200)));
-  --gradient-mixed: linear-gradient(96.56deg, rgb(var(--brand-500)), rgb(var(--accent-300)));
-  --gradient-glow: linear-gradient(135deg, rgb(var(--brand-500) / 0.3), rgb(var(--accent-300) / 0.3));
+  --gradient-primary: linear-gradient(
+    96.56deg,
+    rgb(var(--brand-500)),
+    rgb(var(--brand-400))
+  );
+  --gradient-accent: linear-gradient(
+    96.56deg,
+    rgb(var(--accent-300)),
+    rgb(var(--accent-200))
+  );
+  --gradient-mixed: linear-gradient(
+    96.56deg,
+    rgb(var(--brand-500)),
+    rgb(var(--accent-300))
+  );
+  --gradient-glow: linear-gradient(
+    135deg,
+    rgb(var(--brand-500) / 0.3),
+    rgb(var(--accent-300) / 0.3)
+  );
 
   /* Shadows */
   --shadow-glow: 0 0 60px rgb(var(--brand-500) / 0.4);
@@ -184,7 +202,8 @@
 }
 
 @keyframes glow-pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.5;
   }
   50% {
@@ -229,7 +248,8 @@
   box-shadow: var(--shadow-card);
 }
 
-html, body {
+html,
+body {
   font-family: Poppins, sans-serif;
   height: 100%;
   scroll-padding: 150px;
@@ -252,7 +272,9 @@ body {
   color-scheme: dark;
 }
 
-*, :before, :after {
+*,
+:before,
+:after {
   box-sizing: border-box;
   border-width: 0;
   border-style: solid;
@@ -284,7 +306,22 @@ body {
     padding-right: 56px;
   }
 }
-
+.tp-headline-m {
+  font-size: 32px;
+  font-weight: 500;
+  line-height: 44px;
+  letter-spacing: 0em;
+}
+.headline {
+  background: linear-gradient(
+    96.56deg,
+    rgb(var(--brand-300)) 4.39%,
+    rgb(var(--neutral-0)) 55.53%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
 /* Utility classes for neutral colors */
 .bg-neutral-900 {
   --tw-bg-opacity: 1;
