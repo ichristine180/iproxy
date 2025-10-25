@@ -3,155 +3,97 @@
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarProvider,
-  SidebarTrigger,
-  useSidebar,
-} from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard,
   Server,
-  Package,
-  LogOut,
-  User,
+  FileText,
   CreditCard,
-  Settings,
-  Bell,
-  Search,
-  Wallet,
+  Home,
+  Database,
+  Globe,
+  Smartphone,
+  Gift,
+  Wrench,
+  Chrome,
+  HelpCircle,
+  Users,
+  BookOpen,
+  CheckSquare,
+  ChevronDown,
+  ChevronLeft,
+  User,
+  DollarSign,
+  LogOut,
+  Hash,
+  Zap,
+  Shield,
+  Wifi,
+  Activity,
+  Lock,
+  CloudLightning,
+  Radio,
+  Satellite,
+  Network,
+  CircleDot,
+  Radar,
+  Waves,
+  Menu,
+  X,
 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useState, useEffect } from "react";
 
-const DashboardSidebar = () => {
-  const { state } = useSidebar();
-  const pathname = usePathname();
+interface Plan {
+  id: string;
+  name: string;
+  channel: string;
+  price_usd_month: number;
+}
 
-  const navItems = [
-    { title: "Overview", url: "/dashboard", icon: LayoutDashboard },
-    { title: "Wallet & topup", url: "/dashboard/balance", icon: Wallet },
-    { title: "Plans & rates", url: "/dashboard/plan&rates", icon: Package },
-  ];
+interface ChannelInfo {
+  channel: string;
+  name: string;
+  icon: any;
+}
 
-  return (
-    <Sidebar collapsible="icon">
-      <SidebarContent className="bg-sidebar">
-        {/* Logo Section */}
-        <div
-          className="flex  h-16 items-center border-b px-4"
-          style={{ borderColor: "hsl(var(--border))" }}
-        >
-          {state === "expanded" ? (
-            <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center">
-                <Server className="h-4 w-4 text-primary-foreground" />
-              </div>
-              <h2 className="font-bold text-lg [background-image:var(--gradient-primary)] bg-clip-text text-transparent">
-                iProxy
-              </h2>
-            </div>
-          ) : (
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center mx-auto">
-              <Server className="h-4 w-4 text-primary-foreground" />
-            </div>
-          )}
-        </div>
+// Array of available icons for channels
+const availableIcons = [
+  Home,
+  Server,
+  Database,
+  Globe,
+  Smartphone,
+  Gift,
+  Hash,
+  Zap,
+  Shield,
+  Wifi,
+  Activity,
+  Lock,
+  CloudLightning,
+  Radio,
+  Satellite,
+  Network,
+  CircleDot,
+  Radar,
+  Waves,
+];
 
-        {/* Navigation */}
-        <SidebarGroup className="mt-4">
-          <SidebarGroupLabel className={state === "collapsed" ? "sr-only" : ""}>
-            Navigation
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {navItems.map((item) => {
-                const isActive = pathname === item.url;
-                return (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={isActive}
-                      className={`
-                        group relative
-                        ${
-                          isActive
-                            ? "bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary"
-                            : "hover:bg-muted"
-                        }
-                        ${state === "collapsed" ? "justify-center" : ""}
-                      `}
-                      tooltip={state === "collapsed" ? item.title : undefined}
-                    >
-                      <Link
-                        href={item.url}
-                        className="flex items-center gap-3 w-full"
-                      >
-                        <item.icon
-                          className={`h-5 w-5 ${isActive ? "text-primary" : ""} ${state === "collapsed" ? "mx-auto" : ""}`}
-                        />
-                        {state === "expanded" && (
-                          <span
-                            className={`${isActive ? "font-semibold" : ""}`}
-                          >
-                            {item.title}
-                          </span>
-                        )}
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        {/* Bottom Section - Settings */}
-        <div
-          className="mt-auto border-t"
-          style={{ borderColor: "hsl(var(--border))" }}
-        >
-          <SidebarGroup>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    asChild
-                    className={state === "collapsed" ? "justify-center" : ""}
-                  >
-                    <Link
-                      href="/dashboard/settings"
-                      className="flex items-center gap-3 w-full"
-                    >
-                      <Settings
-                        className={`h-5 w-5 ${state === "collapsed" ? "mx-auto" : ""}`}
-                      />
-                      {state === "expanded" && <span>Settings</span>}
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        </div>
-      </SidebarContent>
-    </Sidebar>
-  );
+// Function to get a consistent icon for each channel based on its ID
+const getIconForChannel = (channelId: string) => {
+  // Convert channel ID to a number for consistent icon selection
+  const hash = channelId.split("").reduce((acc, char) => {
+    return char.charCodeAt(0) + ((acc << 5) - acc);
+  }, 0);
+  const index = Math.abs(hash) % availableIcons.length;
+  return availableIcons[index];
 };
 
 export const DashboardLayout = ({
@@ -162,128 +104,280 @@ export const DashboardLayout = ({
   const { user, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const [proxiesOpen, setProxiesOpen] = useState(true);
+  const [resourcesOpen, setResourcesOpen] = useState(false);
+  const [channels, setChannels] = useState<any[]>([]);
+  const [walletBalance, setWalletBalance] = useState<number>(0);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    fetchPlans();
+    fetchWalletBalance();
+  }, []);
+
+  const fetchPlans = async () => {
+    try {
+      const response = await fetch("/api/plans");
+      const data = await response.json();
+
+      if (data.success && data.plans.length > 0) {
+        setChannels(data.plans);
+      }
+    } catch (error) {
+      console.error("Failed to fetch plans:", error);
+    }
+  };
+
+  const fetchWalletBalance = async () => {
+    try {
+      const response = await fetch("/api/wallet");
+      const data = await response.json();
+
+      if (data.success && data.wallet) {
+        setWalletBalance(data.wallet.balance || 0);
+      }
+    } catch (error) {
+      console.error("Failed to fetch wallet balance:", error);
+    }
+  };
 
   const handleLogout = async () => {
     await logout();
     router.push("/");
   };
 
-  // Get page title based on pathname
-  const getPageTitle = () => {
-    if (pathname === "/dashboard") return "Overview";
-    if (pathname.includes("/proxies")) return "My Proxies";
-    if (pathname.includes("/orders")) return "Orders";
-    if (pathname.includes("/settings")) return "Settings";
-    return "Dashboard";
-  };
-
   // Get user initials for avatar
   const getUserInitials = () => {
     if (user?.email) {
-      return user.email.substring(0, 2).toUpperCase();
+      return user.email.substring(0, 1).toUpperCase();
     }
     return "U";
   };
 
   return (
-    <SidebarProvider defaultOpen={true}>
-      <div className="min-h-screen flex w-full bg-background">
-        <DashboardSidebar />
-        <div className="flex-1 flex flex-col">
-          {/* Modern Header */}
-          <header
-            className="sticky top-0 z-40 h-16 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
-            style={{ borderColor: "hsl(var(--border))" }}
+    <div className="h-screen flex w-full bg-neutral-950 md:p-4 p-2 gap-2 md:gap-4 overflow-hidden">
+      {/* Mobile Overlay */}
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside className={`
+        w-64 bg-neutral-900 border border-neutral-800 rounded-xl flex flex-col h-full
+        fixed lg:relative z-50 lg:z-auto
+        transition-transform duration-300 ease-in-out
+        ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        left-0 lg:left-auto top-0 lg:top-auto
+        m-2 lg:m-0
+      `}>
+        {/* Logo Section */}
+        <div className="h-16 border-b border-neutral-800 flex items-center justify-between px-4 rounded-t-xl flex-shrink-0">
+          <div className="flex items-center gap-2">
+            <h2 className="font-bold text-white text-lg">iProxy</h2>
+          </div>
+          {/* Close button for mobile */}
+          <button
+            onClick={() => setMobileMenuOpen(false)}
+            className="lg:hidden text-neutral-400 hover:text-white transition-colors"
           >
-            <div className="flex h-full items-center justify-between px-6 gap-4">
-              {/* Left Section */}
-              <div className="flex items-center gap-4">
-                <SidebarTrigger className="hover:bg-muted" />
-                <div className="hidden md:flex items-center gap-2">
-                  <h1 className="text-xl font-semibold tracking-tight">
-                    {getPageTitle()}
-                  </h1>
-                </div>
-              </div>
-
-              {/* Right Section */}
-              <div className="flex items-center gap-1 md:gap-2">
-                {/* Notifications */}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="relative h-9 w-9"
-                >
-                  <Bell className="h-4 w-4" />
-                  <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-primary" />
-                </Button>
-
-                {/* User Menu */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-9 gap-2 px-2">
-                      <Avatar className="h-7 w-7">
-                        <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
-                          {getUserInitials()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="hidden md:inline-flex text-sm font-medium max-w-[150px] truncate">
-                        {user?.email}
-                      </span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuLabel>
-                      <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">
-                          My Account
-                        </p>
-                        <p className="text-xs leading-none text-muted-foreground truncate">
-                          {user?.email}
-                        </p>
-                      </div>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={() => router.push("/dashboard/profile")}
-                    >
-                      <User className="mr-2 h-4 w-4" />
-                      Profile
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => router.push("/dashboard/orders")}
-                    >
-                      <CreditCard className="mr-2 h-4 w-4" />
-                      Billing
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => router.push("/dashboard/settings")}
-                    >
-                      <Settings className="mr-2 h-4 w-4" />
-                      Settings
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={handleLogout}
-                      className="text-destructive focus:text-destructive"
-                    >
-                      <LogOut className="mr-2 h-4 w-4" />
-                      Logout
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </div>
-          </header>
-
-          {/* Main Content */}
-          <main className="flex-1 overflow-y-auto bg-muted/40">
-            <div className="container mx-auto p-4 md:p-6 max-w-7xl">
-              {children}
-            </div>
-          </main>
+            <X className="h-5 w-5" />
+          </button>
         </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 overflow-y-auto py-4 scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-transparent">
+          {/* Dashboard */}
+          <Link
+            href="/dashboard"
+            className={`flex items-center gap-3 px-4 py-2.5 mx-2 rounded-lg transition-colors ${
+              pathname === "/dashboard"
+                ? "bg-neutral-800 text-white"
+                : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
+            }`}
+          >
+            <LayoutDashboard className="h-5 w-5" />
+            <span className="text-sm font-medium">Dashboard</span>
+          </Link>
+
+          {/* Invoices */}
+          <Link
+          href={"#"}
+           // href="/dashboard/invoices"
+            className={`flex items-center gap-3 px-4 py-2.5 mx-2 rounded-lg transition-colors ${
+              pathname === "/dashboard/invoices"
+                ? "bg-neutral-800 text-white"
+                : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
+            }`}
+          >
+            <FileText className="h-5 w-5" />
+            <span className="text-sm font-medium">Invoices</span>
+          </Link>
+
+          {/* Deposit history */}
+          <Link
+            href="#"
+            className={`flex items-center gap-3 px-4 py-2.5 mx-2 rounded-lg transition-colors ${
+              pathname === "/dashboard/deposit-history"
+                ? "bg-neutral-800 text-white"
+                : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
+            }`}
+          >
+            <CreditCard className="h-5 w-5" />
+            <span className="text-sm font-medium">Deposit history</span>
+          </Link>
+
+          {/* Proxies Section */}
+          <div className="mt-6">
+            <button
+              onClick={() => setProxiesOpen(!proxiesOpen)}
+              className="flex items-center justify-between w-full px-4 py-2 text-neutral-500 hover:text-neutral-400 transition-colors"
+            >
+              <span className="text-xs font-semibold uppercase tracking-wider">
+                Proxies
+              </span>
+              <ChevronDown
+                className={`h-4 w-4 transition-transform ${proxiesOpen ? "rotate-180" : ""}`}
+              />
+            </button>
+            {proxiesOpen && (
+              <div className="mt-1">
+                {channels.map((channelInfo) => {
+                  const ChannelIcon = getIconForChannel(channelInfo.id) || Hash; // Fallback to Hash
+
+                  return (
+                    <Link
+                      key={channelInfo.id}
+                      //  href={`/dashboard/proxies/${channelInfo.id}`}
+                      href={"#"}
+                      className={`flex items-center gap-3 px-4 py-2.5 mx-2 rounded-lg transition-colors ${
+                        pathname === `/dashboard/proxies/${channelInfo.id}`
+                          ? "bg-neutral-800 text-white"
+                          : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
+                      }`}
+                    >
+                      <ChannelIcon className="h-4 w-4" />
+                      <span className="text-sm">{channelInfo.name}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Resources Section */}
+          <div className="mt-6">
+            <button
+              onClick={() => setResourcesOpen(!resourcesOpen)}
+              className="flex items-center justify-between w-full px-4 py-2 text-neutral-500 hover:text-neutral-400 transition-colors"
+            >
+              <span className="text-xs font-semibold uppercase tracking-wider">
+                Resources
+              </span>
+              <ChevronDown
+                className={`h-4 w-4 transition-transform ${resourcesOpen ? "rotate-180" : ""}`}
+              />
+            </button>
+            {resourcesOpen && (
+              <div className="mt-1">
+                <Link
+                  href="/dashboard/support"
+                  className="flex items-center gap-3 px-4 py-2.5 mx-2 rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-800/50 transition-colors"
+                >
+                  <HelpCircle className="h-4 w-4" />
+                  <span className="text-sm">Support</span>
+                </Link>
+                <Link
+                  href="/dashboard/community"
+                  className="flex items-center gap-3 px-4 py-2.5 mx-2 rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-800/50 transition-colors"
+                >
+                  <Users className="h-4 w-4" />
+                  <span className="text-sm">Community</span>
+                </Link>
+                <Link
+                  href="/dashboard/help-center"
+                  className="flex items-center gap-3 px-4 py-2.5 mx-2 rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-800/50 transition-colors"
+                >
+                  <BookOpen className="h-4 w-4" />
+                  <span className="text-sm">Documentation</span>
+                </Link>
+              </div>
+            )}
+          </div>
+        </nav>
+      </aside>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col gap-2 md:gap-4 h-full overflow-hidden">
+        {/* Header */}
+        <header className="h-16 border border-neutral-800 bg-neutral-900/50 backdrop-blur rounded-xl flex-shrink-0">
+          <div className="h-full flex items-center justify-between px-3 md:px-6">
+            {/* Left Section */}
+            <div className="flex items-center gap-2 md:gap-3">
+              {/* Mobile Menu Toggle */}
+              <button
+                onClick={() => setMobileMenuOpen(true)}
+                className="lg:hidden p-2 text-neutral-400 hover:text-white transition-colors"
+              >
+                <Menu className="h-5 w-5" />
+              </button>
+
+              <button className="hidden sm:flex items-center gap-2 px-3 md:px-4 py-2 bg-[rgb(var(--brand-400))]/10 text-[rgb(var(--brand-400))] rounded-lg hover:bg-[rgb(var(--brand-400))]/20 transition-colors">
+                <User className="h-4 w-4" />
+                <span className="text-xs md:text-sm font-medium">My Profile</span>
+              </button>
+              <button className="flex items-center gap-2 px-3 md:px-4 py-2 bg-[rgb(var(--brand-400))] text-white rounded-lg hover:bg-[rgb(var(--brand-300))] transition-colors">
+                <DollarSign className="h-4 w-4" />
+                <span className="text-xs md:text-sm font-medium">Deposit</span>
+              </button>
+            </div>
+
+            {/* Right Section */}
+            <div className="flex items-center gap-2 md:gap-4">
+              {/* Credits */}
+              <div className="text-neutral-400 hidden sm:block">
+                <span className="text-xs md:text-sm">Credits: </span>
+                <span className="text-white font-semibold text-xs md:text-sm">${walletBalance.toFixed(2)}</span>
+              </div>
+
+              {/* User Menu */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-2 text-white hover:text-neutral-300 transition-colors">
+                    <span className="text-xs md:text-sm hidden md:block">
+                      Hi, {user?.email?.split("@")[0]}
+                    </span>
+                    <Avatar className="h-7 w-7 md:h-8 md:w-8">
+                      <AvatarFallback className="bg-[rgb(var(--brand-400))] text-white text-xs font-semibold">
+                        {getUserInitials()}
+                      </AvatarFallback>
+                    </Avatar>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  {/* Show credits in dropdown on mobile */}
+                  <div className="sm:hidden px-2 py-2 border-b border-neutral-700">
+                    <div className="text-neutral-400 text-xs">
+                      Credits: <span className="text-white font-semibold">${walletBalance.toFixed(2)}</span>
+                    </div>
+                  </div>
+                  <DropdownMenuItem onClick={handleLogout}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+        </header>
+
+        {/* Main Content */}
+        <main className="flex-1 overflow-y-auto border border-neutral-800 rounded-xl scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-transparent">
+          {children}
+        </main>
       </div>
-    </SidebarProvider>
+    </div>
   );
 };
