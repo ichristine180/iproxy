@@ -10,7 +10,12 @@ import {
   AlertTriangle,
   CheckCircle,
   Clock,
-  AlertCircle,
+  MoreVertical,
+  Eye,
+  RefreshCw,
+  Copy,
+  RotateCw,
+  ArrowLeft,
 } from "lucide-react";
 import {
   Dialog,
@@ -20,8 +25,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { ProxyCard } from "@/components/ProxyCard";
 
 interface Plan {
   id: string;
@@ -40,6 +50,7 @@ interface Order {
   id: string;
   status: string;
   plan: {
+    id?: string;
     name: string;
     channel: string;
   };
@@ -50,12 +61,14 @@ interface Order {
     pending_reason?: string;
     manual_provisioning_required?: boolean;
     connection_id?: string;
-    [key: string]: any;
+    duration?: string;
+    [key: string]: string | boolean | undefined;
   };
 }
 
 interface Proxy {
   id: string;
+  order_id?: string;
   host: string;
   port_http: number;
   port_socks5?: number;
@@ -77,7 +90,7 @@ interface Proxy {
   rotation_interval_min?: number;
   data_usage_rotation?: number;
   external_ip?: string;
-  rotation_url?: string;
+  iproxy_change_url?: string;
   auto_renew?: boolean;
   has_access?: boolean;
 }
@@ -98,10 +111,19 @@ function DashboardPageContent() {
   // Orders and Proxies state
   const [orders, setOrders] = useState<Order[]>([]);
   const [proxies, setProxies] = useState<Proxy[]>([]);
+  const [downloadingInvoice, setDownloadingInvoice] = useState<string | null>(
+    null
+  );
+  const [activatingOrder, setActivatingOrder] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [showTrialMessage, setShowTrialMessage] = useState(false);
-  const [activatingOrder, setActivatingOrder] = useState<string | null>(null);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [currentView, setCurrentView] = useState<"list" | "details">("list");
+  const [orderProxies, setOrderProxies] = useState<Proxy[]>([]);
+  const [selectedProxyIndex, setSelectedProxyIndex] = useState(0);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
   const [isPolling, setIsPolling] = useState(false);
   const [previousProxyCount, setPreviousProxyCount] = useState<number>(0);
   const [showProxyAddedMessage, setShowProxyAddedMessage] = useState(false);
@@ -224,6 +246,117 @@ function DashboardPageContent() {
     return (pricePerMonth / (30 * 24)).toFixed(4);
   };
 
+  // Handle invoice download
+  const handleDownloadInvoice = async (orderId: string) => {
+    setDownloadingInvoice(orderId);
+
+    try {
+      const response = await fetch(`/api/orders/${orderId}/invoice`);
+
+      if (!response.ok) {
+        throw new Error("Failed to generate invoice");
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `invoice-${orderId.slice(0, 8)}.html`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error downloading invoice:", error);
+      alert("Failed to download invoice. Please try again.");
+    } finally {
+      setDownloadingInvoice(null);
+    }
+  };
+
+  // Handle view order details
+  const handleViewDetails = async (order: Order) => {
+    setSelectedOrder(order);
+    setCurrentView("details");
+    setOpenMenuId(null);
+    setSelectedProxyIndex(0);
+
+    // Fetch proxies for this order - match by order_id
+    const orderProxies = proxies.filter((proxy) => {
+      // Match by order_id
+      return proxy.order_id === order.id;
+    });
+
+    setOrderProxies(
+      orderProxies.length > 0 ? orderProxies : proxies.slice(0, 1)
+    );
+  };
+
+  // Handle copy to clipboard
+  const handleCopy = async (text: string, field: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedField(field);
+      setTimeout(() => setCopiedField(null), 2000);
+    } catch (error) {
+      console.error("Failed to copy:", error);
+    }
+  };
+
+  // Handle copy all proxy details
+  const handleCopyAll = async () => {
+    if (orderProxies.length === 0) return;
+
+    const proxy = orderProxies[selectedProxyIndex];
+    if (!proxy) return;
+
+    const allDetails = `IP: ${proxy.host}
+HTTP/S Port: ${proxy.port_http}
+Socks5 Port: ${proxy.port_socks5 || "N/A"}
+Username: ${proxy.username}
+Password: ${proxy.password}`;
+
+    try {
+      await navigator.clipboard.writeText(allDetails);
+      setCopiedField("all");
+      setTimeout(() => setCopiedField(null), 2000);
+    } catch (error) {
+      console.error("Failed to copy:", error);
+    }
+  };
+
+  // Handle rotate IP
+  const handleRotateIP = async () => {
+    if (orderProxies.length === 0) return;
+
+    const proxy = orderProxies[selectedProxyIndex];
+    if (!proxy) return;
+
+    if (!proxy.iproxy_change_url) {
+      alert("Rotation URL not available for this proxy");
+      return;
+    }
+
+    try {
+      const response = await fetch(proxy.iproxy_change_url);
+      if (response.ok) {
+        alert("IP rotated successfully!");
+      } else {
+        alert("Failed to rotate IP. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error rotating IP:", error);
+      alert("Failed to rotate IP. Please try again.");
+    }
+  };
+
+  // Handle extend order
+  const handleExtendOrder = (order: Order) => {
+    // Redirect to checkout with the same plan
+    router.push(`/checkout?plan=${order.plan.id || ""}`);
+    setOpenMenuId(null);
+  };
+
   // Handle buy button click
   const handleBuyNow = async (planId: string) => {
     setIsCheckingQuota(true);
@@ -317,9 +450,6 @@ function DashboardPageContent() {
   // Only show free trial warning if user has free trial and no paid plans
   const showFreeTrialWarning = freeTrialOrder && !hasPaidPlan;
 
-  // Show proxies view if user has active proxies, otherwise show plans
-  const hasActiveProxies = proxies.length > 0;
-
   if (isLoading || isLoadingPlans) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -328,6 +458,200 @@ function DashboardPageContent() {
     );
   }
 
+  // Order Details View
+  if (currentView === "details" && selectedOrder) {
+    return (
+      <div className="space-y-6">
+        {/* Back Button */}
+        <button
+          onClick={() => setCurrentView("list")}
+          className="flex items-center gap-2 text-[rgb(var(--brand-400))] hover:text-[rgb(var(--brand-200))] transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          <span className="font-semibold">Back</span>
+        </button>
+
+        {/* Order Information Card */}
+        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-semibold text-white">
+              Order #{selectedOrder.id.slice(0, 6)} information
+            </h2>
+            <Button
+              onClick={() => handleExtendOrder(selectedOrder)}
+              className="bg-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-200))] text-white"
+            >
+              Extend
+            </Button>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <span className="text-neutral-400">Product</span>
+              <span className="text-white font-medium">
+                {selectedOrder.plan.name}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-neutral-400">Status</span>
+              <span className="text-white font-medium">
+                {selectedOrder.status}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-neutral-400">Expire date</span>
+              <span className="text-white font-medium">
+                {new Date(selectedOrder.expires_at).toLocaleString("en-US", {
+                  year: "numeric",
+                  month: "2-digit",
+                  day: "2-digit",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  second: "2-digit",
+                  hour12: false,
+                })}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-neutral-400">Plan</span>
+              <span className="text-white font-medium">
+                {selectedOrder.metadata?.duration || "1 day"}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-neutral-400">Location</span>
+              <span className="text-white font-medium">
+                {orderProxies[selectedProxyIndex]?.location || "United States"}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-neutral-400">Quantity</span>
+              <span className="text-white font-medium">1</span>
+            </div>
+
+            <div className="border-t border-neutral-800 pt-4">
+              <div className="flex justify-between items-center">
+                <span className="text-neutral-400">Final price</span>
+                <span className="text-white text-2xl font-bold">
+                  ${selectedOrder.total_amount.toFixed(2)}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Product Information Card */}
+        {orderProxies.length > 0 && (
+          <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6">
+            <h3 className="text-xl font-semibold text-white mb-4">
+              Product information
+            </h3>
+
+            {/* Proxy Selector */}
+            {orderProxies.length > 1 && (
+              <div className="mb-4">
+                <select
+                  value={selectedProxyIndex}
+                  onChange={(e) => setSelectedProxyIndex(parseInt(e.target.value))}
+                  className="w-full px-4 py-3 bg-neutral-800 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-[rgb(var(--brand-400))]"
+                >
+                  {orderProxies.map((proxy, index) => (
+                    <option key={proxy.id} value={index}>
+                      {proxy.host}:{proxy.port_http}:{proxy.username}:{proxy.password}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Proxy Details */}
+            <div className="space-y-4 mb-4">
+              {/* HTTP Proxy */}
+              <div>
+                <div className="bg-neutral-800 border border-neutral-700 rounded-lg p-4">
+                  <div className="space-y-2 text-sm text-neutral-300 font-mono">
+                    <p>IP: {orderProxies[selectedProxyIndex]?.host}</p>
+                    <p>HTTP/S Port: {orderProxies[selectedProxyIndex]?.port_http}</p>
+                    {orderProxies[selectedProxyIndex]?.iproxy_change_url && (
+                      <p>
+                        API KEY:{" "}
+                        {orderProxies[selectedProxyIndex]?.iproxy_change_url?.split("key=")[1] || "N/A"}
+                      </p>
+                    )}
+                    <p>Username: {orderProxies[selectedProxyIndex]?.username}</p>
+                    <p>Password: {orderProxies[selectedProxyIndex]?.password}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* SOCKS5 Proxy */}
+              {orderProxies[selectedProxyIndex]?.port_socks5 && (
+                <div>
+                  <div className="bg-neutral-800 border border-neutral-700 rounded-lg p-4">
+                    <div className="space-y-2 text-sm text-neutral-300 font-mono">
+                      <p>IP: {orderProxies[selectedProxyIndex]?.host}</p>
+                      <p>Socks5 Port: {orderProxies[selectedProxyIndex]?.port_socks5}</p>
+                      {orderProxies[selectedProxyIndex]?.iproxy_change_url && (
+                        <p>
+                          API KEY:{" "}
+                          {orderProxies[selectedProxyIndex]?.iproxy_change_url?.split("key=")[1] || "N/A"}
+                        </p>
+                      )}
+                      <p>Username: {orderProxies[selectedProxyIndex]?.username}</p>
+                      <p>Password: {orderProxies[selectedProxyIndex]?.password}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Copy Buttons */}
+            <div className="flex gap-3 mb-6">
+              <Button
+                onClick={handleCopyAll}
+                className="bg-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-200))] text-white"
+              >
+                <Copy className="w-4 h-4 mr-2" />
+                {copiedField === "all" ? "Copied!" : "Copy"}
+              </Button>
+              <Button
+                onClick={handleCopyAll}
+                variant="outline"
+                className="border-[rgb(var(--brand-400))] text-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-400))]/10"
+              >
+                Copy all
+              </Button>
+            </div>
+
+            {/* Rotation Link */}
+            <div>
+              <h4 className="text-white text-lg font-normal mb-4">Rotation link</h4>
+              <div className="flex gap-3">
+                <input
+                  type="text"
+                  value={
+                    orderProxies[selectedProxyIndex]?.iproxy_change_url
+                  
+                  }
+                  readOnly
+                  className="flex-1 px-4 py-3 bg-neutral-800 border border-neutral-700 rounded-lg text-neutral-400 text-sm focus:outline-none"
+                />
+                <Button
+                  onClick={handleRotateIP}
+                  className="bg-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-400))] text-white px-6"
+                >
+                  <RotateCw className="w-4 h-4 mr-2" />
+                  Rotate IP
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Orders List View
   return (
     <div className="space-y-8">
       {/* Page Title */}
@@ -399,370 +723,313 @@ function DashboardPageContent() {
         </div>
       )}
 
-      {/* Show proxies if user has active proxies */}
-      {hasActiveProxies ? (
-        <>
-          {/* Overview Stats */}
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-5">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-neutral-400">Active Proxies</span>
-                <div className="h-8 w-8 rounded-lg bg-[rgb(var(--brand-400))]/10 flex items-center justify-center">
-                  <Server className="h-4 w-4 text-[rgb(var(--brand-400))]" />
-                </div>
-              </div>
-              <div className="text-3xl font-bold text-white">
-                {proxies.length}
-              </div>
-              <p className="text-xs text-neutral-500 mt-1">
-                From {activeOrders.length} active order
-                {activeOrders.length !== 1 ? "s" : ""}
-              </p>
-            </div>
-
-            <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-5">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-neutral-400">Pending Orders</span>
-                <div className="h-8 w-8 rounded-lg bg-yellow-500/10 flex items-center justify-center">
-                  <AlertCircle className="h-4 w-4 text-yellow-600" />
-                </div>
-              </div>
-              <div className="text-3xl font-bold text-white">
-                {pendingOrders.length}
-              </div>
-              <p className="text-xs text-neutral-500 mt-1">
-                Awaiting payment confirmation
-              </p>
-            </div>
-
-            {processingOrders.length > 0 && (
-              <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-5">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-neutral-400">
-                    Processing Orders
-                  </span>
-                  <div className="h-8 w-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                    <Loader2 className="h-4 w-4 text-blue-600 animate-spin" />
-                  </div>
-                </div>
-                <div className="text-3xl font-bold text-white">
-                  {processingOrders.length}
-                </div>
-                <p className="text-xs text-neutral-500 mt-1">
-                  Being provisioned
-                </p>
-              </div>
-            )}
-
-            <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-5">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-neutral-400">Total Orders</span>
-                <div className="h-8 w-8 rounded-lg bg-green-500/10 flex items-center justify-center">
-                  <CheckCircle className="h-4 w-4 text-green-600" />
-                </div>
-              </div>
-              <div className="text-3xl font-bold text-white">
-                {orders.length}
-              </div>
-              <p className="text-xs text-neutral-500 mt-1">All time orders</p>
-            </div>
-          </div>
-
-          {/* Proxies List */}
-          <div className="bg-neutral-900 rounded-xl p-6 border border-neutral-800">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="text-lg font-semibold text-white">
-                  Your Proxies
-                </h2>
-                <p className="text-sm text-neutral-400">
-                  Active proxy credentials for your orders
-                </p>
-              </div>
-              <Button
-                onClick={() => handleBuyNow(plans[0]?.id || "")}
-                disabled={isCheckingQuota || !plans.length}
-                className="bg-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-500))]"
-              >
-                {isCheckingQuota ? (
-                  <>
-                    <Loader2 className="inline-block h-4 w-4 mr-2 animate-spin" />
-                    Checking...
-                  </>
-                ) : (
-                  "Buy More"
-                )}
-              </Button>
-            </div>
-            <div className="space-y-4">
-              {proxies.map((proxy, index) => (
-                <ProxyCard key={proxy.id} proxy={proxy} index={index} />
-              ))}
-            </div>
-          </div>
-
-          {/* Processing Orders */}
-          {processingOrders.length > 0 && (
-            <div className="bg-neutral-900 rounded-xl p-6 border border-neutral-800">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h2 className="text-lg font-semibold text-white">
-                    Processing Orders
-                  </h2>
-                  <p className="text-sm text-neutral-400">
-                    Your orders are being set up and will be activated soon
-                  </p>
-                </div>
-                <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />
-              </div>
-              <div className="space-y-3">
-                {processingOrders.map((order) => (
-                  <div
-                    key={order.id}
-                    className="flex items-center justify-between p-3 border border-neutral-700 rounded-lg bg-blue-500/5"
-                  >
-                    <div>
-                      <p className="font-medium text-white">
-                        {order.plan.name}
-                      </p>
-                      <p className="text-sm text-neutral-400">
-                        ${order.total_amount} • Being provisioned
-                      </p>
-                      {order.metadata?.pending_reason && (
-                        <p className="text-xs text-blue-600 mt-1">
-                          {order.metadata.pending_reason}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-500/10 text-blue-600 border border-blue-500/20">
-                        Processing
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Pending Orders */}
-          {pendingOrders.length > 0 && (
-            <div className="bg-neutral-900 rounded-xl p-6 border border-neutral-800">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h2 className="text-lg font-semibold text-white">
-                    Pending Orders
-                  </h2>
-                  <p className="text-sm text-neutral-400">
-                    {isPolling
-                      ? "Checking for activation updates..."
-                      : "Complete payment to activate these orders"}
-                  </p>
-                </div>
-                {isPolling && (
-                  <Loader2 className="w-4 h-4 text-neutral-400 animate-spin" />
-                )}
-              </div>
-              <div className="space-y-3">
-                {pendingOrders.map((order) => (
-                  <div
-                    key={order.id}
-                    className="flex items-center justify-between p-3 border border-neutral-700 rounded-lg"
-                  >
-                    <div>
-                      <p className="font-medium text-white">
-                        {order.plan.name}
-                      </p>
-                      <p className="text-sm text-neutral-400">
-                        ${order.total_amount} •{" "}
-                        {isPolling ? "Awaiting activation" : "Awaiting payment"}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {isDevelopment && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleActivateOrder(order.id)}
-                          disabled={activatingOrder === order.id}
-                        >
-                          {activatingOrder === order.id ? (
-                            <>
-                              <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                              Activating...
-                            </>
-                          ) : (
-                            "Activate (Dev)"
-                          )}
-                        </Button>
-                      )}
-                      <span className="px-3 py-1 rounded-full text-xs font-medium bg-yellow-500/10 text-yellow-600 border border-yellow-500/20">
-                        Pending
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </>
+      {/* Show plans if no active proxies */}
+      {plans.length === 0 ? (
+        <div className="bg-neutral-900 rounded-xl p-12 border border-neutral-800 text-center">
+          <p className="text-neutral-400">
+            No plans available. Please contact support.
+          </p>
+        </div>
       ) : (
         <>
-          {/* Show plans if no active proxies */}
-          {plans.length === 0 ? (
-            <div className="bg-neutral-900 rounded-xl p-12 border border-neutral-800 text-center">
-              <p className="text-neutral-400">
-                No plans available. Please contact support.
-              </p>
-            </div>
-          ) : (
-            <>
-              {/* Proxy Selection Card */}
-              <div className="bg-neutral-900 rounded-xl p-4 border border-neutral-800">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  {/* Left Side - Plans List */}
-                  <div className="space-y-3">
-                    {plans.map((plan) => {
-                      const isSelected = selectedPlanId === plan.id;
+          {/* Proxy Selection Card */}
+          <div className="bg-neutral-900 rounded-xl p-4 border border-neutral-800">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Left Side - Plans List */}
+              <div className="space-y-3">
+                {plans.map((plan) => {
+                  const isSelected = selectedPlanId === plan.id;
 
-                      return (
+                  return (
+                    <div
+                      key={plan.id}
+                      onClick={() => setSelectedPlanId(plan.id)}
+                      className={`w-full flex items-center justify-between px-4 py-4 rounded-full transition-all cursor-pointer ${
+                        isSelected
+                          ? "bg-gradient-to-r from-[rgb(var(--brand-400))] to-[rgb(var(--brand-300))] text-white"
+                          : "bg-neutral-800/50 text-neutral-400 hover:bg-neutral-800 hover:text-white"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
                         <div
-                          key={plan.id}
-                          onClick={() => setSelectedPlanId(plan.id)}
-                          className={`w-full flex items-center justify-between px-4 py-4 rounded-full transition-all cursor-pointer ${
-                            isSelected
-                              ? "bg-gradient-to-r from-[rgb(var(--brand-400))] to-[rgb(var(--brand-300))] text-white"
-                              : "bg-neutral-800/50 text-neutral-400 hover:bg-neutral-800 hover:text-white"
+                          className={`p-2 rounded-full ${
+                            isSelected ? "bg-white/20" : "bg-neutral-700"
                           }`}
                         >
-                          <div className="flex items-center gap-3">
-                            <div
-                              className={`p-2 rounded-full ${
-                                isSelected ? "bg-white/20" : "bg-neutral-700"
-                              }`}
-                            >
-                              <Server className="h-5 w-5" />
-                            </div>
-                            <span className="font-medium">{plan.name}</span>
-                          </div>
-                          {!isSelected && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleBuyNow(plan.id);
-                              }}
-                              disabled={isCheckingQuota}
-                              style={{
-                                border: "1px solid #73a3f1ff",
-                              }}
-                              className="text-sm px-2 py-1  text-[rgb(var(--brand-400))] rounded-sm hover:bg-[rgb(var(--brand-400))]/10 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                              {isCheckingQuota ? "..." : "Buy now"}
-                            </button>
-                          )}
+                          <Server className="h-5 w-5" />
                         </div>
-                      );
-                    })}
-                  </div>
-
-                  {/* Right Side - Selected Plan Details */}
-                  <div className="bg-neutral-800/30 rounded-xl p-6 border border-neutral-700">
-                    {selectedPlan ? (
-                      <>
-                        <h3 className="text-xl font-bold text-white mb-2">
-                          {selectedPlan.name}
-                        </h3>
-
-                        <div className="mb-4 pb-4 border-b border-neutral-700">
-                          <div className="flex items-baseline gap-2">
-                            <span className="text-3xl font-bold text-[rgb(var(--brand-400))]">
-                              ${getPricePerHour(selectedPlan.price_usd_month)}
-                            </span>
-                            <span className="text-sm text-neutral-400">
-                              /hour
-                            </span>
-                          </div>
-                          <div className="text-xs text-neutral-500 mt-1">
-                            ${selectedPlan.price_usd_month}/month
-                          </div>
-                        </div>
-
-                        {selectedPlan.description && (
-                          <p className="text-sm text-neutral-400 mb-4 pb-4 border-b border-neutral-700">
-                            {selectedPlan.description}
-                          </p>
-                        )}
-
-                        {selectedPlan.features &&
-                          selectedPlan.features.length > 0 && (
-                            <ul className="space-y-3 mb-6">
-                              {selectedPlan.features.map((feature, index) => (
-                                <li
-                                  key={index}
-                                  className="flex items-start gap-3 text-neutral-300"
-                                >
-                                  <Check className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                                  <span className="text-sm">{feature}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          )}
-
-                        <button
-                          onClick={() => handleBuyNow(selectedPlan.id)}
-                          disabled={isCheckingQuota}
-                          className="w-full px-6 py-3 bg-gradient-to-r from-[rgb(var(--brand-400))] to-[rgb(var(--brand-300))] text-white font-semibold rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {isCheckingQuota ? (
-                            <>
-                              <Loader2 className="inline-block h-4 w-4 mr-2 animate-spin" />
-                              Checking...
-                            </>
-                          ) : (
-                            `Buy now - $${getPricePerHour(selectedPlan.price_usd_month)}/hr`
-                          )}
-                        </button>
-                      </>
-                    ) : (
-                      <div className="text-center py-12 text-neutral-500">
-                        <p className="text-sm">Select a plan to view details</p>
+                        <span className="font-medium">{plan.name}</span>
                       </div>
+                      {!isSelected && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleBuyNow(plan.id);
+                          }}
+                          disabled={isCheckingQuota}
+                          style={{
+                            border: "1px solid #73a3f1ff",
+                          }}
+                          className="text-sm px-2 py-1  text-[rgb(var(--brand-400))] rounded-sm hover:bg-[rgb(var(--brand-400))]/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {isCheckingQuota ? "..." : "Buy now"}
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Right Side - Selected Plan Details */}
+              <div className="bg-neutral-800/30 rounded-xl p-6 border border-neutral-700">
+                {selectedPlan ? (
+                  <>
+                    <h3 className="text-xl font-bold text-white mb-2">
+                      {selectedPlan.name}
+                    </h3>
+
+                    <div className="mb-4 pb-4 border-b border-neutral-700">
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-3xl font-bold text-[rgb(var(--brand-400))]">
+                          ${getPricePerHour(selectedPlan.price_usd_month)}
+                        </span>
+                        <span className="text-sm text-neutral-400">/hour</span>
+                      </div>
+                      <div className="text-xs text-neutral-500 mt-1">
+                        ${selectedPlan.price_usd_month}/month
+                      </div>
+                    </div>
+
+                    {selectedPlan.description && (
+                      <p className="text-sm text-neutral-400 mb-4 pb-4 border-b border-neutral-700">
+                        {selectedPlan.description}
+                      </p>
                     )}
+
+                    {selectedPlan.features &&
+                      selectedPlan.features.length > 0 && (
+                        <ul className="space-y-3 mb-6">
+                          {selectedPlan.features.map((feature, index) => (
+                            <li
+                              key={index}
+                              className="flex items-start gap-3 text-neutral-300"
+                            >
+                              <Check className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                              <span className="text-sm">{feature}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+
+                    <button
+                      onClick={() => handleBuyNow(selectedPlan.id)}
+                      disabled={isCheckingQuota}
+                      className="w-full px-6 py-3 bg-gradient-to-r from-[rgb(var(--brand-400))] to-[rgb(var(--brand-300))] text-white font-semibold rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isCheckingQuota ? (
+                        <>
+                          <Loader2 className="inline-block h-4 w-4 mr-2 animate-spin" />
+                          Checking...
+                        </>
+                      ) : (
+                        `Buy now - $${getPricePerHour(selectedPlan.price_usd_month)}/hr`
+                      )}
+                    </button>
+                  </>
+                ) : (
+                  <div className="text-center py-12 text-neutral-500">
+                    <p className="text-sm">Select a plan to view details</p>
                   </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Orders Section */}
+          <div className="px-4">
+            <h2 className="text-sm font-semibold text-[rgb(var(--accent-400))] uppercase tracking-wider mb-4">
+              YOUR ORDERS
+            </h2>
+            <div className="bg-neutral-900 rounded-xl p-6 border border-neutral-800">
+              <h3 className="text-lg font-semibold text-white mb-4">
+                Most Recent
+              </h3>
+              <div className="mb-4">
+                <label className="block text-sm text-neutral-400 mb-2">
+                  Search by order ID or IP
+                </label>
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-500" />
+                  <input
+                    type="text"
+                    placeholder="Search"
+                    className="w-full pl-12 pr-4 py-3 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder:text-neutral-500 focus:outline-none focus:border-[rgb(var(--brand-400))] transition-colors"
+                  />
                 </div>
               </div>
 
-              {/* Orders Section */}
-              <div className="px-4">
-                <h2 className="text-sm font-semibold text-[rgb(var(--accent-400))] uppercase tracking-wider mb-4">
-                  YOUR ORDERS
-                </h2>
-                <div className="bg-neutral-900 rounded-xl p-6 border border-neutral-800">
-                  <h3 className="text-lg font-semibold text-white mb-4">
-                    Most Recent
-                  </h3>
-                  <div className="mb-4">
-                    <label className="block text-sm text-neutral-400 mb-2">
-                      Search by order ID or IP
-                    </label>
-                    <div className="relative">
-                      <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-500" />
-                      <input
-                        type="text"
-                        placeholder="Search"
-                        className="w-full pl-12 pr-4 py-3 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder:text-neutral-500 focus:outline-none focus:border-[rgb(var(--brand-400))] transition-colors"
-                      />
+              {orders.length === 0 ? (
+                <div className="text-center py-12 text-neutral-500">
+                  <p>No orders found</p>
+                </div>
+              ) : (
+                <>
+                  {/* Orders Table */}
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-neutral-800">
+                          <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
+                            ID ↑
+                          </th>
+                          <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
+                            Product
+                          </th>
+                          <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
+                            Auto-extend
+                          </th>
+                          <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
+                            Order date
+                          </th>
+                          <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
+                            Amount
+                          </th>
+                          <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
+                            Actions
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {orders.slice(0, 5).map((order) => {
+                          const orderDate = new Date(order.start_at);
+                          const formattedDate = orderDate.toLocaleDateString(
+                            "en-US",
+                            {
+                              month: "short",
+                              day: "2-digit",
+                              year: "numeric",
+                            }
+                          );
+                          const formattedTime = orderDate.toLocaleTimeString(
+                            "en-US",
+                            {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              second: "2-digit",
+                              hour12: false,
+                            }
+                          );
+
+                          return (
+                            <tr
+                              key={order.id}
+                              className="border-b border-neutral-800 hover:bg-neutral-800/50 transition-colors"
+                            >
+                              <td className="py-4 px-4 text-white">
+                                #{order.id.slice(0, 6)}
+                              </td>
+                              <td className="py-4 px-4 text-white">
+                                {order.plan.name}
+                              </td>
+                              <td className="py-4 px-4">
+                                <span className="inline-flex px-3 py-1 rounded-full text-sm border border-neutral-600 text-neutral-400">
+                                  Disabled
+                                </span>
+                              </td>
+                              <td className="py-4 px-4 text-white">
+                                <div>{formattedDate}</div>
+                                <div className="text-sm text-neutral-500">
+                                  {formattedTime}
+                                </div>
+                              </td>
+                              <td className="py-4 px-4 text-white font-semibold">
+                                ${order.total_amount.toFixed(2)}
+                              </td>
+                              <td className="py-4 px-4">
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    onClick={() =>
+                                      handleDownloadInvoice(order.id)
+                                    }
+                                    disabled={downloadingInvoice === order.id}
+                                    className="p-2 text-neutral-400 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    title="Download Invoice"
+                                  >
+                                    {downloadingInvoice === order.id ? (
+                                      <Loader2 className="w-5 h-5 animate-spin" />
+                                    ) : (
+                                      <svg
+                                        className="w-5 h-5"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                      >
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth={2}
+                                          d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                                        />
+                                      </svg>
+                                    )}
+                                  </button>
+
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <button
+                                        className="p-2 text-neutral-400 hover:text-white transition-colors"
+                                        title="More options"
+                                      >
+                                        <MoreVertical className="w-5 h-5" />
+                                      </button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent
+                                      align="end"
+                                      className="w-48"
+                                    >
+                                      <DropdownMenuItem
+                                        onClick={() => handleViewDetails(order)}
+                                        className="cursor-pointer"
+                                      >
+                                        <Eye className="mr-2 h-4 w-4" />
+                                        <span>View Details</span>
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        onClick={() => handleExtendOrder(order)}
+                                        className="cursor-pointer"
+                                      >
+                                        <RefreshCw className="mr-2 h-4 w-4" />
+                                        <span>Extend Order</span>
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Pagination */}
+                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-neutral-800">
+                    <div className="flex items-center gap-2">
+                      <select className="px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-[rgb(var(--brand-400))]">
+                        <option>5 per page</option>
+                        <option>10 per page</option>
+                        <option>20 per page</option>
+                        <option>50 per page</option>
+                      </select>
+                    </div>
+                    <div className="text-sm text-neutral-400">
+                      1-{Math.min(5, orders.length)} of {orders.length}
                     </div>
                   </div>
-
-                  {/* Empty state */}
-                  <div className="text-center py-12 text-neutral-500">
-                    <p>No orders found</p>
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
+                </>
+              )}
+            </div>
+          </div>
         </>
       )}
 
@@ -790,6 +1057,7 @@ function DashboardPageContent() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
     </div>
   );
 }
