@@ -1,0 +1,56 @@
+name: Scheduled Cron Jobs
+
+on:
+  schedule:
+    # Auto-renew check: Every 6 hours at minute 0
+    - cron: '0 */6 * * *'
+    # Cleanup reservations: Every hour at minute 0
+    - cron: '0 * * * *'
+  workflow_dispatch: # Allow manual trigger for testing
+
+jobs:
+  auto-renew:
+    name: Process Auto-Renewals
+    runs-on: ubuntu-latest
+    # Only run for auto-renew schedule or manual trigger
+    if: github.event.schedule == '0 */6 * * *' || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Call Auto-Renew Endpoint
+        run: |
+          response=$(curl -s -w "\n%{http_code}" -X POST ${{ secrets.RAILWAY_URL }}/api/cron/auto-renew \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json")
+
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | head -n-1)
+
+          echo "Response: $body"
+          echo "HTTP Code: $http_code"
+
+          if [ "$http_code" != "200" ]; then
+            echo "Error: Cron job failed with status $http_code"
+            exit 1
+          fi
+
+  cleanup-reservations:
+    name: Cleanup Expired Reservations
+    runs-on: ubuntu-latest
+    # Only run for cleanup schedule or manual trigger
+    if: github.event.schedule == '0 * * * *' || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Call Cleanup Endpoint
+        run: |
+          response=$(curl -s -w "\n%{http_code}" -X POST ${{ secrets.RAILWAY_URL }}/api/cron/cleanup-reservations \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json")
+
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | head -n-1)
+
+          echo "Response: $body"
+          echo "HTTP Code: $http_code"
+
+          if [ "$http_code" != "200" ]; then
+            echo "Error: Cron job failed with status $http_code"
+            exit 1
+          fi

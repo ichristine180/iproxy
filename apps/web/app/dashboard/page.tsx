@@ -32,6 +32,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 
 interface Plan {
   id: string;
@@ -127,9 +128,10 @@ function DashboardPageContent() {
   const [isPolling, setIsPolling] = useState(false);
   const [previousProxyCount, setPreviousProxyCount] = useState<number>(0);
   const [showProxyAddedMessage, setShowProxyAddedMessage] = useState(false);
-
-  // Only show manual activation in development
-  const isDevelopment = process.env.NODE_ENV === "development";
+  const [autoRenew, setAutoRenew] = useState<boolean>(false);
+  const [isUpdatingAutoRenew, setIsUpdatingAutoRenew] = useState(false);
+  const [isRotatingIP, setIsRotatingIP] = useState(false);
+  const [showRotationSuccess, setShowRotationSuccess] = useState(false);
 
   // Success and trial message effects
   useEffect(() => {
@@ -282,14 +284,47 @@ function DashboardPageContent() {
     setSelectedProxyIndex(0);
 
     // Fetch proxies for this order - match by order_id
-    const orderProxies = proxies.filter((proxy) => {
+    const orderProxiesRaw = proxies.filter((proxy) => {
       // Match by order_id
       return proxy.order_id === order.id;
     });
 
+    // Group proxies with the same credentials (username, password, host)
+    // Merge HTTP and SOCKS5 ports into a single proxy object
+    const groupedProxies = new Map<string, Proxy>();
+
+    orderProxiesRaw.forEach((proxy) => {
+      const key = `${proxy.username}-${proxy.password}-${proxy.host}`;
+
+      if (groupedProxies.has(key)) {
+        // Merge with existing proxy
+        const existing = groupedProxies.get(key)!;
+        groupedProxies.set(key, {
+          ...existing,
+          port_http: proxy.port_http || existing.port_http,
+          port_socks5: proxy.port_socks5 || existing.port_socks5,
+        });
+      } else {
+        // Add new proxy
+        groupedProxies.set(key, { ...proxy });
+      }
+    });
+
+    const mergedProxies = Array.from(groupedProxies.values());
+
     setOrderProxies(
-      orderProxies.length > 0 ? orderProxies : proxies.slice(0, 1)
+      mergedProxies.length > 0 ? mergedProxies : proxies.slice(0, 1)
     );
+
+    // Set auto-renew state from the first proxy
+    if (
+      mergedProxies.length > 0 &&
+      mergedProxies[0]?.auto_renew !== undefined
+    ) {
+      setAutoRenew(mergedProxies[0]?.auto_renew || false);
+    } else {
+      setAutoRenew(false);
+    }
   };
 
   // Handle copy to clipboard
@@ -305,16 +340,45 @@ function DashboardPageContent() {
 
   // Handle copy all proxy details
   const handleCopyAll = async () => {
-    if (orderProxies.length === 0) return;
+    if (orderProxies.length === 0) {
+      console.log("No proxies available");
+      return;
+    }
 
     const proxy = orderProxies[selectedProxyIndex];
-    if (!proxy) return;
+    if (!proxy) {
+      console.log("No proxy at selected index");
+      return;
+    }
 
-    const allDetails = `IP: ${proxy.host}
-HTTP/S Port: ${proxy.port_http}
-Socks5 Port: ${proxy.port_socks5 || "N/A"}
-Username: ${proxy.username}
-Password: ${proxy.password}`;
+    let allDetails = "";
+
+    // Add connection strings
+    if (proxy.port_http) {
+      allDetails += `HTTP Connection String:\nhttp://${proxy.username}:${proxy.password}@${proxy.host}:${proxy.port_http}\n\n`;
+    }
+
+    if (proxy.port_socks5) {
+      allDetails += `SOCKS5 Connection String:\nsocks5://${proxy.username}:${proxy.password}@${proxy.host}:${proxy.port_socks5}\n\n`;
+    }
+
+    // Add individual details
+    allDetails += `IP: ${proxy.host}\n`;
+
+    if (proxy.port_http) {
+      allDetails += `HTTP/S Port: ${proxy.port_http}\n`;
+    }
+
+    if (proxy.port_socks5) {
+      allDetails += `Socks5 Port: ${proxy.port_socks5}\n`;
+    }
+
+    if (proxy.iproxy_change_url) {
+      const apiKey = proxy.iproxy_change_url.split("key=")[1] || "N/A";
+      allDetails += `API KEY: ${apiKey}\n`;
+    }
+
+    allDetails += `Username: ${proxy.username}\nPassword: ${proxy.password}`;
 
     try {
       await navigator.clipboard.writeText(allDetails);
@@ -322,6 +386,7 @@ Password: ${proxy.password}`;
       setTimeout(() => setCopiedField(null), 2000);
     } catch (error) {
       console.error("Failed to copy:", error);
+      alert("Failed to copy to clipboard. Please try again.");
     }
   };
 
@@ -333,20 +398,79 @@ Password: ${proxy.password}`;
     if (!proxy) return;
 
     if (!proxy.iproxy_change_url) {
-      alert("Rotation URL not available for this proxy");
+      console.error("Rotation URL not available for this proxy");
       return;
     }
+
+    setIsRotatingIP(true);
 
     try {
       const response = await fetch(proxy.iproxy_change_url);
       if (response.ok) {
-        alert("IP rotated successfully!");
+        setShowRotationSuccess(true);
+        setTimeout(() => setShowRotationSuccess(false), 3000);
       } else {
-        alert("Failed to rotate IP. Please try again.");
+        console.error("Failed to rotate IP");
       }
     } catch (error) {
       console.error("Error rotating IP:", error);
-      alert("Failed to rotate IP. Please try again.");
+    } finally {
+      setIsRotatingIP(false);
+    }
+  };
+
+  // Handle auto-renew toggle
+  const handleAutoRenewToggle = async (checked: boolean) => {
+    if (orderProxies.length === 0 || !selectedOrder) return;
+
+    setIsUpdatingAutoRenew(true);
+    setAutoRenew(checked);
+
+    try {
+      // Get all proxies for this order (both HTTP and SOCKS5)
+      const orderProxiesRaw = proxies.filter(
+        (proxy) => proxy.order_id === selectedOrder.id
+      );
+
+      if (orderProxiesRaw.length === 0) {
+        throw new Error("No proxies found for this order");
+      }
+
+      // Update all proxies for this order
+      const updatePromises = orderProxiesRaw.map((proxy) =>
+        fetch(`/api/proxies/${proxy.id}/auto-renew`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ auto_renew: checked }),
+        }).then((res) => res.json())
+      );
+
+      const results = await Promise.all(updatePromises);
+
+      // Check if any failed
+      const failures = results.filter((result) => !result.success);
+
+      if (failures.length > 0) {
+        // Revert on failure
+        setAutoRenew(!checked);
+        alert(
+          `Failed to update auto-renew for ${failures.length} proxy(ies): ${
+            failures[0].error || "Unknown error"
+          }`
+        );
+      } else {
+        // Success - refresh data to get updated values
+        await fetchData();
+      }
+    } catch (error) {
+      console.error("Error updating auto-renew:", error);
+      // Revert on failure
+      setAutoRenew(!checked);
+      alert("Failed to update auto-renew. Please try again.");
+    } finally {
+      setIsUpdatingAutoRenew(false);
     }
   };
 
@@ -471,6 +595,232 @@ Password: ${proxy.password}`;
           <span className="font-semibold">Back</span>
         </button>
 
+        {/* IP Rotation Success Message */}
+        {showRotationSuccess && (
+          <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-xl flex items-center gap-3">
+            <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+            <div>
+              <p className="font-semibold text-green-600">
+                IP Rotated Successfully!
+              </p>
+              <p className="text-sm text-neutral-400">
+                Your proxy IP has been changed.
+              </p>
+            </div>
+          </div>
+        )}
+        {/* Product Information Card */}
+        {orderProxies.length > 0 && (
+          <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6">
+            <h3 className="text-xl font-semibold text-white mb-4">
+              Product information
+            </h3>
+
+            {/* Proxy Selector */}
+            {orderProxies.length > 1 && (
+              <div className="mb-4">
+                <select
+                  value={selectedProxyIndex}
+                  onChange={(e) =>
+                    setSelectedProxyIndex(parseInt(e.target.value))
+                  }
+                  className="w-full px-4 py-3 bg-neutral-800 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-[rgb(var(--brand-400))]"
+                >
+                  {orderProxies.map((proxy, index) => (
+                    <option key={proxy.id} value={index}>
+                      {proxy.host}:{proxy.port_http}:{proxy.username}:
+                      {proxy.password}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Proxy Details */}
+            <div className="space-y-4 mb-4">
+              {/* HTTP Proxy */}
+              {orderProxies[selectedProxyIndex]?.port_http && (
+                <div>
+                  <h4 className="text-white text-sm font-medium mb-2">
+                    HTTP/HTTPS Proxy
+                  </h4>
+                  <div className="bg-neutral-800 border border-neutral-700 rounded-lg p-4">
+                    <div className="space-y-2 text-sm text-neutral-300 font-mono">
+                      <div className="pb-2 mb-2 border-b border-neutral-700">
+                        <p className="text-xs text-neutral-500 mb-1">
+                          Connection String:
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <p className="flex-1 break-all text-[rgb(var(--brand-400))]">
+                            http://{orderProxies[selectedProxyIndex]?.username}:
+                            {orderProxies[selectedProxyIndex]?.password}@
+                            {orderProxies[selectedProxyIndex]?.host}:
+                            {orderProxies[selectedProxyIndex]?.port_http}
+                          </p>
+                          <button
+                            onClick={() =>
+                              handleCopy(
+                                `http://${orderProxies[selectedProxyIndex]?.username}:${orderProxies[selectedProxyIndex]?.password}@${orderProxies[selectedProxyIndex]?.host}:${orderProxies[selectedProxyIndex]?.port_http}`,
+                                "http-connection"
+                              )
+                            }
+                            className="p-1.5 hover:bg-neutral-700 rounded transition-colors flex-shrink-0"
+                            title={
+                              copiedField === "http-connection"
+                                ? "Copied!"
+                                : "Copy connection string"
+                            }
+                          >
+                            {copiedField === "http-connection" ? (
+                              <CheckCircle className="w-4 h-4 text-green-500" />
+                            ) : (
+                              <Copy className="w-4 h-4" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                      <p>IP: {orderProxies[selectedProxyIndex]?.host}</p>
+                      <p>
+                        HTTP/S Port:{" "}
+                        {orderProxies[selectedProxyIndex]?.port_http}
+                      </p>
+                      {orderProxies[selectedProxyIndex]?.iproxy_change_url && (
+                        <p>
+                          API KEY:{" "}
+                          {orderProxies[
+                            selectedProxyIndex
+                          ]?.iproxy_change_url?.split("key=")[1] || "N/A"}
+                        </p>
+                      )}
+                      <p>
+                        Username: {orderProxies[selectedProxyIndex]?.username}
+                      </p>
+                      <p>
+                        Password: {orderProxies[selectedProxyIndex]?.password}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* SOCKS5 Proxy */}
+              {orderProxies[selectedProxyIndex]?.port_socks5 && (
+                <div>
+                  <h4 className="text-white text-sm font-medium mb-2">
+                    SOCKS5 Proxy
+                  </h4>
+                  <div className="bg-neutral-800 border border-neutral-700 rounded-lg p-4">
+                    <div className="space-y-2 text-sm text-neutral-300 font-mono">
+                      <div className="pb-2 mb-2 border-b border-neutral-700">
+                        <p className="text-xs text-neutral-500 mb-1">
+                          Connection String:
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <p className="flex-1 break-all text-[rgb(var(--brand-400))]">
+                            socks5://
+                            {orderProxies[selectedProxyIndex]?.username}:
+                            {orderProxies[selectedProxyIndex]?.password}@
+                            {orderProxies[selectedProxyIndex]?.host}:
+                            {orderProxies[selectedProxyIndex]?.port_socks5}
+                          </p>
+                          <button
+                            onClick={() =>
+                              handleCopy(
+                                `socks5://${orderProxies[selectedProxyIndex]?.username}:${orderProxies[selectedProxyIndex]?.password}@${orderProxies[selectedProxyIndex]?.host}:${orderProxies[selectedProxyIndex]?.port_socks5}`,
+                                "socks5-connection"
+                              )
+                            }
+                            className="p-1.5 hover:bg-neutral-700 rounded transition-colors flex-shrink-0"
+                            title={
+                              copiedField === "socks5-connection"
+                                ? "Copied!"
+                                : "Copy connection string"
+                            }
+                          >
+                            {copiedField === "socks5-connection" ? (
+                              <CheckCircle className="w-4 h-4 text-green-500" />
+                            ) : (
+                              <Copy className="w-4 h-4" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                      <p>IP: {orderProxies[selectedProxyIndex]?.host}</p>
+                      <p>
+                        Socks5 Port:{" "}
+                        {orderProxies[selectedProxyIndex]?.port_socks5}
+                      </p>
+                      {orderProxies[selectedProxyIndex]?.iproxy_change_url && (
+                        <p>
+                          API KEY:{" "}
+                          {orderProxies[
+                            selectedProxyIndex
+                          ]?.iproxy_change_url?.split("key=")[1] || "N/A"}
+                        </p>
+                      )}
+                      <p>
+                        Username: {orderProxies[selectedProxyIndex]?.username}
+                      </p>
+                      <p>
+                        Password: {orderProxies[selectedProxyIndex]?.password}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Copy Buttons */}
+            <div className="flex gap-3 mb-6">
+              <Button
+                onClick={handleCopyAll}
+                className="bg-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-200))] text-white"
+              >
+                <Copy className="w-4 h-4 mr-2" />
+                {copiedField === "all" ? "Copied!" : "Copy"}
+              </Button>
+              <Button
+                onClick={handleCopyAll}
+                variant="outline"
+                className="border-[rgb(var(--brand-400))] text-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-400))]/10"
+              >
+                Copy all
+              </Button>
+            </div>
+
+            {/* Rotation Link */}
+            <div>
+              <h4 className="text-white text-lg font-normal mb-4">
+                Rotation link
+              </h4>
+              <div className="flex gap-3">
+                <input
+                  type="text"
+                  value={orderProxies[selectedProxyIndex]?.iproxy_change_url}
+                  readOnly
+                  className="flex-1 px-4 py-3 bg-neutral-800 border border-neutral-700 rounded-lg text-neutral-400 text-sm focus:outline-none"
+                />
+                <Button
+                  onClick={handleRotateIP}
+                  disabled={isRotatingIP}
+                  className="bg-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-400))] text-white px-6 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isRotatingIP ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Rotating...
+                    </>
+                  ) : (
+                    <>
+                      <RotateCw className="w-4 h-4 mr-2" />
+                      Rotate IP
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
         {/* Order Information Card */}
         <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6">
           <div className="flex items-center justify-between mb-6">
@@ -529,6 +879,24 @@ Password: ${proxy.password}`;
               <span className="text-white font-medium">1</span>
             </div>
 
+            {/* Auto-renew toggle */}
+            <div className="flex justify-between items-center border-2 border-yellow-500 p-2 rounded">
+              <span className="text-neutral-400">Auto-renew</span>
+              <div className="flex items-center gap-2">
+                <Switch
+                  checked={autoRenew}
+                  onCheckedChange={handleAutoRenewToggle}
+                  disabled={isUpdatingAutoRenew}
+                  style={{
+                    border: "1px solid #73a3f1ff",
+                  }}
+                />
+                <span className="text-white text-sm">
+                  {autoRenew ? "Enabled" : "Disabled"}
+                </span>
+              </div>
+            </div>
+
             <div className="border-t border-neutral-800 pt-4">
               <div className="flex justify-between items-center">
                 <span className="text-neutral-400">Final price</span>
@@ -539,114 +907,6 @@ Password: ${proxy.password}`;
             </div>
           </div>
         </div>
-
-        {/* Product Information Card */}
-        {orderProxies.length > 0 && (
-          <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6">
-            <h3 className="text-xl font-semibold text-white mb-4">
-              Product information
-            </h3>
-
-            {/* Proxy Selector */}
-            {orderProxies.length > 1 && (
-              <div className="mb-4">
-                <select
-                  value={selectedProxyIndex}
-                  onChange={(e) => setSelectedProxyIndex(parseInt(e.target.value))}
-                  className="w-full px-4 py-3 bg-neutral-800 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-[rgb(var(--brand-400))]"
-                >
-                  {orderProxies.map((proxy, index) => (
-                    <option key={proxy.id} value={index}>
-                      {proxy.host}:{proxy.port_http}:{proxy.username}:{proxy.password}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            {/* Proxy Details */}
-            <div className="space-y-4 mb-4">
-              {/* HTTP Proxy */}
-              <div>
-                <div className="bg-neutral-800 border border-neutral-700 rounded-lg p-4">
-                  <div className="space-y-2 text-sm text-neutral-300 font-mono">
-                    <p>IP: {orderProxies[selectedProxyIndex]?.host}</p>
-                    <p>HTTP/S Port: {orderProxies[selectedProxyIndex]?.port_http}</p>
-                    {orderProxies[selectedProxyIndex]?.iproxy_change_url && (
-                      <p>
-                        API KEY:{" "}
-                        {orderProxies[selectedProxyIndex]?.iproxy_change_url?.split("key=")[1] || "N/A"}
-                      </p>
-                    )}
-                    <p>Username: {orderProxies[selectedProxyIndex]?.username}</p>
-                    <p>Password: {orderProxies[selectedProxyIndex]?.password}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* SOCKS5 Proxy */}
-              {orderProxies[selectedProxyIndex]?.port_socks5 && (
-                <div>
-                  <div className="bg-neutral-800 border border-neutral-700 rounded-lg p-4">
-                    <div className="space-y-2 text-sm text-neutral-300 font-mono">
-                      <p>IP: {orderProxies[selectedProxyIndex]?.host}</p>
-                      <p>Socks5 Port: {orderProxies[selectedProxyIndex]?.port_socks5}</p>
-                      {orderProxies[selectedProxyIndex]?.iproxy_change_url && (
-                        <p>
-                          API KEY:{" "}
-                          {orderProxies[selectedProxyIndex]?.iproxy_change_url?.split("key=")[1] || "N/A"}
-                        </p>
-                      )}
-                      <p>Username: {orderProxies[selectedProxyIndex]?.username}</p>
-                      <p>Password: {orderProxies[selectedProxyIndex]?.password}</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Copy Buttons */}
-            <div className="flex gap-3 mb-6">
-              <Button
-                onClick={handleCopyAll}
-                className="bg-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-200))] text-white"
-              >
-                <Copy className="w-4 h-4 mr-2" />
-                {copiedField === "all" ? "Copied!" : "Copy"}
-              </Button>
-              <Button
-                onClick={handleCopyAll}
-                variant="outline"
-                className="border-[rgb(var(--brand-400))] text-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-400))]/10"
-              >
-                Copy all
-              </Button>
-            </div>
-
-            {/* Rotation Link */}
-            <div>
-              <h4 className="text-white text-lg font-normal mb-4">Rotation link</h4>
-              <div className="flex gap-3">
-                <input
-                  type="text"
-                  value={
-                    orderProxies[selectedProxyIndex]?.iproxy_change_url
-                  
-                  }
-                  readOnly
-                  className="flex-1 px-4 py-3 bg-neutral-800 border border-neutral-700 rounded-lg text-neutral-400 text-sm focus:outline-none"
-                />
-                <Button
-                  onClick={handleRotateIP}
-                  className="bg-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-400))] text-white px-6"
-                >
-                  <RotateCw className="w-4 h-4 mr-2" />
-                  Rotate IP
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     );
   }
@@ -1057,7 +1317,6 @@ Password: ${proxy.password}`;
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
     </div>
   );
 }

@@ -182,6 +182,9 @@ export default function LoginPage() {
                   Email
                 </label>
                 <input
+                  style={{
+                    border: "0.5px solid #ccc",
+                  }}
                   id="email"
                   type="email"
                   value={formData.email}
@@ -203,6 +206,9 @@ export default function LoginPage() {
                 </label>
                 <div className="relative">
                   <input
+                    style={{
+                      border: "0.5px solid #ccc",
+                    }}
                     id="password"
                     type={showPassword ? "text" : "password"}
                     value={formData.password}
