@@ -14,9 +14,16 @@ async function runCron() {
   console.log(`Time: ${new Date().toISOString()}`);
   console.log("==========================================");
 
+  // Check if this is running during build phase
+  if (process.env.RAILWAY_IS_BUILDER === 'true') {
+    console.log("⚠️  Running in build phase - skipping cron execution");
+    console.log("Cron will run on schedule after deployment");
+    process.exit(0);
+  }
+
   // Validate environment variables
   if (!APP_URL) {
-    console.error("❌ Error: APP_URL environment variable is not set");
+    console.error("❌ Error: NEXT_PUBLIC_APP_BASE_URL environment variable is not set");
     process.exit(1);
   }
 
