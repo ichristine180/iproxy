@@ -609,8 +609,8 @@ function DashboardPageContent() {
             </div>
           </div>
         )}
-        {/* Product Information Card */}
-        {orderProxies.length > 0 && (
+        {/* Product Information Card - Only show for active orders */}
+        {orderProxies.length > 0 && selectedOrder.status === 'active' && (
           <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6">
             <h3 className="text-xl font-semibold text-white mb-4">
               Product information
@@ -827,12 +827,14 @@ function DashboardPageContent() {
             <h2 className="text-2xl font-semibold text-white">
               Order #{selectedOrder.id.slice(0, 6)} information
             </h2>
-            <Button
-              onClick={() => handleExtendOrder(selectedOrder)}
-              className="bg-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-200))] text-white"
-            >
-              Extend
-            </Button>
+            {selectedOrder.status === 'active' && (
+              <Button
+                onClick={() => handleExtendOrder(selectedOrder)}
+                className="bg-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-200))] text-white"
+              >
+                Extend
+              </Button>
+            )}
           </div>
 
           <div className="space-y-4">
@@ -844,8 +846,22 @@ function DashboardPageContent() {
             </div>
             <div className="flex justify-between items-center">
               <span className="text-neutral-400">Status</span>
-              <span className="text-white font-medium">
-                {selectedOrder.status}
+              <span className="inline-flex px-3 py-1 rounded-full text-sm border capitalize">
+                {(() => {
+                  const status = selectedOrder.status;
+                  const statusStyles = {
+                    active: "bg-green-500/10 text-green-400 border-green-500/20",
+                    pending: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
+                    expired: "bg-red-500/10 text-red-400 border-red-500/20",
+                    failed: "bg-red-500/10 text-red-400 border-red-500/20",
+                    cancelled: "bg-neutral-500/10 text-neutral-400 border-neutral-500/20",
+                  };
+                  return (
+                    <span className={statusStyles[status as keyof typeof statusStyles] || statusStyles.pending}>
+                      {status}
+                    </span>
+                  );
+                })()}
               </span>
             </div>
             <div className="flex justify-between items-center">
@@ -865,7 +881,17 @@ function DashboardPageContent() {
             <div className="flex justify-between items-center">
               <span className="text-neutral-400">Plan</span>
               <span className="text-white font-medium">
-                {selectedOrder.metadata?.duration || "1 day"}
+                {(() => {
+                  const startDate = new Date(selectedOrder.start_at);
+                  const expiresDate = new Date(selectedOrder.expires_at);
+                  const durationMs = expiresDate.getTime() - startDate.getTime();
+                  const durationDays = Math.ceil(durationMs / (1000 * 60 * 60 * 24));
+
+                  if (durationDays === 1) return "1 day";
+                  if (durationDays === 7) return "7 days";
+                  if (durationDays === 30) return "30 days";
+                  return `${durationDays} days`;
+                })()}
               </span>
             </div>
             <div className="flex justify-between items-center">
@@ -1146,6 +1172,9 @@ function DashboardPageContent() {
                             Product
                           </th>
                           <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
+                            Status
+                          </th>
+                          <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
                             Auto-extend
                           </th>
                           <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
@@ -1180,6 +1209,23 @@ function DashboardPageContent() {
                             }
                           );
 
+                          // Helper function to get status badge styles
+                          const getStatusBadge = (status: string) => {
+                            const statusStyles = {
+                              active: "bg-green-500/10 text-green-400 border-green-500/20",
+                              pending: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
+                              expired: "bg-red-500/10 text-red-400 border-red-500/20",
+                              failed: "bg-red-500/10 text-red-400 border-red-500/20",
+                              cancelled: "bg-neutral-500/10 text-neutral-400 border-neutral-500/20",
+                            };
+
+                            return (
+                              <span className={`inline-flex px-3 py-1 rounded-full text-sm border capitalize ${statusStyles[status as keyof typeof statusStyles] || statusStyles.pending}`}>
+                                {status}
+                              </span>
+                            );
+                          };
+
                           return (
                             <tr
                               key={order.id}
@@ -1190,6 +1236,9 @@ function DashboardPageContent() {
                               </td>
                               <td className="py-4 px-4 text-white">
                                 {order.plan.name}
+                              </td>
+                              <td className="py-4 px-4">
+                                {getStatusBadge(order.status)}
                               </td>
                               <td className="py-4 px-4">
                                 <span className="inline-flex px-3 py-1 rounded-full text-sm border border-neutral-600 text-neutral-400">
@@ -1254,13 +1303,15 @@ function DashboardPageContent() {
                                         <Eye className="mr-2 h-4 w-4" />
                                         <span>View Details</span>
                                       </DropdownMenuItem>
-                                      <DropdownMenuItem
-                                        onClick={() => handleExtendOrder(order)}
-                                        className="cursor-pointer"
-                                      >
-                                        <RefreshCw className="mr-2 h-4 w-4" />
-                                        <span>Extend Order</span>
-                                      </DropdownMenuItem>
+                                      {order.status === 'active' && (
+                                        <DropdownMenuItem
+                                          onClick={() => handleExtendOrder(order)}
+                                          className="cursor-pointer"
+                                        >
+                                          <RefreshCw className="mr-2 h-4 w-4" />
+                                          <span>Extend Order</span>
+                                        </DropdownMenuItem>
+                                      )}
                                     </DropdownMenuContent>
                                   </DropdownMenu>
                                 </div>

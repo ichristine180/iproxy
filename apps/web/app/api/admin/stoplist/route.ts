@@ -107,6 +107,37 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Reduce quota by 1 when adding to stoplist
+    const { data: quota, error: quotaFetchError } = await supabase
+      .from("quota")
+      .select("*")
+      .limit(1)
+      .single();
+
+    if (quotaFetchError && quotaFetchError.code !== "PGRST116") {
+      console.error("Error fetching quota:", quotaFetchError);
+    } else if (quota) {
+      // Update quota - reduce available connections by 1
+      const newAvailable = Math.max(0, quota.available_connection_number - 1);
+
+      const { error: quotaUpdateError } = await supabase
+        .from("quota")
+        .update({
+          available_connection_number: newAvailable,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", quota.id);
+
+      if (quotaUpdateError) {
+        console.error("Error updating quota:", quotaUpdateError);
+        // Don't fail the whole operation if quota update fails
+      } else {
+        console.log(`Quota reduced: ${quota.available_connection_number} → ${newAvailable}`);
+      }
+    } else {
+      console.warn("No quota record found - skipping quota reduction");
+    }
+
     return NextResponse.json({ success: true, entry: data });
   } catch (error) {
     console.error("Error in stoplist POST:", error);
@@ -149,6 +180,21 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "ID is required" }, { status: 400 });
     }
 
+    // Get the stoplist entry before deleting (to log connection_id)
+    const { data: stoplisted, error: fetchError } = await supabase
+      .from("connection_stoplist")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (fetchError) {
+      console.error("Error fetching stoplist entry:", fetchError);
+      return NextResponse.json(
+        { error: "Stoplist entry not found" },
+        { status: 404 }
+      );
+    }
+
     // Delete from stoplist
     const { error } = await supabase
       .from("connection_stoplist")
@@ -161,6 +207,49 @@ export async function DELETE(request: NextRequest) {
         { error: "Failed to delete from stoplist" },
         { status: 500 }
       );
+    }
+
+    // Add quota back when removing from stoplist
+    const { data: quota, error: quotaFetchError } = await supabase
+      .from("quota")
+      .select("*")
+      .limit(1)
+      .single();
+
+    if (quotaFetchError && quotaFetchError.code !== "PGRST116") {
+      console.error("Error fetching quota:", quotaFetchError);
+    } else if (quota) {
+      // Update quota - add 1 connection back
+      const newAvailable = quota.available_connection_number + 1;
+
+      const { error: quotaUpdateError } = await supabase
+        .from("quota")
+        .update({
+          available_connection_number: newAvailable,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", quota.id);
+
+      if (quotaUpdateError) {
+        console.error("Error updating quota:", quotaUpdateError);
+        // Don't fail the whole operation if quota update fails
+      } else {
+        console.log(`Quota increased: ${quota.available_connection_number} → ${newAvailable}`);
+        console.log(`Removed connection ${stoplisted.connection_id} from stoplist`);
+      }
+    } else {
+      // Create quota if it doesn't exist
+      const { error: quotaCreateError } = await supabase
+        .from("quota")
+        .insert({
+          available_connection_number: 1,
+        });
+
+      if (quotaCreateError) {
+        console.error("Error creating quota:", quotaCreateError);
+      } else {
+        console.log("Created quota with 1 available connection");
+      }
     }
 
     return NextResponse.json({ success: true });

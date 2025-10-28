@@ -169,48 +169,67 @@ export async function GET(request: NextRequest) {
     let quotaUpdated = 0;
 
     if (expiredProxies && expiredProxies.length > 0) {
+      // Group proxies by order_id
+      const proxiesByOrder = new Map<string, any[]>();
+
       for (const proxy of expiredProxies) {
+        const orderId = proxy.order_id;
+        if (!proxiesByOrder.has(orderId)) {
+          proxiesByOrder.set(orderId, []);
+        }
+        proxiesByOrder.get(orderId)!.push(proxy);
+      }
+
+      console.log(`Processing ${proxiesByOrder.size} orders with ${expiredProxies.length} total expired proxies`);
+
+      // Process each order (which may have multiple proxies)
+      for (const [orderId, proxies] of proxiesByOrder) {
         try {
-          const order = proxy.order;
+          const firstProxy = proxies[0];
+          const order = firstProxy.order;
+
           if (!order || !order.plan) {
-            console.error(`Order or plan not found for proxy ${proxy.id}`);
+            console.error(`Order or plan not found for order ${orderId}`);
             continue;
           }
 
-          if (proxy.auto_renew) {
-            // Check if user has sufficient funds for renewal
+          // Check if ALL proxies in this order have auto_renew enabled
+          const allAutoRenew = proxies.every(p => p.auto_renew);
+
+          if (allAutoRenew) {
+            // All proxies have auto-renew enabled - check funds and renew as one order
             const { data: wallet } = await supabaseAdmin
               .from("user_wallet")
               .select("balance")
-              .eq("user_id", proxy.user_id)
+              .eq("user_id", firstProxy.user_id)
               .single();
 
             if (wallet && wallet.balance >= order.total_amount) {
-              // Sufficient funds - process auto-renewal
+              // Sufficient funds - process auto-renewal for ALL proxies
               // Calculate plan duration
               const startAt = new Date(order.start_at);
               const expiresAt = new Date(order.expires_at);
               const durationDays = Math.ceil((expiresAt.getTime() - startAt.getTime()) / (24 * 60 * 60 * 1000));
 
-              const currentExpiry = new Date(proxy.expires_at);
+              const currentExpiry = new Date(order.expires_at);
               const newExpiry = new Date(currentExpiry.getTime() + durationDays * 24 * 60 * 60 * 1000);
 
-              // Deduct from wallet
+              // Deduct from wallet ONCE for the entire order
               const { error: walletError } = await supabaseAdmin
                 .from("user_wallet")
                 .update({ balance: wallet.balance - order.total_amount })
-                .eq("user_id", proxy.user_id);
+                .eq("user_id", firstProxy.user_id);
 
               if (walletError) {
-                console.error(`Failed to deduct from wallet for proxy ${proxy.id}:`, walletError);
+                console.error(`Failed to deduct from wallet for order ${orderId}:`, walletError);
                 throw walletError;
               }
 
-              // Create renewal order
+              // Create ONE renewal order for all proxies
               const { data: newOrder, error: orderError } = await supabaseAdmin
                 .from("orders")
                 .insert({
-                  user_id: proxy.user_id,
+                  user_id: firstProxy.user_id,
                   plan_id: order.plan.id,
                   status: "active",
                   total_amount: order.total_amount,
@@ -227,63 +246,109 @@ export async function GET(request: NextRequest) {
                 .single();
 
               if (orderError || !newOrder) {
-                console.error(`Failed to create renewal order for proxy ${proxy.id}:`, orderError);
+                console.error(`Failed to create renewal order for order ${orderId}:`, orderError);
                 throw orderError;
               }
 
-              // Update proxy
-              const { error: updateError } = await supabaseAdmin
-                .from("proxies")
-                .update({
-                  expires_at: newExpiry.toISOString(),
-                  order_id: newOrder.id,
-                  updated_at: now.toISOString(),
-                })
-                .eq("id", proxy.id);
+              // Update ALL proxies from this order
+              for (const proxy of proxies) {
+                const { error: updateError } = await supabaseAdmin
+                  .from("proxies")
+                  .update({
+                    expires_at: newExpiry.toISOString(),
+                    order_id: newOrder.id,
+                    updated_at: now.toISOString(),
+                  })
+                  .eq("id", proxy.id);
 
-              if (updateError) {
-                console.error(`Failed to update proxy ${proxy.id}:`, updateError);
-                throw updateError;
+                if (updateError) {
+                  console.error(`Failed to update proxy ${proxy.id}:`, updateError);
+                } else {
+                  renewedCount++;
+                  renewalResults.push({
+                    proxy_id: proxy.id,
+                    order_id: newOrder.id,
+                    action: "renewed",
+                    new_expiry: newExpiry.toISOString(),
+                  });
+                }
               }
 
-              renewedCount++;
-              renewalResults.push({
-                proxy_id: proxy.id,
-                action: "renewed",
-                new_expiry: newExpiry.toISOString(),
-                amount_charged: order.total_amount,
-              });
-
-              console.log(`Auto-renewed proxy ${proxy.id}, new expiry: ${newExpiry.toISOString()}`);
+              console.log(`Auto-renewed order ${orderId} with ${proxies.length} proxies, charged $${order.total_amount}`);
             } else {
-              // Insufficient funds - deactivate proxy
-              await deactivateProxy(supabaseAdmin, proxy);
-              deactivatedCount++;
+              // Insufficient funds - deactivate ALL proxies (but update quota only once)
+              for (const proxy of proxies) {
+                await deactivateProxy(supabaseAdmin, proxy, false); // Skip quota update
+                deactivatedCount++;
+                renewalResults.push({
+                  proxy_id: proxy.id,
+                  order_id: orderId,
+                  action: "deactivated",
+                  reason: "insufficient_funds",
+                });
+              }
+
+              // Mark order as expired
+              await supabaseAdmin
+                .from("orders")
+                .update({ status: "expired" })
+                .eq("id", orderId);
+
+              // Update quota once for the entire order (1 connection freed)
+              await updateQuota(supabaseAdmin, 1);
               quotaUpdated++;
-              renewalResults.push({
-                proxy_id: proxy.id,
-                action: "deactivated",
-                reason: "insufficient_funds",
-              });
+
+              console.log(`Deactivated ${proxies.length} proxies from order ${orderId} - insufficient funds, quota +1`);
             }
           } else {
-            // Auto-renew not enabled - deactivate proxy
-            await deactivateProxy(supabaseAdmin, proxy);
-            deactivatedCount++;
+            // Mixed or all disabled auto-renew - deactivate all proxies (update quota once)
+            for (const proxy of proxies) {
+              if (proxy.auto_renew) {
+                // This proxy wants auto-renew but others don't - deactivate (to keep order consistent)
+                await deactivateProxy(supabaseAdmin, proxy, false); // Skip quota update
+                deactivatedCount++;
+                renewalResults.push({
+                  proxy_id: proxy.id,
+                  order_id: orderId,
+                  action: "deactivated",
+                  reason: "partial_auto_renew_not_supported",
+                });
+              } else {
+                // Auto-renew not enabled - deactivate proxy
+                await deactivateProxy(supabaseAdmin, proxy, false); // Skip quota update
+                deactivatedCount++;
+                renewalResults.push({
+                  proxy_id: proxy.id,
+                  order_id: orderId,
+                  action: "deactivated",
+                  reason: "auto_renew_disabled",
+                });
+              }
+            }
+
+            // Mark order as expired
+            await supabaseAdmin
+              .from("orders")
+              .update({ status: "expired" })
+              .eq("id", orderId);
+
+            // Update quota once for the entire order (1 connection freed)
+            await updateQuota(supabaseAdmin, 1);
             quotaUpdated++;
-            renewalResults.push({
-              proxy_id: proxy.id,
-              action: "deactivated",
-              reason: "auto_renew_disabled",
-            });
+
+            console.log(`Deactivated ${proxies.length} proxies from order ${orderId} - auto-renew not enabled for all, quota +1`);
           }
         } catch (error: any) {
-          console.error(`Error processing expired proxy ${proxy.id}:`, error);
-          renewalResults.push({
-            proxy_id: proxy.id,
-            action: "failed",
-            error: error.message,
-          });
+          console.error(`Error processing order ${orderId}:`, error);
+          // Mark all proxies from this order as failed
+          for (const proxy of proxies) {
+            renewalResults.push({
+              proxy_id: proxy.id,
+              order_id: orderId,
+              action: "failed",
+              error: error.message,
+            });
+          }
         }
       }
     }
@@ -406,9 +471,61 @@ async function sendExpiryNotification(
 }
 
 /**
- * Deactivate proxy and update quota
+ * Update quota by adding connections back
  */
-async function deactivateProxy(supabaseAdmin: any, proxy: any) {
+async function updateQuota(supabaseAdmin: any, connectionsToAdd: number) {
+  try {
+    const { data: quota, error: quotaFetchError } = await supabaseAdmin
+      .from("quota")
+      .select("*")
+      .limit(1)
+      .single();
+
+    if (quotaFetchError && quotaFetchError.code !== "PGRST116") {
+      console.error("Error fetching quota:", quotaFetchError);
+      return;
+    }
+
+    if (quota) {
+      // Update existing quota
+      const newAvailable = quota.available_connection_number + connectionsToAdd;
+
+      const { error: quotaUpdateError } = await supabaseAdmin
+        .from("quota")
+        .update({
+          available_connection_number: newAvailable,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", quota.id);
+
+      if (quotaUpdateError) {
+        console.error("Error updating quota:", quotaUpdateError);
+      } else {
+        console.log(`Quota updated: ${quota.available_connection_number} → ${newAvailable} (+${connectionsToAdd})`);
+      }
+    } else {
+      // Create quota if it doesn't exist
+      const { error: quotaCreateError } = await supabaseAdmin
+        .from("quota")
+        .insert({
+          available_connection_number: connectionsToAdd,
+        });
+
+      if (quotaCreateError) {
+        console.error("Error creating quota:", quotaCreateError);
+      } else {
+        console.log(`Created quota with ${connectionsToAdd} available connections`);
+      }
+    }
+  } catch (error) {
+    console.error("Error in updateQuota:", error);
+  }
+}
+
+/**
+ * Deactivate proxy and optionally update quota
+ */
+async function deactivateProxy(supabaseAdmin: any, proxy: any, updateQuota = true) {
   try {
     // Step 1: Delete proxy access from iProxy service
     if (proxy.iproxy_connection_id && proxy.id) {
@@ -442,6 +559,12 @@ async function deactivateProxy(supabaseAdmin: any, proxy: any) {
     if (proxyError) {
       console.error(`Failed to deactivate proxy ${proxy.id}:`, proxyError);
       throw proxyError;
+    }
+
+    // Step 3: Update quota - add freed connection back to quota (only if requested)
+    if (!updateQuota) {
+      console.log(`Proxy ${proxy.id} deactivated (quota update skipped)`);
+      return;
     }
 
     // Update quota - add freed connection back to quota
