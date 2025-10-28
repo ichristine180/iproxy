@@ -6,9 +6,12 @@ import { getAvailableConnection } from "@/lib/get-available-connection";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Await params (Next.js 15 requirement)
+    const { id: orderId } = await context.params;
+
     // Check admin auth
     const supabase = await createClient();
     const {
@@ -35,8 +38,6 @@ export async function POST(
         { status: 403 }
       );
     }
-
-    const orderId = params.id;
 
     const supabaseAdmin = createSupabaseClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
