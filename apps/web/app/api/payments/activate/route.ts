@@ -4,6 +4,10 @@ import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { provisionProxyAccess } from "@/lib/provision-proxy";
 import { getAvailableConnection } from "@/lib/get-available-connection";
 import { createQuotaManager } from "@/lib/quota-manager";
+import {
+  sendProvisioningEmails,
+  sendConnectionConfigNeededEmail,
+} from "@/lib/send-provisioning-emails";
 
 // POST - Manually activate a payment (for testing/development ONLY)
 export async function POST(request: NextRequest) {
@@ -81,7 +85,9 @@ export async function POST(request: NextRequest) {
     const quotaManager = createQuotaManager(supabaseAdmin);
 
     // Check quota availability
-    const quotaCheck = await quotaManager.checkAvailability(order.quantity || 1);
+    const quotaCheck = await quotaManager.checkAvailability(
+      order.quantity || 1
+    );
     if (!quotaCheck.success) {
       return NextResponse.json(
         {
@@ -189,16 +195,15 @@ export async function POST(request: NextRequest) {
 
       const selectedConnection = connectionResult.connection;
       console.log("Selected connection:", selectedConnection.id);
+
+      // Get origin for email links
+      const origin =
+        request.headers.get("origin") ||
+        process.env.NEXT_PUBLIC_APP_BASE_URL ||
+        "http://localhost:3000";
+
       // Check if connection is active before proceeding with proxy access
       if (!selectedConnection.isActive) {
-        console.log(
-          "⚠️ ADMIN NOTIFICATION: Connection is not active, needs manual provisioning"
-        );
-        console.log("Connection ID:", selectedConnection.id);
-        console.log("Order ID:", order.id);
-        console.log("User ID:", user.id);
-        console.log("User Email:", userEmail);
-
         // Update order status to indicate it's being processed manually
         const { error: updateError } = await supabaseAdmin
           .from("orders")
@@ -218,6 +223,20 @@ export async function POST(request: NextRequest) {
           console.error("Failed to update order status:", updateError);
         }
 
+        // Send email notifications to admins and customer
+        await sendProvisioningEmails({
+          supabase: supabaseAdmin,
+          orderId: order.id,
+          userId: user.id,
+          userEmail,
+          plan: order.plan,
+          quantity: order.quantity || 1,
+          totalAmount: order.total_amount,
+          duration_days: order.metadata?.duration_days,
+          connectionId: selectedConnection.id,
+          origin,
+        });
+
         // Return early with pending status
         return NextResponse.json({
           success: true,
@@ -228,10 +247,14 @@ export async function POST(request: NextRequest) {
         });
       }
       if (selectedConnection.notConfigured) {
-        //TODO/////////////////////
-        console.log(
-          "Notify admin that this connection is sold it needs to be configured,+++++++++++++"
-        );
+        // Notify admin that this connection is sold and needs to be configured
+        await sendConnectionConfigNeededEmail({
+          supabase: supabaseAdmin,
+          orderId: order.id,
+          userEmail,
+          connectionId: selectedConnection.id,
+          origin,
+        });
       }
       // Step 2: Provision proxy access using shared function
       const provisionResult = await provisionProxyAccess({

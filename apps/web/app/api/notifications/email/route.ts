@@ -22,37 +22,45 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // TODO: Implement Resend email sending
-    // const resendApiKey = process.env.RESEND_API_KEY;
-    //
-    // const response = await fetch('https://api.resend.com/emails', {
-    //   method: 'POST',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //     'Authorization': `Bearer ${resendApiKey}`,
-    //   },
-    //   body: JSON.stringify({
-    //     from,
-    //     to,
-    //     subject,
-    //     html,
-    //   }),
-    // });
-    //
-    // const data = await response.json();
-    //
-    // if (!response.ok) {
-    //   return NextResponse.json(
-    //     { success: false, error: 'Failed to send email' },
-    //     { status: 500 }
-    //   );
-    // }
+    // Get Resend API key
+    const resendApiKey = process.env.RESEND_API_KEY;
 
-    // Placeholder response
+    if (!resendApiKey) {
+      console.error('RESEND_API_KEY is not configured');
+      return NextResponse.json(
+        { success: false, error: 'Email service not configured' },
+        { status: 500 }
+      );
+    }
+
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${resendApiKey}`,
+      },
+      body: JSON.stringify({
+        from,
+        to,
+        subject,
+        html,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error('Resend API error:', data);
+      return NextResponse.json(
+        { success: false, error: data.message || 'Failed to send email' },
+        { status: 500 }
+      );
+    }
+
     return NextResponse.json({
       success: true,
       message: 'Email sent successfully',
-      emailId: `email_${Date.now()}`,
+      emailId: data.id,
     });
   } catch (error) {
     console.error('Email notification error:', error);

@@ -5,6 +5,7 @@ import { iproxyService } from "@/lib/iproxy-service";
 import { provisionProxyAccess } from "@/lib/provision-proxy";
 import { getAvailableConnection } from "@/lib/get-available-connection";
 import { createQuotaManager } from "@/lib/quota-manager";
+import { sendProvisioningEmails, sendConnectionConfigNeededEmail } from "@/lib/send-provisioning-emails";
 
 const NOWPAYMENTS_IPS = [
   // Current NOWPayments webhook IPs (2025)
@@ -512,11 +513,14 @@ async function processWebhook(
     // Provision proxy for the activated order
     try {
       const finalExpiresAt = currentOrderData?.expires_at || expiresAt;
+      const origin =
+        process.env.NEXT_PUBLIC_APP_BASE_URL || "http://localhost:3000";
       await provisionProxyForOrder(
         supabase,
         payment.order_id,
         userId,
-        finalExpiresAt
+        finalExpiresAt,
+        origin
       );
     } catch (proxyError: any) {
       console.error("Error provisioning proxy:", proxyError);
@@ -559,7 +563,8 @@ async function provisionProxyForOrder(
   supabase: any,
   orderId: string,
   userId: string,
-  expiresAt: string
+  expiresAt: string,
+  origin: string
 ) {
   console.log("Starting connection provisioning for order:", orderId);
 
@@ -605,14 +610,6 @@ async function provisionProxyForOrder(
 
   // Check if connection is active before proceeding with proxy access
   if (!selectedConnection.isActive) {
-    console.log(
-      "⚠️ ADMIN NOTIFICATION: Connection is not active, needs manual provisioning"
-    );
-    console.log("Connection ID:", selectedConnection.id);
-    console.log("Order ID:", orderId);
-    console.log("User ID:", userId);
-    console.log("User Email:", userEmail);
-
     // Update order status to indicate it's being processed manually
     const { error: updateError } = await supabase
       .from("orders")
@@ -632,6 +629,20 @@ async function provisionProxyForOrder(
       console.error("Failed to update order status:", updateError);
     }
 
+    // Send email notifications to admins and customer
+    await sendProvisioningEmails({
+      supabase,
+      orderId,
+      userId,
+      userEmail,
+      plan: order.plan,
+      quantity: order.quantity || 1,
+      totalAmount: order.total_amount,
+      duration_days: order.metadata?.duration_days,
+      connectionId: selectedConnection.id,
+      origin,
+    });
+
     // Return early with pending status
     return NextResponse.json({
       success: true,
@@ -642,10 +653,14 @@ async function provisionProxyForOrder(
     });
   }
   if (selectedConnection.notConfigured) {
-    //TODO/////////////////////
-    console.log(
-      "Notify admin that this connection is sold it needs to be configured"
-    );
+    // Notify admin that this connection is sold and needs to be configured
+    await sendConnectionConfigNeededEmail({
+      supabase,
+      orderId,
+      userEmail,
+      connectionId: selectedConnection.id,
+      origin,
+    });
   }
   // Step 4: Provision proxy access using shared utility
   const provisionResult = await provisionProxyAccess({

@@ -8,6 +8,7 @@ const NOWPAYMENTS_API_URL = 'https://api.nowpayments.io/v1';
 interface CreateInvoiceRequest {
   plan_id: string;
   quantity?: number;
+  duration_days?: number;
   price_amount: number;
   price_currency?: string;
   pay_currency?: string;
@@ -50,6 +51,7 @@ export async function POST(request: NextRequest) {
     const {
       plan_id,
       quantity = 1,
+      duration_days = 30,
       price_amount,
       price_currency = 'usd',
       pay_currency,
@@ -135,9 +137,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create order with initial dates
+    // Create order with initial dates based on duration
     const now = new Date().toISOString();
-    const thirtyDaysFromNow = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+    const expiresAt = new Date(Date.now() + duration_days * 24 * 60 * 60 * 1000).toISOString();
 
     const { data: order, error: orderError } = await supabaseAdmin
       .from('orders')
@@ -149,13 +151,14 @@ export async function POST(request: NextRequest) {
         total_amount: price_amount,
         currency: price_currency.toUpperCase(),
         start_at: now,
-        expires_at: thirtyDaysFromNow,
+        expires_at: expiresAt,
         metadata: {
           pay_currency: pay_currency,
           order_description: order_description,
           promo_code: promo_code || null,
           ip_change_enabled,
           ip_change_interval_minutes,
+          duration_days,
         },
       })
       .select()

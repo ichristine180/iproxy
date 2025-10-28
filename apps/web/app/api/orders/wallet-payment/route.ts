@@ -4,6 +4,7 @@ import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { provisionProxyAccess } from "@/lib/provision-proxy";
 import { getAvailableConnection } from "@/lib/get-available-connection";
 import { createQuotaManager } from "@/lib/quota-manager";
+import { sendProvisioningEmails, sendConnectionConfigNeededEmail } from "@/lib/send-provisioning-emails";
 
 // POST - Create order and pay with wallet balance
 export async function POST(request: NextRequest) {
@@ -27,6 +28,7 @@ export async function POST(request: NextRequest) {
     const {
       plan_id,
       quantity = 1,
+      duration_days = 30, // Default to 30 days (1 month)
       promo_code,
       ip_change_enabled = false,
       ip_change_interval_minutes = 0,
@@ -66,8 +68,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Calculate total amount
-    const totalAmount = parseFloat(plan.price_usd_month) * quantity;
+    // Calculate total amount based on duration and quantity
+    // price_usd_month is for 30 days, so prorate based on duration
+    const pricePerDay = parseFloat(plan.price_usd_month) / 30;
+    const totalAmount = pricePerDay * duration_days * quantity;
 
     // Initialize quota manager
     const quotaManager = createQuotaManager(supabaseAdmin);
@@ -78,8 +82,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: quotaCheck.error || 'Insufficient quota available',
-          available: quotaCheck.available
+          error: quotaCheck.error || "Insufficient quota available",
+          available: quotaCheck.available,
         },
         { status: quotaCheck.available === 0 ? 503 : 400 }
       );
@@ -115,6 +119,11 @@ export async function POST(request: NextRequest) {
 
     // Start a transaction-like process
     // 1. Create the order
+    const now = new Date();
+    const expiresAt = new Date(
+      now.getTime() + duration_days * 24 * 60 * 60 * 1000
+    );
+
     const { data: order, error: orderError } = await supabaseAdmin
       .from("orders")
       .insert({
@@ -124,11 +133,14 @@ export async function POST(request: NextRequest) {
         quantity: quantity,
         total_amount: totalAmount,
         currency: "USD",
+        start_at: now.toISOString(),
+        expires_at: expiresAt.toISOString(),
         metadata: {
           payment_method: "wallet",
           promo_code: promo_code || null,
           ip_change_enabled,
           ip_change_interval_minutes,
+          duration_days,
         },
       })
       .select()
@@ -151,21 +163,21 @@ export async function POST(request: NextRequest) {
     );
 
     if (!reservationResult.success) {
-      console.error('Failed to reserve quota:', reservationResult.error);
+      console.error("Failed to reserve quota:", reservationResult.error);
       // Rollback: Delete the order
-      await supabaseAdmin.from('orders').delete().eq('id', order.id);
+      await supabaseAdmin.from("orders").delete().eq("id", order.id);
 
       return NextResponse.json(
         {
           success: false,
-          error: reservationResult.error || 'Failed to reserve quota',
-          available: reservationResult.available
+          error: reservationResult.error || "Failed to reserve quota",
+          available: reservationResult.available,
         },
         { status: 400 }
       );
     }
 
-    console.log('Quota reserved for wallet payment:', reservationResult);
+    console.log("Quota reserved for wallet payment:", reservationResult);
 
     // 3. Deduct from wallet balance
     const newBalance = currentBalance - totalAmount;
@@ -213,10 +225,13 @@ export async function POST(request: NextRequest) {
     const confirmResult = await quotaManager.confirmReservation(order.id);
 
     if (!confirmResult.success) {
-      console.error('Failed to confirm quota reservation:', confirmResult.error);
+      console.error(
+        "Failed to confirm quota reservation:",
+        confirmResult.error
+      );
       // Continue anyway - payment was successful, we can handle this manually
     } else {
-      console.log('Quota reservation confirmed:', confirmResult);
+      console.log("Quota reservation confirmed:", confirmResult);
     }
 
     // 6. Create payment record for consistency
@@ -259,21 +274,12 @@ export async function POST(request: NextRequest) {
       console.log("Free trial orders deactivated for user:", user.id);
     }
 
-    // 8. Calculate start and expiry dates based on plan duration
-    const now = new Date().toISOString();
-    const durationDays = plan.duration_days || 30;
-    const expiresAt = new Date(
-      Date.now() + durationDays * 24 * 60 * 60 * 1000
-    ).toISOString();
-
-    // 9. Update order status to active with dates
+    // 8. Update order status to active (dates already set during creation)
     const { error: activateOrderError } = await supabaseAdmin
       .from("orders")
       .update({
         status: "active",
-        start_at: now,
-        expires_at: expiresAt,
-        updated_at: now,
+        updated_at: new Date().toISOString(),
       })
       .eq("id", order.id);
 
@@ -289,15 +295,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log(
-      "Order activated:",
-      order.id,
-      "Duration:",
-      durationDays,
-      "days"
-    );
-
     // 10. Provision proxy for the activated order
+    // Get origin for email links
+    const origin =
+      request.headers.get("origin") ||
+      process.env.NEXT_PUBLIC_APP_BASE_URL ||
+      "http://localhost:3000";
+
     try {
       await provisionProxyForOrder(
         supabaseAdmin,
@@ -306,7 +310,11 @@ export async function POST(request: NextRequest) {
         expiresAt,
         plan,
         ip_change_enabled,
-        ip_change_interval_minutes
+        ip_change_interval_minutes,
+        quantity,
+        totalAmount,
+        duration_days,
+        origin
       );
     } catch (proxyError: any) {
       console.error("Error provisioning proxy:", proxyError);
@@ -346,10 +354,14 @@ async function provisionProxyForOrder(
   supabase: any,
   orderId: string,
   userId: string,
-  expiresAt: string,
+  expiresAt: Date,
   plan: any,
   ipChangeEnabled: boolean,
-  ipChangeIntervalMinutes: number
+  ipChangeIntervalMinutes: number,
+  quantity: number,
+  totalAmount: number,
+  duration_days: number,
+  origin: string
 ) {
   console.log("Starting connection provisioning for order:", orderId);
 
@@ -376,14 +388,6 @@ async function provisionProxyForOrder(
 
   // Step 3: Check if connection is active before proceeding with proxy access
   if (!selectedConnection.isActive) {
-    console.log(
-      "⚠️ ADMIN NOTIFICATION: Connection is not active, needs manual provisioning"
-    );
-    console.log("Connection ID:", selectedConnection.id);
-    console.log("Order ID:", orderId);
-    console.log("User ID:", userId);
-    console.log("User Email:", userEmail);
-
     // Update order status to indicate it's being processed manually
     const { error: updateError } = await supabase
       .from("orders")
@@ -404,15 +408,37 @@ async function provisionProxyForOrder(
       console.error("Failed to update order status:", updateError);
     }
 
-    throw new Error(
-      "Connection requires activation - order pending manual provisioning"
-    );
-  }
+    // Send email notifications to admins and customer
+    await sendProvisioningEmails({
+      supabase,
+      orderId,
+      userId,
+      userEmail,
+      plan,
+      quantity,
+      totalAmount,
+      duration_days,
+      connectionId: selectedConnection.id,
+      origin,
+    });
 
+    return NextResponse.json({
+      success: true,
+      connection_id: selectedConnection.id,
+      status: "pending_manual_provisioning",
+      message:
+        "Your order is being processed. You will be notified when it's ready.",
+    });
+  }
   if (selectedConnection.notConfigured) {
-    console.log(
-      "Notify admin that this connection is sold, it needs to be configured"
-    );
+    // Notify admin that this connection is sold and needs to be configured
+    await sendConnectionConfigNeededEmail({
+      supabase,
+      orderId,
+      userEmail,
+      connectionId: selectedConnection.id,
+      origin,
+    });
   }
 
   // Step 4: Provision proxy access using shared utility
@@ -422,7 +448,7 @@ async function provisionProxyForOrder(
     userId,
     userEmail,
     connectionId: selectedConnection.id,
-    expiresAt,
+    expiresAt: expiresAt.toDateString(),
     planName: plan.name || "Plan",
     ipChangeEnabled,
     ipChangeIntervalMinutes,

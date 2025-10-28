@@ -86,6 +86,7 @@ export async function POST(request: NextRequest) {
     const {
       plan_id,
       quantity = 1,
+      duration_days = 30,
       pay_currency,
       promo_code,
       ip_change_enabled = false,
@@ -126,8 +127,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Calculate total amount
-    const totalAmount = parseFloat(plan.price_usd_month) * quantity;
+    // Calculate total amount based on duration and quantity
+    const pricePerDay = parseFloat(plan.price_usd_month) / 30;
+    const totalAmount = pricePerDay * duration_days * quantity;
 
     // Create invoice via payments API
     const origin = request.headers.get('origin') || process.env.NEXT_PUBLIC_APP_BASE_URL;
@@ -141,10 +143,11 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({
         plan_id,
         quantity,
+        duration_days,
         price_amount: totalAmount,
         price_currency: 'usd',
         pay_currency: pay_currency || 'btc',
-        order_description: `${plan.name} - ${quantity} proxy${quantity > 1 ? 'ies' : ''}`,
+        order_description: `${plan.name} - ${quantity} proxy${quantity > 1 ? 'ies' : ''} - ${duration_days} days`,
         promo_code,
         ip_change_enabled,
         ip_change_interval_minutes,

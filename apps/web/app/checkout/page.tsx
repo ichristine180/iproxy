@@ -110,7 +110,7 @@ function CheckoutPageContent() {
     };
   };
 
-  const { pricePerUnit, hourlyPrice, totalPrice, finalPrice, rotationCostPerHour, totalRotationCost, discount, totalHours } = calculatePrice();
+  const {hourlyPrice, finalPrice, rotationCostPerHour, totalRotationCost, discount, totalHours } = calculatePrice();
 
   const handleIncrementDuration = () => setDurationQuantity((prev) => prev + 1);
   const handleDecrementDuration = () => setDurationQuantity((prev) => (prev > 1 ? prev - 1 : 1));
@@ -238,7 +238,8 @@ function CheckoutPageContent() {
           },
           body: JSON.stringify({
             plan_id: plan.id,
-            quantity: totalHours, // Total hours for the purchase
+            quantity: 1, // Always 1 proxy per order
+            duration_days: Math.ceil(totalHours / 24), // Convert hours to days
             duration_quantity: durationQuantity, // Number of hours/days/weeks/months
             duration_unit: duration, // hour/day/week/month
             ip_change_enabled: rotationMinutes > 0,
@@ -271,7 +272,8 @@ function CheckoutPageContent() {
         },
         body: JSON.stringify({
           plan_id: plan.id,
-          quantity: totalHours, // Total hours for the purchase
+          quantity: 1, // Always 1 proxy per order
+          duration_days: Math.ceil(totalHours / 24), // Convert hours to days
           duration_quantity: durationQuantity, // Number of hours/days/weeks/months
           duration_unit: duration, // hour/day/week/month
           pay_currency: selectedCrypto,

@@ -66,11 +66,11 @@ export default function AdminDashboardPage() {
           ? stoplistData.stoplist.length
           : 0;
 
-        // Fetch processing orders count
-        const ordersResponse = await fetch("/api/orders");
+        // Fetch processing orders count (all orders, not just admin's)
+        const ordersResponse = await fetch("/api/admin/orders?status=processing");
         const ordersData = await ordersResponse.json();
         const processingOrders = ordersData.success
-          ? ordersData.orders.filter((order: any) => order.status === "processing").length
+          ? ordersData.orders.length
           : 0;
 
         setStats({
@@ -183,21 +183,7 @@ export default function AdminDashboardPage() {
             </p>
           </CardContent>
         </Card>
-        <Card className="shadow-sm bg-card/50 backdrop-blur">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Revenue</CardTitle>
-            <div className="h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-              <DollarSign className="h-4 w-4 text-emerald-600" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl md:text-3xl font-bold">
-              ${stats.revenue.toFixed(2)}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">Total revenue</p>
-          </CardContent>
-        </Card>
-
+       
         <Card className="shadow-sm bg-card/50 backdrop-blur">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Stoplist</CardTitle>
@@ -216,7 +202,10 @@ export default function AdminDashboardPage() {
         </Card>
 
         {stats.processingOrders > 0 && (
-          <Card className="shadow-sm bg-card/50 backdrop-blur border-blue-500/20">
+          <Card
+            className="shadow-sm bg-card/50 backdrop-blur border-blue-500/20 cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => router.push("/admin/processing-orders")}
+          >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Processing Orders</CardTitle>
               <div className="h-8 w-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
