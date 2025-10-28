@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     const threeDaysFromNow = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
 
     // ===== STEP 1: Handle 3-day notifications =====
-    // Find active proxies expiring in ~3 days (except 1-day plans)
+    // Find active proxies expiring within the next 3 days (except 1-day plans)
     const { data: proxiesForNotification, error: notificationFetchError } = await supabaseAdmin
       .from("proxies")
       .select(`
@@ -43,8 +43,8 @@ export async function GET(request: NextRequest) {
         )
       `)
       .eq("status", "active")
-      .gte("expires_at", threeDaysFromNow.toISOString())
-      .lt("expires_at", new Date(threeDaysFromNow.getTime() + 24 * 60 * 60 * 1000).toISOString());
+      .gt("expires_at", now.toISOString()) // Still in the future
+      .lte("expires_at", threeDaysFromNow.toISOString()); // Within next 3 days
 
     if (notificationFetchError) {
       console.error("Error fetching proxies for notification:", notificationFetchError);
@@ -56,6 +56,17 @@ export async function GET(request: NextRequest) {
     if (proxiesForNotification && proxiesForNotification.length > 0) {
       for (const proxy of proxiesForNotification) {
         try {
+          // Skip if notification was already sent in the last 24 hours
+          if (proxy.expiry_notification_sent_at) {
+            const lastNotificationTime = new Date(proxy.expiry_notification_sent_at);
+            const hoursSinceLastNotification = (now.getTime() - lastNotificationTime.getTime()) / (1000 * 60 * 60);
+
+            if (hoursSinceLastNotification < 24) {
+              console.log(`Skipping proxy ${proxy.id} - notification already sent ${hoursSinceLastNotification.toFixed(1)} hours ago`);
+              continue;
+            }
+          }
+
           // Skip 1-day plans
           const order = proxy.order;
           if (!order || !order.plan) continue;
@@ -104,6 +115,13 @@ export async function GET(request: NextRequest) {
                 order.total_amount,
                 "insufficient_funds"
               );
+
+              // Mark notification as sent
+              await supabaseAdmin
+                .from("proxies")
+                .update({ expiry_notification_sent_at: now.toISOString() })
+                .eq("id", proxy.id);
+
               notificationsSent++;
               notificationResults.push({
                 proxy_id: proxy.id,
@@ -123,6 +141,13 @@ export async function GET(request: NextRequest) {
               order.total_amount,
               "auto_renew_disabled"
             );
+
+            // Mark notification as sent
+            await supabaseAdmin
+              .from("proxies")
+              .update({ expiry_notification_sent_at: now.toISOString() })
+              .eq("id", proxy.id);
+
             notificationsSent++;
             notificationResults.push({
               proxy_id: proxy.id,
