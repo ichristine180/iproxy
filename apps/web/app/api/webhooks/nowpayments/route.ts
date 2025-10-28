@@ -644,13 +644,13 @@ async function provisionProxyForOrder(
     });
 
     // Return early with pending status
-    return NextResponse.json({
+    return {
       success: true,
       connection_id: selectedConnection.id,
       status: "pending_manual_provisioning",
       message:
         "Your order is being processed. You will be notified when it's ready.",
-    });
+    };
   }
   if (selectedConnection.notConfigured) {
     // Notify admin that this connection is sold and needs to be configured
