@@ -1,0 +1,43 @@
+ name: Auto-Renew Cron Job
+
+  on:
+    schedule:
+      # Run every 6 hours at minute 0
+      - cron: '0 */6 * * *'
+    workflow_dispatch: # Allow manual trigger from GitHub Actions UI
+
+  jobs:
+    auto-renew:
+      runs-on: ubuntu-latest
+      timeout-minutes: 5
+
+      steps:
+        - name: Call Auto-Renew Endpoint
+          run: |
+            echo "🔄 Running auto-renewal cron job..."
+            echo "Time: $(date -u)"
+
+            response=$(curl -s -w "\n%{http_code}" -X GET \
+
+  "https://web-production-4bee0.up.railway.app/api/cron/auto-renew" \
+              -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+              -H "Content-Type: application/json")
+
+            http_code=$(echo "$response" | tail -n1)
+            body=$(echo "$response" | sed '$d')
+
+            echo "HTTP Status: $http_code"
+            echo "Response: $body"
+
+            if [ "$http_code" != "200" ]; then
+              echo "❌ Cron job failed with status $http_code"
+              exit 1
+            fi
+
+            echo "✅ Cron job completed successfully"
+
+        - name: Notify on Failure
+          if: failure()
+          run: |
+            echo "::error::Auto-renewal cron job failed. Check the logs 
+  above for details."
