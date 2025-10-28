@@ -144,7 +144,7 @@ export async function POST(
       success: true,
       message: "Order activated successfully",
       order_id: orderId,
-      proxy_id: provisionResult.proxy?.id,
+      proxy_id: provisionResult.proxy_id,
     });
   } catch (error: any) {
     console.error("Error activating order:", error);
