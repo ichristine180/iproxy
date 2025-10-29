@@ -464,8 +464,16 @@ async function sendExpiryNotification(
       </div>
     `;
 
-    // Send email notification
-    if (profile.notify_email) {
+    // Check if user has proxy expiry alerts enabled
+    const shouldNotify = profile.proxy_expiry_alerts !== false; // Default to true if not set
+
+    if (!shouldNotify) {
+      console.log(`User ${profile.email} has proxy_expiry_alerts disabled, skipping notification`);
+      return;
+    }
+
+    // Send email notification if enabled
+    if (profile.notify_email !== false) { // Default to true if not set
       const emailResponse = await fetch(
         `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/notifications/email`,
         {
@@ -484,11 +492,65 @@ async function sendExpiryNotification(
       if (!emailResponse.ok) {
         console.error(`Failed to send email to ${profile.email}`);
       } else {
-        console.log(`Expiry notification sent to ${profile.email}`);
+        console.log(`Expiry notification email sent to ${profile.email}`);
       }
+    } else {
+      console.log(`Email notifications disabled for ${profile.email}`);
     }
 
-    // TODO: Add Telegram notification if profile.notify_telegram is true
+    // Send Telegram notification if enabled
+    if (profile.notify_telegram && profile.telegram_chat_id) {
+      const telegramMessage = `
+🔔 *Proxy Rental Expiration Notice*
+
+Your proxy rental *${proxy.label}* will expire on *${expiryDate.toLocaleString()}*.
+
+${
+  reason === "insufficient_funds"
+    ? `⚠️ *Action Required: Insufficient Funds*
+
+Auto-renewal is enabled, but your wallet balance is insufficient to complete the renewal.
+Required amount: *$${renewalAmount.toFixed(2)}*
+
+Please top up your deposit to ensure uninterrupted service.`
+    : `ℹ️ *Auto-Renewal Not Enabled*
+
+To extend your rental for the next period, please:
+• Top up your deposit with at least *$${renewalAmount.toFixed(2)}*
+• Enable auto-renewal for seamless service continuation`
+}
+
+If you do not take action, your proxy access will be removed after the expiration date.
+
+[Manage Your Account](${process.env.NEXT_PUBLIC_APP_URL || "https://iproxy.com"}/dashboard)
+      `.trim();
+
+      try {
+        const telegramResponse = await fetch(
+          `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/notifications/telegram`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              chat_id: profile.telegram_chat_id,
+              message: telegramMessage,
+            }),
+          }
+        );
+
+        if (!telegramResponse.ok) {
+          console.error(`Failed to send Telegram notification to ${profile.email}`);
+        } else {
+          console.log(`Expiry notification sent via Telegram to ${profile.email}`);
+        }
+      } catch (telegramError) {
+        console.error(`Error sending Telegram notification to ${profile.email}:`, telegramError);
+      }
+    } else if (profile.notify_telegram && !profile.telegram_chat_id) {
+      console.log(`Telegram notifications enabled but no chat_id set for ${profile.email}`);
+    }
   } catch (error) {
     console.error("Error sending expiry notification:", error);
     throw error;

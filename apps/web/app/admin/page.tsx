@@ -12,23 +12,19 @@ import {
 import {
   Loader2,
   Server,
-  Users,
   Package,
   Activity,
-  TrendingUp,
-  DollarSign,
   Ban,
   Database,
   AlertTriangle,
   Clock,
+  Users,
 } from "lucide-react";
 
 interface Stats {
   totalUsers: number;
   totalProxies: number;
   activeProxies: number;
-  totalOrders: number;
-  revenue: number;
   availableQuota: number;
   stoplistCount: number;
   processingOrders: number;
@@ -40,8 +36,6 @@ export default function AdminDashboardPage() {
     totalUsers: 0,
     totalProxies: 0,
     activeProxies: 0,
-    totalOrders: 0,
-    revenue: 0,
     availableQuota: 0,
     stoplistCount: 0,
     processingOrders: 0,
@@ -51,34 +45,36 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        // Fetch quota
-        const quotaResponse = await fetch("/api/admin/quota");
+        // Fetch all stats in parallel
+        const [statsResponse, quotaResponse, stoplistResponse, ordersResponse] = await Promise.all([
+          fetch("/api/admin/stats"),
+          fetch("/api/admin/quota"),
+          fetch("/api/admin/stoplist"),
+          fetch("/api/admin/orders?status=processing"),
+        ]);
+
+        const statsData = await statsResponse.json();
         const quotaData = await quotaResponse.json();
+        const stoplistData = await stoplistResponse.json();
+        const ordersData = await ordersResponse.json();
+
         const availableQuota =
           quotaData.success && quotaData.quota
             ? quotaData.quota.available_connection_number
             : 0;
 
-        // Fetch stoplist
-        const stoplistResponse = await fetch("/api/admin/stoplist");
-        const stoplistData = await stoplistResponse.json();
         const stoplistCount = stoplistData.success
           ? stoplistData.stoplist.length
           : 0;
 
-        // Fetch processing orders count (all orders, not just admin's)
-        const ordersResponse = await fetch("/api/admin/orders?status=processing");
-        const ordersData = await ordersResponse.json();
         const processingOrders = ordersData.success
           ? ordersData.orders.length
           : 0;
 
         setStats({
-          totalUsers: 0,
-          totalProxies: 0,
-          activeProxies: 0,
-          totalOrders: 0,
-          revenue: 0,
+          totalUsers: statsData.success ? statsData.stats.totalUsers : 0,
+          totalProxies: statsData.success ? statsData.stats.totalProxies : 0,
+          activeProxies: statsData.success ? statsData.stats.activeProxies : 0,
           availableQuota,
           stoplistCount,
           processingOrders,
@@ -164,6 +160,22 @@ export default function AdminDashboardPage() {
               {stats.availableQuota < 3
                 ? "Low quota - add more"
                 : "Connections available"}
+            </p>
+          </CardContent>
+        </Card>
+        <Card className="shadow-sm bg-card/50 backdrop-blur">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+            <div className="h-8 w-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
+              <Users className="h-4 w-4 text-blue-600" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl md:text-3xl font-bold">
+              {stats.totalUsers}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Registered users
             </p>
           </CardContent>
         </Card>
@@ -273,6 +285,23 @@ export default function AdminDashboardPage() {
 
         <Card
           className="cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => router.push("/admin/users")}
+        >
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                <Users className="h-5 w-5 text-blue-600" />
+              </div>
+              <div>
+                <CardTitle>User Management</CardTitle>
+                <CardDescription>View and manage all users</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+        </Card>
+
+        <Card
+          className="cursor-pointer hover:shadow-md transition-shadow"
           onClick={() => router.push("/admin/stoplist")}
         >
           <CardHeader>
@@ -324,7 +353,7 @@ export default function AdminDashboardPage() {
           </CardHeader>
         </Card>
 
-        <Card
+        {/* <Card
           className="cursor-pointer hover:shadow-md transition-shadow"
           onClick={() => router.push("/admin/billing")}
         >
@@ -339,11 +368,11 @@ export default function AdminDashboardPage() {
               </div>
             </div>
           </CardHeader>
-        </Card>
+        </Card> */}
       </div>
 
       {/* Recent Activity */}
-      <Card>
+      {/* <Card>
         <CardHeader>
           <CardTitle>Recent Activity</CardTitle>
           <CardDescription>Latest system events and actions</CardDescription>
@@ -354,7 +383,7 @@ export default function AdminDashboardPage() {
             <p className="text-sm">No recent activity</p>
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
     </div>
   );
 }

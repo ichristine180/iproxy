@@ -93,38 +93,106 @@ export async function sendProvisioningEmails({
     console.error("Failed to fetch admins or send admin emails:", emailError);
   }
 
-  // Send email notification to customer
+  // Send notification to customer
   try {
-    const response = await fetch(`${origin}/api/notifications/email`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        to: userEmail,
-        subject: "Order Received - Processing in Progress",
-        html: `
-          <h2>Thank you for your order!</h2>
-          <p>Hi,</p>
-          <p>We've received your payment and your order is currently being processed.</p>
-          <h3>Order Details:</h3>
-          <ul>
-            <li><strong>Order ID:</strong> ${orderId.slice(0, 8)}</li>
-            <li><strong>Plan:</strong> ${plan.name}</li>
-            <li><strong>Quantity:</strong> ${quantity} proxy${quantity > 1 ? "ies" : ""}</li>
-            <li><strong>Amount Paid:</strong> $${totalAmount.toFixed(2)}</li>
-            ${duration_days ? `<li><strong>Duration:</strong> ${duration_days} days</li>` : ""}
-          </ul>
-          <p><strong>What's Next?</strong></p>
-          <p>Your proxies are being provisioned and will be available shortly. You'll receive another email once they're ready to use.</p>
-          <p>You can check your order status at any time in your dashboard: <a href="${origin}/dashboard">${origin}/dashboard</a></p>
-          <p>If you have any questions, please contact our support team.</p>
-          <p>Best regards,<br>iProxy Team</p>
-        `,
-      }),
-    });
+    // Fetch user profile to check notification preferences
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("notify_email, notify_telegram, telegram_chat_id, payment_confirmations")
+      .eq("id", userId)
+      .single();
 
-    customerEmailSent = response.ok;
+    // Check if payment confirmations are enabled (default to true if not set)
+    const shouldNotify = profile?.payment_confirmations !== false;
+
+    if (!shouldNotify) {
+      console.log(`User ${userEmail} has payment_confirmations disabled, skipping notification`);
+      return {
+        success: true,
+        adminEmailsSent,
+        customerEmailSent: false,
+      };
+    }
+
+    const emailHtml = `
+      <h2>Thank you for your order!</h2>
+      <p>Hi,</p>
+      <p>We've received your payment and your order is currently being processed.</p>
+      <h3>Order Details:</h3>
+      <ul>
+        <li><strong>Order ID:</strong> ${orderId.slice(0, 8)}</li>
+        <li><strong>Plan:</strong> ${plan.name}</li>
+        <li><strong>Quantity:</strong> ${quantity} proxy${quantity > 1 ? "ies" : ""}</li>
+        <li><strong>Amount Paid:</strong> $${totalAmount.toFixed(2)}</li>
+        ${duration_days ? `<li><strong>Duration:</strong> ${duration_days} days</li>` : ""}
+      </ul>
+      <p><strong>What's Next?</strong></p>
+      <p>Your proxies are being provisioned and will be available shortly. You'll receive another email once they're ready to use.</p>
+      <p>You can check your order status at any time in your dashboard: <a href="${origin}/dashboard">${origin}/dashboard</a></p>
+      <p>If you have any questions, please contact our support team.</p>
+      <p>Best regards,<br>iProxy Team</p>
+    `;
+
+    // Send email if enabled
+    if (profile?.notify_email !== false) {
+      const response = await fetch(`${origin}/api/notifications/email`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to: userEmail,
+          subject: "Order Received - Processing in Progress",
+          html: emailHtml,
+        }),
+      });
+
+      customerEmailSent = response.ok;
+
+      if (response.ok) {
+        console.log(`Payment confirmation email sent to ${userEmail}`);
+      }
+    } else {
+      console.log(`Email notifications disabled for ${userEmail}`);
+    }
+
+    // Send Telegram notification if enabled
+    if (profile?.notify_telegram && profile?.telegram_chat_id) {
+      const telegramMessage = `
+🎉 *Thank you for your order!*
+
+We've received your payment and your order is currently being processed.
+
+*Order Details:*
+• Order ID: \`${orderId.slice(0, 8)}\`
+• Plan: *${plan.name}*
+• Quantity: ${quantity} proxy${quantity > 1 ? "ies" : ""}
+• Amount Paid: *$${totalAmount.toFixed(2)}*
+${duration_days ? `• Duration: ${duration_days} days` : ""}
+
+*What's Next?*
+Your proxies are being provisioned and will be available shortly. You'll receive another notification once they're ready to use.
+
+[View Dashboard](${origin}/dashboard)
+      `.trim();
+
+      try {
+        const telegramResponse = await fetch(`${origin}/api/notifications/telegram`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            chat_id: profile.telegram_chat_id,
+            message: telegramMessage,
+          }),
+        });
+
+        if (telegramResponse.ok) {
+          console.log(`Payment confirmation sent via Telegram to ${userEmail}`);
+        }
+      } catch (telegramError) {
+        console.error(`Failed to send Telegram notification to ${userEmail}:`, telegramError);
+      }
+    }
   } catch (emailError) {
-    console.error("Failed to send customer notification email:", emailError);
+    console.error("Failed to send customer notification:", emailError);
   }
 
   return {

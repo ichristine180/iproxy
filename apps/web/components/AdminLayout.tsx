@@ -45,10 +45,10 @@ const AdminSidebar = () => {
 
   const navItems = [
     { title: 'Dashboard', url: '/admin', icon: LayoutDashboard },
-    { title: 'Connections', url: '/admin/connections', icon: Server },
+    // { title: 'Connections', url: '/admin/connections', icon: Server },
     { title: 'Users', url: '/admin/users', icon: Users },
     { title: 'Orders', url: '/admin/orders', icon: Package },
-    { title: 'Billing', url: '/admin/billing', icon: CreditCard },
+    // { title: 'Billing', url: '/admin/billing', icon: CreditCard },
   ];
 
   return (
@@ -129,15 +129,15 @@ const AdminSidebar = () => {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
-                  <SidebarMenuButton
+                  {/* <SidebarMenuButton
                     asChild
                     className={state === 'collapsed' ? 'justify-center' : ''}
                   >
-                    <Link href="/admin/settings" className="flex items-center gap-3 w-full">
+                    <Link href="#" className="flex items-center gap-3 w-full">
                       <Settings className={`h-5 w-5 ${state === 'collapsed' ? 'mx-auto' : ''}`} />
                       {state === 'expanded' && <span>Settings</span>}
                     </Link>
-                  </SidebarMenuButton>
+                  </SidebarMenuButton> */}
                 </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
@@ -161,11 +161,11 @@ export const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   // Get page title based on pathname
   const getPageTitle = () => {
     if (pathname === '/admin') return 'Admin Dashboard';
-    if (pathname.includes('/connections')) return 'Connection Management';
+    // if (pathname.includes('/connections')) return 'Connection Management';
     if (pathname.includes('/users')) return 'User Management';
     if (pathname.includes('/orders')) return 'Order Management';
     if (pathname.includes('/balance')) return 'Wallet Management';
-    if (pathname.includes('/settings')) return 'Admin Settings';
+    // if (pathname.includes('/settings')) return 'Admin Settings';
     return 'Admin Panel';
   };
 
@@ -196,10 +196,10 @@ export const AdminLayout = ({ children }: { children: React.ReactNode }) => {
               {/* Right Section */}
               <div className="flex items-center gap-1 md:gap-2">
                 {/* Notifications */}
-                <Button variant="ghost" size="icon" className="relative h-9 w-9">
+                {/* <Button variant="ghost" size="icon" className="relative h-9 w-9">
                   <Bell className="h-4 w-4" />
                   <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-primary" />
-                </Button>
+                </Button> */}
 
                 {/* User Menu */}
                 <DropdownMenu>
@@ -229,10 +229,10 @@ export const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                       <LayoutDashboard className="mr-2 h-4 w-4" />
                       User Dashboard
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => router.push('/admin/settings')}>
+                    {/* <DropdownMenuItem onClick={() => router.push('/admin/settings')}>
                       <Settings className="mr-2 h-4 w-4" />
                       Settings
-                    </DropdownMenuItem>
+                    </DropdownMenuItem> */}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
                       <LogOut className="mr-2 h-4 w-4" />
