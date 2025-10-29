@@ -343,7 +343,7 @@ export default function AdminOrderDetailPage() {
                 </p>
               </div>
             </div>
-            {order.payment && order.payment.length > 0 && (
+            {order.payment && order.payment.length > 0 && order.payment[0] && (
               <>
                 <div>
                   <label className="text-sm text-muted-foreground">
