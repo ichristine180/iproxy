@@ -351,7 +351,8 @@ export const DashboardLayout = ({
                 <Menu className="h-5 w-5" />
               </button>
 
-              <button
+              <a
+                href="/dashboard/profile"
                 style={{
                   border: "1px solid #73a3f1ff",
                 }}
@@ -361,7 +362,7 @@ export const DashboardLayout = ({
                 <span className="text-xs md:text-sm font-medium">
                   My Profile
                 </span>
-              </button>
+              </a>
               <a
               href="/dashboard/deposit"
                 style={{
