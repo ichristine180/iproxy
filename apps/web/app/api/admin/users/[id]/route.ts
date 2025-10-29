@@ -5,7 +5,7 @@ import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 // GET - Fetch single user details (admin only)
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Get authenticated user
@@ -41,7 +41,8 @@ export async function GET(
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    const userId = params.id;
+    const { id } = await params;
+    const userId = id;
 
     // Fetch user profile
     const { data: userProfile, error: profileError } = await supabaseAdmin
