@@ -39,10 +39,13 @@ export async function POST(request: NextRequest) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    // Fetch plan details
+    // Fetch plan details with pricing
     const { data: plan, error: planError } = await supabaseAdmin
       .from('plans')
-      .select('*')
+      .select(`
+        *,
+        pricing:plan_pricing(*)
+      `)
       .eq('id', plan_id)
       .single();
 
@@ -53,8 +56,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify this is actually a free trial plan
-    if (plan.price_usd_month !== 0) {
+    // Verify this is actually a free trial plan (has no pricing or all pricing is $0)
+    const hasPricing = plan.pricing && plan.pricing.length > 0;
+    const hasNonZeroPricing = hasPricing && plan.pricing.some((p: any) => parseFloat(p.price_usd) > 0);
+
+    if (hasNonZeroPricing) {
       return NextResponse.json(
         { success: false, error: 'This endpoint is only for free trial plans' },
         { status: 400 }

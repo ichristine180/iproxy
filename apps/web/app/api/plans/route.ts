@@ -14,11 +14,15 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const channel = searchParams.get('channel'); // Filter by channel (mobile, residential, datacenter)
 
+    // Fetch plans with their pricing information
     let query = supabase
       .from('plans')
-      .select('*')
+      .select(`
+        *,
+        pricing:plan_pricing(*)
+      `)
       .eq('is_active', true)
-      .order('price_usd_month', { ascending: true });
+      .order('created_at', { ascending: true });
 
     // Apply channel filter if provided
     if (channel) {

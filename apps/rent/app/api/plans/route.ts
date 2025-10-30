@@ -25,11 +25,15 @@ export async function GET() {
 
     while (attempts < maxAttempts) {
       try {
+        // Fetch plans with their pricing information
         const { data: plans, error } = await supabaseAdmin
           .from('plans')
-          .select('*')
+          .select(`
+            *,
+            pricing:plan_pricing(*)
+          `)
           .eq('is_active', true)
-          .order('price_usd_month', { ascending: true });
+          .order('created_at', { ascending: true });
 
         if (error) {
           throw error;

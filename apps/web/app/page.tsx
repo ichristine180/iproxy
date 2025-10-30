@@ -1,14 +1,15 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { Eye, EyeOff, Check } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { refreshUser } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
@@ -17,6 +18,18 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
+  // Capture redirect params on mount
+  useEffect(() => {
+    const plan = searchParams.get("plan");
+    const redirect = searchParams.get("redirect");
+
+    if (plan || redirect) {
+      // Store in sessionStorage to persist through login
+      if (plan) sessionStorage.setItem("pending_plan", plan);
+      if (redirect) sessionStorage.setItem("pending_redirect", redirect);
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,8 +50,21 @@ export default function LoginPage() {
       if (data.success) {
         // Refresh the user context to pick up the new session
         await refreshUser();
-        // Redirect based on user role
-        if (data.user?.role === "admin") {
+
+        // Check for pending redirect from plan selection
+        const pendingRedirect = sessionStorage.getItem("pending_redirect");
+        const pendingPlan = sessionStorage.getItem("pending_plan");
+
+        // Clear stored values
+        sessionStorage.removeItem("pending_redirect");
+        sessionStorage.removeItem("pending_plan");
+
+        // Redirect based on pending redirect or user role
+        if (pendingRedirect && pendingPlan) {
+          router.push(`${pendingRedirect}?plan=${pendingPlan}`);
+        } else if (pendingRedirect) {
+          router.push(pendingRedirect);
+        } else if (data.user?.role === "admin") {
           router.push("/admin");
         } else {
           router.push("/dashboard");
@@ -83,9 +109,12 @@ export default function LoginPage() {
                 </div>
                 <div className="absolute -inset-1 bg-gradient-to-br from-[rgb(var(--brand-400))] to-[rgb(var(--brand-600))] rounded-lg blur opacity-30"></div>
               </div>
-              <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-[rgb(var(--brand-400))] via-[rgb(var(--brand-500))] to-purple-500 bg-clip-text text-transparent">
-                iProxy
-              </h1>
+              <a
+                href={process.env.NEXT_PUBLIC_RENT_BASE_URL}
+                className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-[rgb(var(--brand-400))] via-[rgb(var(--brand-500))] to-purple-500 bg-clip-text text-transparent"
+              >
+                Highbid Proxies
+              </a>
             </div>
           </div>
 
@@ -98,7 +127,7 @@ export default function LoginPage() {
               <p className="text-sm sm:text-base text-white/70">
                 Don't have an account yet?{" "}
                 <Link
-                  href="/signup"
+                  href={`/signup${searchParams.toString() ? `?${searchParams.toString()}` : ""}`}
                   className="text-[rgb(var(--brand-400))] hover:underline"
                 >
                   Sign Up
@@ -409,5 +438,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-neutral-950 flex items-center justify-center"><div className="text-white">Loading...</div></div>}>
+      <LoginForm />
+    </Suspense>
   );
 }

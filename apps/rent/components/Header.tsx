@@ -28,36 +28,10 @@ const getPlanIcon = (planName: string) => {
   return <Server className="w-6 h-6" />; // default
 };
 
-// Helper function to check if plan is new (created within last 30 days)
-const isNewPlan = (createdAt: string) => {
-  const created = new Date(createdAt);
-  const now = new Date();
-  const diffTime = Math.abs(now.getTime() - created.getTime());
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  return diffDays <= 30;
-};
-
-// Helper to format price display
-const formatPriceDisplay = (plan: Plan): string => {
-  if (plan.price_usd_month === 0) return "Custom pricing";
-
-  // Check if it's GB-based pricing (residential)
-  if (plan.name.toLowerCase().includes("residential")) {
-    return `$${plan.price_usd_month}/GB`;
-  }
-
-  // Check if it's day-based pricing (mobile)
-  if (plan.duration_days && plan.duration_days < 7) {
-    return `$${plan.price_usd_month}/day`;
-  }
-
-  // Default to per-proxy pricing
-  return `$${plan.price_usd_month}/proxy`;
-};
-
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [productsDropdownOpen, setProductsDropdownOpen] = useState(false);
+  const [mobileProductsDropdownOpen, setMobileProductsDropdownOpen] = useState(false);
   const [plans, setPlans] = useState<Plan[]>([]);
 
   useEffect(() => {
@@ -79,11 +53,42 @@ export default function Header() {
     <header className="sticky top-0 z-50 w-full select-none border-b border-b-[#3b82f6]/25 bg-neutral-900 shadow-[0_1px_0_rgba(59,130,246,0.2)]">
       <div className="content-sizer flex items-center justify-between h-[88px] gap-8">
         {/* Logo */}
-        <Link href="/" className="flex items-center">
+        <div className="">
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <div className="w-10 h-10 bg-gradient-to-br from-[rgb(var(--brand-400))] to-[rgb(var(--brand-600))] rounded-lg flex items-center justify-center">
+                <svg
+                  className="w-6 h-6 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 10V3L4 14h7v7l9-11h-7z"
+                  />
+                </svg>
+              </div>
+              <div className="absolute -inset-1 bg-gradient-to-br from-[rgb(var(--brand-400))] to-[rgb(var(--brand-600))] rounded-lg blur opacity-30"></div>
+            </div>
+            <a
+              href={"/"}
+              className="text-2xl sm:text-xl font-bold bg-gradient-to-r from-[rgb(var(--brand-400))] via-[rgb(var(--brand-500))] to-purple-500 bg-clip-text text-transparent"
+            >
+              Highbid Proxies
+            </a>
+          </div>
+        </div>
+        {/* <Link
+          href={"/"}
+          className="flex items-center"
+        >
           <span className="text-xl font-semibold text-white tracking-tight">
-            iproxy
+            Highbid Proxies
           </span>
-        </Link>
+        </Link> */}
 
         {/* Desktop Navigation Menu */}
         <nav className="hidden lg:flex items-center gap-6 flex-1">
@@ -92,57 +97,93 @@ export default function Header() {
             onMouseEnter={() => setProductsDropdownOpen(true)}
             onMouseLeave={() => setProductsDropdownOpen(false)}
           >
-            <button className="flex items-center gap-1.5 text-[15px] font-normal text-white hover:text-[rgb(var(--brand-400))] transition-colors">
-              Pricing
+            <button className="flex items-center gap-1.5 text-[17px] font-normal text-white hover:text-[rgb(var(--brand-400))] transition-colors">
+              Proxies
               <ChevronDown className="w-3.5 h-3.5" />
             </button>
 
             {/* Products Dropdown Menu */}
             {productsDropdownOpen && plans.length > 0 && (
-              <div className="absolute top-full left-0 mt-2 w-[380px] bg-neutral-800 border border-neutral-700/50 rounded-xl shadow-2xl py-3">
+              <div
+                style={{
+                  border: "1px solid rgba(100, 100, 100, 0.4)",
+                }}
+                className="absolute top-full left-1/2 -translate-x-1/2 bg-neutral-800 border border-neutral-700/50 rounded-xl shadow-2xl py-6 pointer-events-auto flex flex-col items-center w-[380px]"
+              >
                 {plans.map((plan) => (
                   <a
                     key={plan.id}
-                    href={`${process.env.NEXT_PUBLIC_APP_BASE_URL}/signup`}
-                    className="flex items-start gap-4 px-6 py-4 hover:bg-neutral-700/30 transition-colors"
+                    href={`${process.env.NEXT_PUBLIC_APP_BASE_URL}?plan=${plan.id}&redirect=/checkout`}
+                    className="flex items-center gap-4 w-[90%] px-5 py-3 rounded-lg hover:bg-neutral-700/30 transition-all"
                   >
-                    <div className="flex-shrink-0 text-[rgb(var(--brand-400))] mt-1">
-                      {getPlanIcon(plan.name)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-[16px] font-semibold text-white">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="text-[rgb(var(--brand-400))] flex items-center">
+                          {getPlanIcon(plan.name)}
+                        </div>
+                        <h3 className="text-[14px] font-semibold text-white">
                           {plan.name}
                         </h3>
-                        {plan.created_at && isNewPlan(plan.created_at) && (
-                          <span className="px-2 py-0.5 text-[11px] font-semibold text-white bg-[rgb(var(--brand-400))] rounded-md">
-                            NEW!
-                          </span>
-                        )}
                       </div>
-                      <p className="text-[14px] text-white/60">
-                        Gets as low as {formatPriceDisplay(plan)}
-                      </p>
+
+                      {/* Display pricing tiers */}
+                      {plan.pricing && plan.pricing.length > 0 ? (
+                        <div className="flex flex-wrap items-center gap-3 mt-1">
+                          {plan.pricing
+                            .sort((a, b) => {
+                              const order = {
+                                daily: 1,
+                                weekly: 2,
+                                monthly: 3,
+                                yearly: 4,
+                              };
+                              return order[a.duration] - order[b.duration];
+                            })
+                            .map((pricing, index) => {
+                              const durationShort = {
+                                daily: "day",
+                                weekly: "week",
+                                monthly: "month",
+                                yearly: "year",
+                              };
+                              const durationUnit =
+                                durationShort[pricing.duration] ||
+                                pricing.duration;
+
+                              return (
+                                <div
+                                  key={index}
+                                  className="flex items-center gap-1 bg-neutral-700/40 border border-neutral-600/40 rounded-md px-1 py-1 text-xs text-white hover:border-[rgb(var(--brand-400))] transition-all"
+                                >
+                                  <span className="text-[rgb(var(--brand-400))] font-semibold">
+                                    ${pricing.price_usd}
+                                  </span>
+                                  <span className="text-white/70">
+                                    / {durationUnit}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                        </div>
+                      ) : (
+                        <p className="text-[13px] text-white/60 mt-1">
+                          Custom pricing
+                        </p>
+                      )}
                     </div>
                   </a>
                 ))}
               </div>
             )}
           </div>
-          <button className="flex items-center gap-1.5 text-[15px] font-normal text-white hover:text-[rgb(var(--brand-400))] transition-colors">
-            Why choose us
-          </button>
-          <button className="flex items-center gap-1.5 text-[15px] font-normal text-white hover:text-[rgb(var(--brand-400))] transition-colors">
-            Docs
-          </button>
         </nav>
 
         {/* Right Side Actions */}
         <div className="flex items-center gap-3">
-          {/* Log in Button - Always visible */}
+          {/* Log in Button - Text only on mobile, bordered on desktop */}
           <a
             href={process.env.NEXT_PUBLIC_APP_BASE_URL}
-            className="px-4 sm:px-6 py-2 sm:py-2.5 text-[14px] sm:text-[15px] font-medium text-[rgb(var(--brand-400))] border-2 border-[rgb(var(--brand-400))] rounded-[10px] hover:bg-[rgb(var(--brand-400)/0.1)] transition-all"
+            className="px-2 sm:px-4 md:px-6 py-1 sm:py-2 md:py-2.5 text-[14px] sm:text-[15px] font-medium text-[rgb(var(--brand-400))] hover:text-[#fff] sm:border-2 sm:border-[rgb(var(--brand-400))] sm:rounded-[10px] sm:hover:bg-[rgb(var(--brand-500))] transition-all whitespace-nowrap"
           >
             Log in
           </a>
@@ -174,14 +215,82 @@ export default function Header() {
       {mobileMenuOpen && (
         <div className="lg:hidden border-t border-[rgba(255,255,255,0.1)] bg-neutral-900">
           <nav className="content-sizer py-4 flex flex-col gap-4">
-            <button className="flex items-center justify-between text-[15px] font-normal text-white hover:text-[rgb(var(--brand-400))] transition-colors py-2">
-              Products
-              <ChevronDown className="w-4 h-4" />
-            </button>
-            <button className="flex items-center justify-between text-[15px] font-normal text-white hover:text-[rgb(var(--brand-400))] transition-colors py-2">
-              Resources
-              <ChevronDown className="w-4 h-4" />
-            </button>
+            <div>
+              <button
+                onClick={() => setMobileProductsDropdownOpen(!mobileProductsDropdownOpen)}
+                className="flex items-center justify-between text-[15px] font-normal text-white hover:text-[rgb(var(--brand-400))] transition-colors py-2 w-full"
+              >
+                Proxies
+                <ChevronDown className={`w-4 h-4 transition-transform ${mobileProductsDropdownOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {/* Mobile Products Dropdown */}
+              {mobileProductsDropdownOpen && plans.length > 0 && (
+                <div className="mt-2 flex flex-col gap-2">
+                  {plans.map((plan) => (
+                    <a
+                      key={plan.id}
+                      href={`${process.env.NEXT_PUBLIC_APP_BASE_URL}?plan=${plan.id}&redirect=/checkout`}
+                      className="flex flex-col gap-2 px-4 py-3 rounded-lg bg-neutral-800/50 border border-neutral-700/50 hover:border-[rgb(var(--brand-400))]/30 transition-all"
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="text-[rgb(var(--brand-400))] flex items-center">
+                          {getPlanIcon(plan.name)}
+                        </div>
+                        <h3 className="text-[14px] font-semibold text-white">
+                          {plan.name}
+                        </h3>
+                      </div>
+
+                      {/* Display pricing tiers */}
+                      {plan.pricing && plan.pricing.length > 0 ? (
+                        <div className="flex flex-wrap items-center gap-2">
+                          {plan.pricing
+                            .sort((a, b) => {
+                              const order = {
+                                daily: 1,
+                                weekly: 2,
+                                monthly: 3,
+                                yearly: 4,
+                              };
+                              return order[a.duration] - order[b.duration];
+                            })
+                            .map((pricing, index) => {
+                              const durationShort = {
+                                daily: "day",
+                                weekly: "week",
+                                monthly: "month",
+                                yearly: "year",
+                              };
+                              const durationUnit =
+                                durationShort[pricing.duration] ||
+                                pricing.duration;
+
+                              return (
+                                <div
+                                  key={index}
+                                  className="flex items-center gap-1 bg-neutral-700/40 border border-neutral-600/40 rounded-md px-2 py-1 text-xs text-white"
+                                >
+                                  <span className="text-[rgb(var(--brand-400))] font-semibold">
+                                    ${pricing.price_usd}
+                                  </span>
+                                  <span className="text-white/70">
+                                    / {durationUnit}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                        </div>
+                      ) : (
+                        <p className="text-[13px] text-white/60">
+                          Custom pricing
+                        </p>
+                      )}
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
 
             {/* Register button in mobile menu */}
             <a

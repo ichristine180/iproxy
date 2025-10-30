@@ -34,17 +34,23 @@ import {
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 
+interface PlanPricing {
+  id: string;
+  plan_id: string;
+  duration: "daily" | "weekly" | "monthly" | "yearly";
+  price_usd: number;
+  created_at: string;
+}
+
 interface Plan {
   id: string;
   name: string;
   channel: string;
-  price_usd_month: number;
   rotation_api: boolean;
   description: string;
   features: string[];
   is_active: boolean;
-  duration_days?: number;
-  country?: string;
+  pricing?: PlanPricing[];
 }
 
 interface Order {
@@ -243,9 +249,27 @@ function DashboardPageContent() {
     return () => clearInterval(interval);
   }, [orders, isLoading, fetchData]);
 
-  // Calculate price per hour
-  const getPricePerHour = (pricePerMonth: number) => {
-    return (pricePerMonth / (30 * 24)).toFixed(4);
+  // Get the lowest price from available pricing tiers
+  const getLowestPrice = (plan: Plan): { price: number; duration: string } => {
+    if (!plan.pricing || plan.pricing.length === 0) {
+      return { price: 0, duration: "month" };
+    }
+
+    const lowestPricing = plan.pricing.reduce((min, current) =>
+      current.price_usd < min.price_usd ? current : min
+    );
+
+    const durationMap: { [key: string]: string } = {
+      daily: "day",
+      weekly: "week",
+      monthly: "month",
+      yearly: "year",
+    };
+
+    return {
+      price: lowestPricing.price_usd,
+      duration: durationMap[lowestPricing.duration] || lowestPricing.duration,
+    };
   };
 
   // Handle invoice download
@@ -610,7 +634,7 @@ function DashboardPageContent() {
           </div>
         )}
         {/* Product Information Card - Only show for active orders */}
-        {orderProxies.length > 0 && selectedOrder.status === 'active' && (
+        {orderProxies.length > 0 && selectedOrder.status === "active" && (
           <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6">
             <h3 className="text-xl font-semibold text-white mb-4">
               Product information
@@ -827,7 +851,7 @@ function DashboardPageContent() {
             <h2 className="text-2xl font-semibold text-white">
               Order #{selectedOrder.id.slice(0, 6)} information
             </h2>
-            {selectedOrder.status === 'active' && (
+            {selectedOrder.status === "active" && (
               <Button
                 onClick={() => handleExtendOrder(selectedOrder)}
                 className="bg-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-200))] text-white"
@@ -850,14 +874,22 @@ function DashboardPageContent() {
                 {(() => {
                   const status = selectedOrder.status;
                   const statusStyles = {
-                    active: "bg-green-500/10 text-green-400 border-green-500/20",
-                    pending: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
+                    active:
+                      "bg-green-500/10 text-green-400 border-green-500/20",
+                    pending:
+                      "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
                     expired: "bg-red-500/10 text-red-400 border-red-500/20",
                     failed: "bg-red-500/10 text-red-400 border-red-500/20",
-                    cancelled: "bg-neutral-500/10 text-neutral-400 border-neutral-500/20",
+                    cancelled:
+                      "bg-neutral-500/10 text-neutral-400 border-neutral-500/20",
                   };
                   return (
-                    <span className={statusStyles[status as keyof typeof statusStyles] || statusStyles.pending}>
+                    <span
+                      className={
+                        statusStyles[status as keyof typeof statusStyles] ||
+                        statusStyles.pending
+                      }
+                    >
                       {status}
                     </span>
                   );
@@ -884,8 +916,11 @@ function DashboardPageContent() {
                 {(() => {
                   const startDate = new Date(selectedOrder.start_at);
                   const expiresDate = new Date(selectedOrder.expires_at);
-                  const durationMs = expiresDate.getTime() - startDate.getTime();
-                  const durationDays = Math.ceil(durationMs / (1000 * 60 * 60 * 24));
+                  const durationMs =
+                    expiresDate.getTime() - startDate.getTime();
+                  const durationDays = Math.ceil(
+                    durationMs / (1000 * 60 * 60 * 24)
+                  );
 
                   if (durationDays === 1) return "1 day";
                   if (durationDays === 7) return "7 days";
@@ -1075,15 +1110,28 @@ function DashboardPageContent() {
                     </h3>
 
                     <div className="mb-4 pb-4 border-b border-neutral-700">
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-3xl font-bold text-[rgb(var(--brand-400))]">
-                          ${getPricePerHour(selectedPlan.price_usd_month)}
-                        </span>
-                        <span className="text-sm text-neutral-400">/hour</span>
-                      </div>
-                      <div className="text-xs text-neutral-500 mt-1">
-                        ${selectedPlan.price_usd_month}/month
-                      </div>
+                      {(() => {
+                        const { price, duration } =
+                          getLowestPrice(selectedPlan);
+                        return (
+                          <>
+                            <div className="flex items-baseline gap-2">
+                              <span className="text-3xl font-bold text-[rgb(var(--brand-400))]">
+                                ${price}
+                              </span>
+                              <span className="text-sm text-neutral-400">
+                                /{duration}
+                              </span>
+                            </div>
+                            {selectedPlan.pricing &&
+                              selectedPlan.pricing.length > 1 && (
+                                <div className="text-xs text-neutral-500 mt-1">
+                                  Starting from ${price}/{duration}
+                                </div>
+                              )}
+                          </>
+                        );
+                      })()}
                     </div>
 
                     {selectedPlan.description && (
@@ -1118,7 +1166,7 @@ function DashboardPageContent() {
                           Checking...
                         </>
                       ) : (
-                        `Buy now - $${getPricePerHour(selectedPlan.price_usd_month)}/hr`
+                        `Buy now`
                       )}
                     </button>
                   </>
@@ -1212,15 +1260,22 @@ function DashboardPageContent() {
                           // Helper function to get status badge styles
                           const getStatusBadge = (status: string) => {
                             const statusStyles = {
-                              active: "bg-green-500/10 text-green-400 border-green-500/20",
-                              pending: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
-                              expired: "bg-red-500/10 text-red-400 border-red-500/20",
-                              failed: "bg-red-500/10 text-red-400 border-red-500/20",
-                              cancelled: "bg-neutral-500/10 text-neutral-400 border-neutral-500/20",
+                              active:
+                                "bg-green-500/10 text-green-400 border-green-500/20",
+                              pending:
+                                "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
+                              expired:
+                                "bg-red-500/10 text-red-400 border-red-500/20",
+                              failed:
+                                "bg-red-500/10 text-red-400 border-red-500/20",
+                              cancelled:
+                                "bg-neutral-500/10 text-neutral-400 border-neutral-500/20",
                             };
 
                             return (
-                              <span className={`inline-flex px-3 py-1 rounded-full text-sm border capitalize ${statusStyles[status as keyof typeof statusStyles] || statusStyles.pending}`}>
+                              <span
+                                className={`inline-flex px-3 py-1 rounded-full text-sm border capitalize ${statusStyles[status as keyof typeof statusStyles] || statusStyles.pending}`}
+                              >
                                 {status}
                               </span>
                             );
@@ -1303,9 +1358,11 @@ function DashboardPageContent() {
                                         <Eye className="mr-2 h-4 w-4" />
                                         <span>View Details</span>
                                       </DropdownMenuItem>
-                                      {order.status === 'active' && (
+                                      {order.status === "active" && (
                                         <DropdownMenuItem
-                                          onClick={() => handleExtendOrder(order)}
+                                          onClick={() =>
+                                            handleExtendOrder(order)
+                                          }
                                           className="cursor-pointer"
                                         >
                                           <RefreshCw className="mr-2 h-4 w-4" />

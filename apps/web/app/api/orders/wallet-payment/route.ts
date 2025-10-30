@@ -28,7 +28,8 @@ export async function POST(request: NextRequest) {
     const {
       plan_id,
       quantity = 1,
-      duration_days = 30, // Default to 30 days (1 month)
+      duration_quantity = 1, // Number of duration units (e.g., 2 months)
+      duration_unit = 'monthly', // 'daily', 'weekly', 'monthly', 'yearly'
       promo_code,
       ip_change_enabled = false,
       ip_change_interval_minutes = 0,
@@ -49,15 +50,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (duration_quantity <= 0) {
+      return NextResponse.json(
+        { success: false, error: "duration_quantity must be greater than 0" },
+        { status: 400 }
+      );
+    }
+
     const supabaseAdmin = createSupabaseClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    // Fetch plan details
+    // Fetch plan details with pricing
     const { data: plan, error: planError } = await supabaseAdmin
       .from("plans")
-      .select("*")
+      .select(`
+        *,
+        pricing:plan_pricing(*)
+      `)
       .eq("id", plan_id)
       .single();
 
@@ -68,10 +79,43 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Calculate total amount based on duration and quantity
-    // price_usd_month is for 30 days, so prorate based on duration
-    const pricePerDay = parseFloat(plan.price_usd_month) / 30;
-    const totalAmount = pricePerDay * duration_days * quantity;
+    // Find the pricing for the selected duration
+    const selectedPricing = plan.pricing?.find((p: any) => p.duration === duration_unit);
+
+    if (!selectedPricing) {
+      return NextResponse.json(
+        { success: false, error: `Pricing not found for duration: ${duration_unit}` },
+        { status: 404 }
+      );
+    }
+
+    // Calculate base amount
+    const pricePerUnit = parseFloat(selectedPricing.price_usd);
+    let totalAmount = pricePerUnit * duration_quantity * quantity;
+
+    // Add rotation costs if enabled
+    if (ip_change_enabled && (ip_change_interval_minutes === 3 || ip_change_interval_minutes === 4)) {
+      const rotationCostPerUnit = ip_change_interval_minutes === 3 ? 2 : 1;
+      const totalRotationCost = rotationCostPerUnit * duration_quantity * quantity;
+      totalAmount += totalRotationCost;
+    }
+
+    // Calculate duration in days for expiration
+    const durationInDays = (() => {
+      switch (duration_unit) {
+        case 'daily':
+          return duration_quantity * 1;
+        case 'weekly':
+          return duration_quantity * 7;
+        case 'monthly':
+          return duration_quantity * 30;
+        case 'yearly':
+          return duration_quantity * 365;
+        default:
+          return 30;
+      }
+    })();
+    const duration_days = durationInDays;
 
     // Initialize quota manager
     const quotaManager = createQuotaManager(supabaseAdmin);
@@ -140,7 +184,9 @@ export async function POST(request: NextRequest) {
           promo_code: promo_code || null,
           ip_change_enabled,
           ip_change_interval_minutes,
-          duration_days,
+          duration_quantity,
+          duration_unit,
+          duration_in_days: duration_days,
         },
       })
       .select()

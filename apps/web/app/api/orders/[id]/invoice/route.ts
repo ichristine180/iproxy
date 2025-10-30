@@ -309,7 +309,7 @@ function generateInvoiceHTML(order: any, user: any): string {
             <strong>${order.plan?.name || 'Proxy Service'}</strong><br>
             <small>${order.plan?.description || ''}</small>
           </td>
-          <td>${order.duration_days || 30} days</td>
+          <td>${order.metadata?.duration_in_days || 30} days</td>
           <td>$${order.total_amount.toFixed(2)}</td>
           <td style="text-align: right;">$${order.total_amount.toFixed(2)}</td>
         </tr>

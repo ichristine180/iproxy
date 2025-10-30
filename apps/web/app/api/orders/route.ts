@@ -86,7 +86,8 @@ export async function POST(request: NextRequest) {
     const {
       plan_id,
       quantity = 1,
-      duration_days = 30,
+      duration_quantity = 1, // Number of duration units (e.g., 2 months)
+      duration_unit = 'monthly', // 'daily', 'weekly', 'monthly', 'yearly'
       pay_currency,
       promo_code,
       ip_change_enabled = false,
@@ -108,15 +109,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (duration_quantity <= 0) {
+      return NextResponse.json(
+        { success: false, error: 'duration_quantity must be greater than 0' },
+        { status: 400 }
+      );
+    }
+
     const supabaseAdmin = createSupabaseClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    // Fetch plan details
+    // Fetch plan details with pricing
     const { data: plan, error: planError } = await supabaseAdmin
       .from('plans')
-      .select('*')
+      .select(`
+        *,
+        pricing:plan_pricing(*)
+      `)
       .eq('id', plan_id)
       .single();
 
@@ -127,12 +138,34 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Calculate total amount based on duration and quantity
-    const pricePerDay = parseFloat(plan.price_usd_month) / 30;
-    const totalAmount = pricePerDay * duration_days * quantity;
+    // Find the pricing for the selected duration
+    const selectedPricing = plan.pricing?.find((p: any) => p.duration === duration_unit);
+
+    if (!selectedPricing) {
+      return NextResponse.json(
+        { success: false, error: `Pricing not found for duration: ${duration_unit}` },
+        { status: 404 }
+      );
+    }
+
+    // Calculate base amount
+    const pricePerUnit = parseFloat(selectedPricing.price_usd);
+    let totalAmount = pricePerUnit * duration_quantity * quantity;
+
+    // Add rotation costs if enabled
+    if (ip_change_enabled && (ip_change_interval_minutes === 3 || ip_change_interval_minutes === 4)) {
+      const rotationCostPerUnit = ip_change_interval_minutes === 3 ? 2 : 1;
+      const totalRotationCost = rotationCostPerUnit * duration_quantity * quantity;
+      totalAmount += totalRotationCost;
+    }
 
     // Create invoice via payments API
     const origin = request.headers.get('origin') || process.env.NEXT_PUBLIC_APP_BASE_URL;
+
+    // Create a readable duration description
+    const durationLabel = duration_quantity === 1
+      ? duration_unit.replace('ly', '').replace('dai', 'day').replace('week', 'week').replace('month', 'month').replace('year', 'year')
+      : `${duration_quantity} ${duration_unit.replace('ly', '').replace('dai', 'day').replace('week', 'week').replace('month', 'month').replace('year', 'year')}s`;
 
     const invoiceResponse = await fetch(`${origin}/api/payments/invoice`, {
       method: 'POST',
@@ -143,11 +176,12 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({
         plan_id,
         quantity,
-        duration_days,
+        duration_quantity,
+        duration_unit,
         price_amount: totalAmount,
         price_currency: 'usd',
         pay_currency: pay_currency || 'btc',
-        order_description: `${plan.name} - ${quantity} proxy${quantity > 1 ? 'ies' : ''} - ${duration_days} days`,
+        order_description: `${plan.name} - ${quantity} proxy${quantity > 1 ? 'ies' : ''} - ${durationLabel}`,
         promo_code,
         ip_change_enabled,
         ip_change_interval_minutes,

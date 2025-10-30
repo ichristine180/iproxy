@@ -142,10 +142,10 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Calculate expiry date using plan's duration_days (default 30 days, or 7 days for free trial)
+    // Calculate expiry date using order's metadata.duration_in_days (default 30 days, or 7 days for free trial)
     const expiryDate = new Date();
     const daysToAdd =
-      order.total_amount === 0 ? 7 : order.plan?.duration_days || 30;
+      order.total_amount === 0 ? 7 : order.metadata?.duration_in_days || 30;
     expiryDate.setDate(expiryDate.getDate() + daysToAdd);
 
     // Update payment status if it exists
@@ -232,7 +232,7 @@ export async function POST(request: NextRequest) {
           plan: order.plan,
           quantity: order.quantity || 1,
           totalAmount: order.total_amount,
-          duration_days: order.metadata?.duration_days,
+          duration_days: order.metadata?.duration_in_days || 30,
           connectionId: selectedConnection.id,
           origin,
         });

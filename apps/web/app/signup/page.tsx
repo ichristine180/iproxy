@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { Eye, EyeOff, Check } from "lucide-react";
 
-export default function SignupPage() {
+function SignupForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -18,6 +19,18 @@ export default function SignupPage() {
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // Capture redirect params on mount
+  useEffect(() => {
+    const plan = searchParams.get("plan");
+    const redirect = searchParams.get("redirect");
+
+    if (plan || redirect) {
+      // Store in sessionStorage to persist through signup flow
+      if (plan) sessionStorage.setItem("pending_plan", plan);
+      if (redirect) sessionStorage.setItem("pending_redirect", redirect);
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,7 +89,7 @@ export default function SignupPage() {
               <p className="text-white/70">
                 Already have an account?{" "}
                 <Link
-                  href="/"
+                  href={`/${searchParams.toString() ? `?${searchParams.toString()}` : ""}`}
                   className="text-[rgb(var(--brand-400))] hover:underline"
                 >
                   Log In
@@ -430,5 +443,13 @@ export default function SignupPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-neutral-950 flex items-center justify-center"><div className="text-white">Loading...</div></div>}>
+      <SignupForm />
+    </Suspense>
   );
 }

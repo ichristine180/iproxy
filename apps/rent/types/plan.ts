@@ -1,15 +1,22 @@
+export interface PlanPricing {
+  id: string;
+  plan_id: string;
+  duration: 'daily' | 'weekly' | 'monthly' | 'yearly';
+  price_usd: number;
+  created_at: string;
+}
+
 export interface Plan {
   id: string;
   name: string;
   channel: 'mobile' | 'residential' | 'datacenter';
-  price_usd_month: number;
-  duration_days: number;
   rotation_api: boolean;
   description: string | null;
   features: string[];
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  pricing?: PlanPricing[]; // Optional array of pricing tiers
 }
 
 export interface PlanDisplay {

@@ -179,9 +179,15 @@ export const DashboardLayout = ({
         {/* Logo Section */}
         <div className="h-16 border-b border-neutral-800 flex items-center justify-between px-4 rounded-t-xl flex-shrink-0">
           <div className="flex items-center gap-2 overflow-hidden">
-            <h2 className="font-bold text-white text-lg whitespace-nowrap lg:hidden">iProxy</h2>
-            <h2 className={`font-bold text-white text-lg whitespace-nowrap hidden lg:block ${sidebarCollapsed ? "hidden" : ""}`}>iProxy</h2>
-            <h2 className={`font-bold text-white text-lg hidden lg:block ${sidebarCollapsed ? "" : "hidden"}`}>iP</h2>
+            <h2 className="font-bold text-white text-lg whitespace-nowrap lg:hidden">
+              {" "}
+              Highbid Proxies
+            </h2>
+            <h2
+              className={`font-bold text-white text-lg whitespace-nowrap hidden lg:block ${sidebarCollapsed ? "hidden" : ""}`}
+            >
+              Highbid Proxies
+            </h2>
           </div>
           {/* Toggle button for desktop, Close button for mobile */}
           <div className="flex items-center gap-2">
@@ -197,7 +203,9 @@ export const DashboardLayout = ({
               className="hidden lg:block text-neutral-400 hover:text-white transition-colors"
               title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             >
-              <ChevronLeft className={`h-5 w-5 transition-transform ${sidebarCollapsed ? "rotate-180" : ""}`} />
+              <ChevronLeft
+                className={`h-5 w-5 transition-transform ${sidebarCollapsed ? "rotate-180" : ""}`}
+              />
             </button>
           </div>
         </div>
@@ -215,7 +223,11 @@ export const DashboardLayout = ({
             title="Dashboard"
           >
             <LayoutDashboard className="h-5 w-5 flex-shrink-0" />
-            <span className={`text-sm font-medium lg:${sidebarCollapsed ? "hidden" : "block"}`}>Dashboard</span>
+            <span
+              className={`text-sm font-medium lg:${sidebarCollapsed ? "hidden" : "block"}`}
+            >
+              Dashboard
+            </span>
           </Link>
 
           {/* Invoices */}
@@ -230,7 +242,11 @@ export const DashboardLayout = ({
             title="Invoices"
           >
             <FileText className="h-5 w-5 flex-shrink-0" />
-            <span className={`text-sm font-medium lg:${sidebarCollapsed ? "hidden" : "block"}`}>Invoices</span>
+            <span
+              className={`text-sm font-medium lg:${sidebarCollapsed ? "hidden" : "block"}`}
+            >
+              Invoices
+            </span>
           </Link>
 
           {/* Deposit history */}
@@ -244,7 +260,11 @@ export const DashboardLayout = ({
             title="Deposit history"
           >
             <CreditCard className="h-5 w-5 flex-shrink-0" />
-            <span className={`text-sm font-medium lg:${sidebarCollapsed ? "hidden" : "block"}`}>Deposit history</span>
+            <span
+              className={`text-sm font-medium lg:${sidebarCollapsed ? "hidden" : "block"}`}
+            >
+              Deposit history
+            </span>
           </Link>
 
           {/* Proxies Section */}
@@ -260,7 +280,9 @@ export const DashboardLayout = ({
                 className={`h-4 w-4 transition-transform ${proxiesOpen ? "rotate-180" : ""}`}
               />
             </button>
-            <div className={`px-4 py-2 text-neutral-500 text-center hidden ${sidebarCollapsed ? "lg:block" : ""}`}>
+            <div
+              className={`px-4 py-2 text-neutral-500 text-center hidden ${sidebarCollapsed ? "lg:block" : ""}`}
+            >
               <Server className="h-4 w-4 mx-auto" />
             </div>
             {(proxiesOpen || sidebarCollapsed) && (
@@ -280,7 +302,11 @@ export const DashboardLayout = ({
                       title={channelInfo.name}
                     >
                       <ChannelIcon className="h-4 w-4 flex-shrink-0" />
-                      <span className={`text-sm lg:${sidebarCollapsed ? "hidden" : "block"}`}>{channelInfo.name}</span>
+                      <span
+                        className={`text-sm lg:${sidebarCollapsed ? "hidden" : "block"}`}
+                      >
+                        {channelInfo.name}
+                      </span>
                     </Link>
                   );
                 })}
@@ -301,7 +327,9 @@ export const DashboardLayout = ({
                 className={`h-4 w-4 transition-transform ${resourcesOpen ? "rotate-180" : ""}`}
               />
             </button>
-            <div className={`px-4 py-2 text-neutral-500 text-center hidden ${sidebarCollapsed ? "lg:block" : ""}`}>
+            <div
+              className={`px-4 py-2 text-neutral-500 text-center hidden ${sidebarCollapsed ? "lg:block" : ""}`}
+            >
               <BookOpen className="h-4 w-4 mx-auto" />
             </div>
             {(resourcesOpen || sidebarCollapsed) && (
@@ -312,7 +340,11 @@ export const DashboardLayout = ({
                   title="Support"
                 >
                   <HelpCircle className="h-4 w-4 flex-shrink-0" />
-                  <span className={`text-sm lg:${sidebarCollapsed ? "hidden" : "block"}`}>Support</span>
+                  <span
+                    className={`text-sm lg:${sidebarCollapsed ? "hidden" : "block"}`}
+                  >
+                    Support
+                  </span>
                 </Link>
                 <Link
                   href="/dashboard/community"
@@ -320,7 +352,11 @@ export const DashboardLayout = ({
                   title="Community"
                 >
                   <Users className="h-4 w-4 flex-shrink-0" />
-                  <span className={`text-sm lg:${sidebarCollapsed ? "hidden" : "block"}`}>Community</span>
+                  <span
+                    className={`text-sm lg:${sidebarCollapsed ? "hidden" : "block"}`}
+                  >
+                    Community
+                  </span>
                 </Link>
                 <Link
                   href="/dashboard/help-center"
@@ -328,7 +364,11 @@ export const DashboardLayout = ({
                   title="Documentation"
                 >
                   <BookOpen className="h-4 w-4 flex-shrink-0" />
-                  <span className={`text-sm lg:${sidebarCollapsed ? "hidden" : "block"}`}>Documentation</span>
+                  <span
+                    className={`text-sm lg:${sidebarCollapsed ? "hidden" : "block"}`}
+                  >
+                    Documentation
+                  </span>
                 </Link>
               </div>
             )}
@@ -364,7 +404,7 @@ export const DashboardLayout = ({
                 </span>
               </a>
               <a
-              href="/dashboard/deposit"
+                href="/dashboard/deposit"
                 style={{
                   border: "1px solid #73a3f1ff",
                 }}

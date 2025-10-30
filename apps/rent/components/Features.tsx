@@ -1,36 +1,48 @@
-import { Shield, DollarSign, Infinity, HeadphonesIcon, Gauge, Network } from "lucide-react";
+import {
+  Shield,
+  DollarSign,
+  Infinity,
+  Flag,
+  Gauge,
+  RotateCw,
+} from "lucide-react";
 
 const features = [
   {
     icon: Shield,
-    title: "Maximum Privacy Protection",
-    description: "Advanced encryption and anonymous browsing ensure your identity and data remain completely secure throughout all proxy sessions."
+    title: "Dedicated",
+    description:
+      "No splicing, no sharing. Your proxy is exclusive to you and only you.",
   },
   {
     icon: DollarSign,
-    title: "Transparent Pay-As-You-Go",
-    description: "Only pay for what you actually use with our flexible pricing model. No hidden fees, contracts, or minimum commitments required."
+    title: "Raw",
+    description:
+      "Connect and manage multiple accounts per proxy without issues.",
   },
   {
     icon: Infinity,
-    title: "Unlimited Bandwidth Access",
-    description: "Experience true unlimited data transfer with no throttling or caps. Scale your operations without worrying about bandwidth limits."
+    title: "Limitless",
+    description:
+      "Unlimited 5G LTE, 24/7 without limits on threads, connections or PCs.",
   },
   {
-    icon: HeadphonesIcon,
-    title: "24/7 Expert Support",
-    description: "Get instant assistance from our dedicated support team anytime. We're here to help you succeed with quick resolutions and expert guidance."
+    icon: Flag,
+    title: "USA",
+    description: "Proxy IPs located in the United States.",
   },
   {
     icon: Gauge,
-    title: "Blazing Fast Speeds",
-    description: "Enjoy ultra-low latency and high-speed connections optimized for performance. Perfect for time-sensitive tasks and data-intensive operations."
+    title: "Huge IP Pool",
+    description:
+      "Access to millions of IPs distributed across multiple network providers.",
   },
   {
-    icon: Network,
-    title: "Multi-Protocol Support",
-    description: "Full compatibility with HTTP, HTTPS, and SOCKS5 protocols. Seamlessly integrate with any tool or application in your workflow."
-  }
+    icon: RotateCw,
+    title: "Rotating Proxies",
+    description:
+      "Optionally set custom rotation intervals and keep your IPs fresh.",
+  },
 ];
 
 const Features = () => {
@@ -38,30 +50,58 @@ const Features = () => {
   const duplicatedFeatures = [...features, ...features];
 
   return (
-    <section className="py-10 sm:py-20 md:py-24 relative bg-neutral-900 overflow-hidden">
+    <section className="relative bg-neutral-900 mb-10">
       <div className="content-sizer px-4">
-        <div className="text-center mb-16 sm:mb-20">
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4">
+        <div className="text-center mb-12 sm:mb-16">
+          <h2 className="text-2xl sm:text-3xl md:text-[32px] font-bold text-white mb-4">
             Why Choose Our Proxies?
           </h2>
         </div>
+
+        {/* Mobile/Tablet Grid - Hidden on desktop */}
+        <div className="lg:hidden grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 max-w-7xl mx-auto">
+          {features.map((feature, index) => (
+            <div
+              key={index}
+              className="bg-neutral-800/50 border border-neutral-700/50 rounded-xl p-6 sm:p-8 hover:border-[rgb(var(--brand-400))]/30 transition-all duration-300"
+            >
+              {/* Icon + Title inline */}
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-12 h-12 rounded-lg bg-[rgb(var(--brand-400))]/10 border border-[rgb(var(--brand-400))]/20 flex items-center justify-center flex-shrink-0">
+                  <feature.icon className="w-6 h-6 text-[rgb(var(--brand-400))]" />
+                </div>
+                <h3 className="text-lg sm:text-xl font-semibold text-white">
+                  {feature.title}
+                </h3>
+              </div>
+
+              <p className="text-sm text-white/70 leading-relaxed">
+                {feature.description}
+              </p>
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* Infinite Scroll Container */}
-      <div className="relative">
-        <div className="overflow-hidden pb-6">
-          <div className="flex gap-6 px-4 animate-scroll">
+      {/* Desktop Infinite Scroll - Hidden on mobile/tablet */}
+      <div className="hidden lg:block relative overflow-hidden">
+        <div className="pb-6">
+          <div className="flex gap-6 animate-scroll">
             {duplicatedFeatures.map((feature, index) => (
               <div
                 key={index}
-                className="w-[340px] sm:w-[380px] bg-neutral-800/50 border border-neutral-700/50 rounded-xl p-6 sm:p-8 hover:border-[rgb(var(--brand-400))]/30 transition-all duration-300 flex-shrink-0"
+                className="w-[380px] bg-neutral-800/50 border border-neutral-700/50 rounded-xl p-8 hover:border-[rgb(var(--brand-400))]/30 transition-all duration-300 flex-shrink-0"
               >
-                <div className="w-14 h-14 rounded-lg bg-[rgb(var(--brand-400))]/10 border border-[rgb(var(--brand-400))]/20 flex items-center justify-center mb-4">
-                  <feature.icon className="w-7 h-7 text-[rgb(var(--brand-400))]" />
+                {/* Icon + Title inline */}
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-12 h-12 rounded-lg bg-[rgb(var(--brand-400))]/10 border border-[rgb(var(--brand-400))]/20 flex items-center justify-center">
+                    <feature.icon className="w-6 h-6 text-[rgb(var(--brand-400))]" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-white">
+                    {feature.title}
+                  </h3>
                 </div>
-                <h3 className="text-xl font-semibold text-white mb-3">
-                  {feature.title}
-                </h3>
+
                 <p className="text-sm text-white/70 leading-relaxed">
                   {feature.description}
                 </p>
@@ -71,25 +111,14 @@ const Features = () => {
         </div>
       </div>
 
-      {/* Custom scrollbar and animation styling */}
+      {/* Animation styling */}
       <style jsx>{`
         @keyframes scroll {
           0% {
             transform: translateX(0);
           }
           100% {
-            transform: translateX(calc(-1 * (340px + 24px) * 6));
-          }
-        }
-
-        @media (min-width: 640px) {
-          @keyframes scroll {
-            0% {
-              transform: translateX(0);
-            }
-            100% {
-              transform: translateX(calc(-1 * (380px + 24px) * 6));
-            }
+            transform: translateX(calc(-1 * (380px + 24px) * 6));
           }
         }
 

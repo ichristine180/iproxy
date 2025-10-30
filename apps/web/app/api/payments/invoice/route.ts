@@ -8,7 +8,8 @@ const NOWPAYMENTS_API_URL = 'https://api.nowpayments.io/v1';
 interface CreateInvoiceRequest {
   plan_id: string;
   quantity?: number;
-  duration_days?: number;
+  duration_quantity?: number;
+  duration_unit?: 'daily' | 'weekly' | 'monthly' | 'yearly';
   price_amount: number;
   price_currency?: string;
   pay_currency?: string;
@@ -51,7 +52,8 @@ export async function POST(request: NextRequest) {
     const {
       plan_id,
       quantity = 1,
-      duration_days = 30,
+      duration_quantity = 1,
+      duration_unit = 'monthly',
       price_amount,
       price_currency = 'usd',
       pay_currency,
@@ -137,9 +139,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Calculate duration in days based on duration_unit
+    const durationInDays = (() => {
+      switch (duration_unit) {
+        case 'daily':
+          return duration_quantity * 1;
+        case 'weekly':
+          return duration_quantity * 7;
+        case 'monthly':
+          return duration_quantity * 30;
+        case 'yearly':
+          return duration_quantity * 365;
+        default:
+          return 30; // Default to 30 days
+      }
+    })();
+
     // Create order with initial dates based on duration
     const now = new Date().toISOString();
-    const expiresAt = new Date(Date.now() + duration_days * 24 * 60 * 60 * 1000).toISOString();
+    const expiresAt = new Date(Date.now() + durationInDays * 24 * 60 * 60 * 1000).toISOString();
 
     const { data: order, error: orderError } = await supabaseAdmin
       .from('orders')
@@ -158,7 +176,9 @@ export async function POST(request: NextRequest) {
           promo_code: promo_code || null,
           ip_change_enabled,
           ip_change_interval_minutes,
-          duration_days,
+          duration_quantity,
+          duration_unit,
+          duration_in_days: durationInDays,
         },
       })
       .select()

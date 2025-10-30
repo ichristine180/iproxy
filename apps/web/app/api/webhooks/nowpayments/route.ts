@@ -472,16 +472,16 @@ async function processWebhook(
       );
     }
 
-    // Fetch current order to check if dates need to be set and get plan duration
+    // Fetch current order to check if dates need to be set and get duration
     const { data: currentOrderData } = await supabase
       .from("orders")
-      .select("start_at, expires_at, plan:plans(duration_days)")
+      .select("start_at, expires_at, metadata")
       .eq("id", payment.order_id)
       .single();
 
     const now = new Date().toISOString();
-    // Use plan's duration_days or default to 30 days
-    const durationDays = currentOrderData?.plan?.duration_days || 30;
+    // Use order's metadata.duration_in_days or default to 30 days
+    const durationDays = currentOrderData?.metadata?.duration_in_days || 30;
     const expiresAt = new Date(
       Date.now() + durationDays * 24 * 60 * 60 * 1000
     ).toISOString();
@@ -638,7 +638,7 @@ async function provisionProxyForOrder(
       plan: order.plan,
       quantity: order.quantity || 1,
       totalAmount: order.total_amount,
-      duration_days: order.metadata?.duration_days,
+      duration_days: order.metadata?.duration_in_days || 30,
       connectionId: selectedConnection.id,
       origin,
     });

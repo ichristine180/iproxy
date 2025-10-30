@@ -352,7 +352,17 @@ body {
   --tw-text-opacity: 1;
   color: rgba(var(--neutral-300), var(--tw-text-opacity, 1));
 }
-
+.hover\:text-neutral-0:hover {
+  --tw-text-opacity: 1;
+  color: rgba(var(--neutral-0), var(--tw-text-opacity, 1));
+}
+.hover\:bg-brand-600:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgba(var(--brand-600), var(--tw-bg-opacity, 1));
+}
+.hover\:border-transparent:hover {
+  border-color: transparent;
+}
 /* Responsive Typography - Fluid text sizing */
 @media (max-width: 640px) {
   html {

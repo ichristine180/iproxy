@@ -22,26 +22,36 @@ import {
 import { Button } from "@/components/ui/button";
 import { nowPayments } from "@/lib/nowpayments";
 
+interface PlanPricing {
+  id: string;
+  plan_id: string;
+  duration: 'daily' | 'weekly' | 'monthly' | 'yearly';
+  price_usd: number;
+  created_at: string;
+}
+
 interface Plan {
   id: string;
   name: string;
-  channel: string;
-  price_usd_month: number;
+  channel: 'mobile' | 'residential' | 'datacenter';
   rotation_api: boolean;
-  description: string;
+  description: string | null;
   features: string[];
   is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  pricing?: PlanPricing[];
 }
 
-type Duration = "hour" | "day" | "week" | "month";
+type Duration = "daily" | "weekly" | "monthly" | "yearly";
 
 function CheckoutPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [currentStep, setCurrentStep] = useState(1);
   const [rotationMinutes, setRotationMinutes] = useState(0);
-  const [durationQuantity, setDurationQuantity] = useState(1); // How many hours/days/weeks/months
-  const [duration, setDuration] = useState<Duration>("hour");
+  const [durationQuantity, setDurationQuantity] = useState(1); // How many days/weeks/months/years
+  const [duration, setDuration] = useState<Duration>("daily");
   const [paymentMethod, setPaymentMethod] = useState<"wallet" | "crypto">("wallet");
   const [selectedCrypto, setSelectedCrypto] = useState("btc");
   const [couponCode, setCouponCode] = useState("");
@@ -56,42 +66,62 @@ function CheckoutPageContent() {
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [showQuotaDialog, setShowQuotaDialog] = useState(false);
 
-  // Duration options for display
-  const durationOptions = [
-    { value: "hour" as Duration, label: "Hour", labelPlural: "Hours", multiplier: 1 },
-    { value: "day" as Duration, label: "Day", labelPlural: "Days", multiplier: 24 },
-    { value: "week" as Duration, label: "Week", labelPlural: "Weeks", multiplier: 7 * 24 },
-    { value: "month" as Duration, label: "Month", labelPlural: "Months", multiplier: 30 * 24 },
-  ];
+  // Get available duration options from plan pricing
+  const getAvailableDurations = () => {
+    if (!plan || !plan.pricing || plan.pricing.length === 0) {
+      return [];
+    }
+
+    const durationMap = {
+      daily: { label: "Day", labelPlural: "Days" },
+      weekly: { label: "Week", labelPlural: "Weeks" },
+      monthly: { label: "Month", labelPlural: "Months" },
+      yearly: { label: "Year", labelPlural: "Years" },
+    };
+
+    return plan.pricing
+      .sort((a, b) => {
+        const order = { daily: 1, weekly: 2, monthly: 3, yearly: 4 };
+        return order[a.duration] - order[b.duration];
+      })
+      .map(pricing => ({
+        value: pricing.duration,
+        label: durationMap[pricing.duration].label,
+        labelPlural: durationMap[pricing.duration].labelPlural,
+        price: pricing.price_usd,
+      }));
+  };
+
+  const durationOptions = getAvailableDurations();
 
   // Calculate price based on duration
   const calculatePrice = () => {
-    if (!plan) return { pricePerUnit: 0, hourlyPrice: 0, totalPrice: 0, finalPrice: 0, rotationCostPerHour: 0, totalRotationCost: 0, discount: 0, totalHours: 0 };
-
-    // The plan price_usd_month is actually the hourly price
-    const hourlyPrice = plan.price_usd_month;
-
-    // Get multiplier based on duration (hours per unit)
-    const selectedDuration = durationOptions.find(d => d.value === duration);
-    const hoursPerUnit = selectedDuration?.multiplier || 1;
-
-    // Total hours for the order
-    const totalHours = hoursPerUnit * durationQuantity;
-
-    // Base price
-    const pricePerUnit = hourlyPrice * hoursPerUnit;
-    const baseTotalPrice = hourlyPrice * totalHours;
-
-    // Calculate rotation cost per hour if applicable
-    let rotationCostPerHour = 0;
-    if (rotationMinutes === 3) {
-      rotationCostPerHour = 2;
-    } else if (rotationMinutes === 4) {
-      rotationCostPerHour = 1;
+    if (!plan || !plan.pricing || plan.pricing.length === 0) {
+      return { pricePerUnit: 0, totalPrice: 0, finalPrice: 0, rotationCostPerUnit: 0, totalRotationCost: 0, discount: 0 };
     }
 
-    // Total rotation cost for all hours
-    const totalRotationCost = rotationCostPerHour * totalHours;
+    // Find the pricing for the selected duration
+    const selectedPricing = plan.pricing.find(p => p.duration === duration);
+    if (!selectedPricing) {
+      return { pricePerUnit: 0, totalPrice: 0, finalPrice: 0, rotationCostPerUnit: 0, totalRotationCost: 0, discount: 0 };
+    }
+
+    // Base price per unit (day/week/month/year)
+    const pricePerUnit = selectedPricing.price_usd;
+
+    // Base total price
+    const baseTotalPrice = pricePerUnit * durationQuantity;
+
+    // Calculate rotation cost per unit if applicable
+    let rotationCostPerUnit = 0;
+    if (rotationMinutes === 3) {
+      rotationCostPerUnit = 2; // $2 per unit for 3-minute rotation
+    } else if (rotationMinutes === 4) {
+      rotationCostPerUnit = 1; // $1 per unit for 4-minute rotation
+    }
+
+    // Total rotation cost for all units
+    const totalRotationCost = rotationCostPerUnit * durationQuantity;
 
     const totalPrice = baseTotalPrice + totalRotationCost;
     const discount = 0;
@@ -100,17 +130,15 @@ function CheckoutPageContent() {
 
     return {
       pricePerUnit,
-      hourlyPrice,
       totalPrice,
       finalPrice,
-      rotationCostPerHour,
+      rotationCostPerUnit,
       totalRotationCost,
-      discount,
-      totalHours
+      discount
     };
   };
 
-  const {hourlyPrice, finalPrice, rotationCostPerHour, totalRotationCost, discount, totalHours } = calculatePrice();
+  const {pricePerUnit, finalPrice, rotationCostPerUnit, totalRotationCost, discount } = calculatePrice();
 
   const handleIncrementDuration = () => setDurationQuantity((prev) => prev + 1);
   const handleDecrementDuration = () => setDurationQuantity((prev) => (prev > 1 ? prev - 1 : 1));
@@ -118,8 +146,10 @@ function CheckoutPageContent() {
   // Get rotation price display
   const getRotationPrice = (minutes: number) => {
     if (minutes !== 3 && minutes !== 4) return null;
-    const costPerHour = minutes === 3 ? 2 : 1;
-    return `+$${costPerHour}/hr`;
+    const costPerUnit = minutes === 3 ? 2 : 1;
+    const selectedDuration = durationOptions.find(d => d.value === duration);
+    const label = selectedDuration?.label.toLowerCase() || "unit";
+    return `+$${costPerUnit}/${label}`;
   };
 
   const rotationOptions = [
@@ -239,9 +269,8 @@ function CheckoutPageContent() {
           body: JSON.stringify({
             plan_id: plan.id,
             quantity: 1, // Always 1 proxy per order
-            duration_days: Math.ceil(totalHours / 24), // Convert hours to days
-            duration_quantity: durationQuantity, // Number of hours/days/weeks/months
-            duration_unit: duration, // hour/day/week/month
+            duration_quantity: durationQuantity, // Number of days/weeks/months/years
+            duration_unit: duration, // daily/weekly/monthly/yearly
             ip_change_enabled: rotationMinutes > 0,
             ip_change_interval_minutes: rotationMinutes,
           }),
@@ -273,9 +302,8 @@ function CheckoutPageContent() {
         body: JSON.stringify({
           plan_id: plan.id,
           quantity: 1, // Always 1 proxy per order
-          duration_days: Math.ceil(totalHours / 24), // Convert hours to days
-          duration_quantity: durationQuantity, // Number of hours/days/weeks/months
-          duration_unit: duration, // hour/day/week/month
+          duration_quantity: durationQuantity, // Number of days/weeks/months/years
+          duration_unit: duration, // daily/weekly/monthly/yearly
           pay_currency: selectedCrypto,
           promo_code: couponCode || undefined,
           ip_change_enabled: rotationMinutes > 0,
@@ -382,11 +410,11 @@ function CheckoutPageContent() {
     <DashboardLayout>
       <div className="p-3 md:p-6">
         {/* Header */}
-        <div className="mb-4 md:mb-6">
-          <h1 className="text-3xl md:text-2xl font-bold text-white mb-4 md:mb-6">{plan.name}</h1>
+        <div className="">
+          <h1 className="text-2xl md:text-xl font-bold text-white">{plan.name}</h1>
 
           {/* Tabs */}
-          <div className="flex gap-4 md:gap-8 border-b border-neutral-800 mb-4 md:mb-6 overflow-x-auto">
+          {/* <div className="flex gap-4 md:gap-8 border-b border-neutral-800 mb-4 md:mb-6 overflow-x-auto">
             <button className="pb-3 px-1 text-[rgb(var(--brand-400))] border-b-2 border-[rgb(var(--brand-400))] font-medium text-base md:text-lg whitespace-nowrap">
               Buy now
             </button>
@@ -396,7 +424,7 @@ function CheckoutPageContent() {
             <button className="pb-3 px-1 text-neutral-400 hover:text-white transition-colors text-base md:text-lg whitespace-nowrap">
               Information
             </button>
-          </div>
+          </div> */}
 
           {/* Progress Steps */}
           <div className="flex items-center justify-end gap-2 md:gap-3 mb-4 md:mb-6">
@@ -425,9 +453,11 @@ function CheckoutPageContent() {
         </div>
 
         {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-4" >
           {/* Left Section - Steps */}
-          <div className="lg:col-span-2 space-y-3 md:space-y-4">
+          <div className="lg:col-span-2 space-y-3 md:space-y-4"  style={{
+                  border: "1px solid #2e2e30ff",
+                }}>
             {/* Step 1: Order Details */}
             <div
               id="order-details-section"
@@ -436,7 +466,7 @@ function CheckoutPageContent() {
               }`}
             >
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl md:text-2xl font-semibold text-white">Step 1: Order Details</h2>
+                <h2 className="text-md md:text-xl font-semibold text-white">Step 1: Order Details</h2>
                 {currentStep === 2 && (
                   <button
                     onClick={handleBackToDetails}
@@ -449,7 +479,7 @@ function CheckoutPageContent() {
 
               {/* Duration Selection */}
               <div className="mb-4 md:mb-5">
-                <h3 className="text-base md:text-lg font-medium text-white mb-2 md:mb-3">Select billing period</h3>
+                <h3 className="text-sm md:text-lg  text-white mb-2 md:mb-3">Select billing period</h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                   {durationOptions.map((option) => (
                     <button
@@ -465,7 +495,7 @@ function CheckoutPageContent() {
                       <div className="flex flex-col items-center gap-1">
                         <span className="text-lg font-semibold">{option.label}</span>
                         <span className="text-base text-neutral-500">
-                          ${(hourlyPrice * option.multiplier).toFixed(2)}/{option.label.toLowerCase()}
+                          ${option.price.toFixed(2)}/{option.label.toLowerCase()}
                         </span>
                       </div>
                     </button>
@@ -485,9 +515,6 @@ function CheckoutPageContent() {
                         ? durationOptions.find(d => d.value === duration)?.label.toLowerCase()
                         : durationOptions.find(d => d.value === duration)?.labelPlural.toLowerCase()
                       }
-                    </span>
-                    <span className="text-base text-neutral-400 ml-2">
-                      ({totalHours} hours total)
                     </span>
                   </div>
                   <button
@@ -567,7 +594,7 @@ function CheckoutPageContent() {
                 className="bg-neutral-900 border border-neutral-800 rounded-xl p-3 md:p-5 transition-all"
               >
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl md:text-2xl font-semibold text-white">Step 2: Payment Method</h2>
+                 <h2 className="text-md md:text-xl font-semibold text-white">Step 2: Payment Method</h2>
                 </div>
 
                 <div className="space-y-3">
@@ -603,15 +630,17 @@ function CheckoutPageContent() {
                   </button>
 
                   {/* Crypto Payment */}
-                  <button
-                    onClick={() => setPaymentMethod("crypto")}
-                    className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
+                  <div
+                    className={`w-full p-4 rounded-lg border-2 transition-all ${
                       paymentMethod === "crypto"
                         ? "border-[rgb(var(--brand-400))] bg-neutral-800"
                         : "border-neutral-700 bg-neutral-800/50 hover:border-neutral-600"
                     }`}
                   >
-                    <div className="flex items-center gap-3 mb-2">
+                    <button
+                      onClick={() => setPaymentMethod("crypto")}
+                      className="w-full text-left flex items-center gap-3 mb-2"
+                    >
                       <div
                         className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
                           paymentMethod === "crypto"
@@ -625,7 +654,7 @@ function CheckoutPageContent() {
                       </div>
                       <Bitcoin className="h-5 w-5" />
                       <span className="text-lg font-semibold text-white">Cryptocurrency</span>
-                    </div>
+                    </button>
 
                     {paymentMethod === "crypto" && (
                       <div className="ml-7 mt-3 space-y-2">
@@ -687,7 +716,7 @@ function CheckoutPageContent() {
                         )}
                       </div>
                     )}
-                  </button>
+                  </div>
                 </div>
 
                 {/* Complete Payment Button */}
@@ -739,11 +768,6 @@ function CheckoutPageContent() {
                 </div>
 
                 <div className="flex items-center justify-between text-base">
-                  <span className="text-neutral-400">Total Hours</span>
-                  <span className="font-semibold text-white">{totalHours} hours</span>
-                </div>
-
-                <div className="flex items-center justify-between text-base">
                   <span className="text-neutral-400">IP Rotation</span>
                   <span className="font-semibold text-white">
                     {rotationMinutes === 0 ? "No rotation" : `${rotationMinutes} min`}
@@ -752,19 +776,19 @@ function CheckoutPageContent() {
 
                 <div className="border-t border-neutral-800 pt-3 space-y-2">
                   <div className="flex items-center justify-between text-base">
-                    <span className="text-neutral-400">Hourly Rate</span>
-                    <span className="font-semibold text-white">${hourlyPrice.toFixed(4)}/hr</span>
+                    <span className="text-neutral-400">Price per {durationOptions.find(d => d.value === duration)?.label}</span>
+                    <span className="font-semibold text-white">${pricePerUnit.toFixed(2)}</span>
                   </div>
 
                   <div className="flex items-center justify-between text-base">
-                    <span className="text-neutral-400">Base Cost ({totalHours} hrs)</span>
-                    <span className="font-semibold text-white">${(hourlyPrice * totalHours).toFixed(2)}</span>
+                    <span className="text-neutral-400">Base Cost (×{durationQuantity})</span>
+                    <span className="font-semibold text-white">${(pricePerUnit * durationQuantity).toFixed(2)}</span>
                   </div>
 
-                  {rotationCostPerHour > 0 && (
+                  {totalRotationCost > 0 && (
                     <>
                       <div className="flex items-center justify-between text-base">
-                        <span className="text-neutral-400">Rotation (+${rotationCostPerHour}/hr)</span>
+                        <span className="text-neutral-400">Rotation (+${rotationCostPerUnit}/{durationOptions.find(d => d.value === duration)?.label.toLowerCase()})</span>
                         <span className="font-semibold text-yellow-500">+${totalRotationCost.toFixed(2)}</span>
                       </div>
                     </>
