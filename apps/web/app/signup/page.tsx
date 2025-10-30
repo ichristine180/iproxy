@@ -78,8 +78,33 @@ function SignupForm() {
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
         <div className="w-full max-w-[500px]">
           {/* Logo */}
-          <div className="mb-12">
-            <h1 className="text-2xl font-semibold text-white">iProxy</h1>
+          <div className="mb-8 md:mb-12">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <div className="w-10 h-10 bg-gradient-to-br from-[rgb(var(--brand-400))] to-[rgb(var(--brand-600))] rounded-lg flex items-center justify-center">
+                  <svg
+                    className="w-6 h-6 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 10V3L4 14h7v7l9-11h-7z"
+                    />
+                  </svg>
+                </div>
+                <div className="absolute -inset-1 bg-gradient-to-br from-[rgb(var(--brand-400))] to-[rgb(var(--brand-600))] rounded-lg blur opacity-30"></div>
+              </div>
+              <a
+                href={process.env.NEXT_PUBLIC_RENT_BASE_URL}
+                className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-[rgb(var(--brand-400))] via-[rgb(var(--brand-500))] to-purple-500 bg-clip-text text-transparent"
+              >
+                Highbid Proxies
+              </a>
+            </div>
           </div>
 
           {/* Signup Form */}
@@ -266,9 +291,7 @@ function SignupForm() {
                   />
                   <button
                     type="button"
-                    onClick={() =>
-                      setShowConfirmPassword(!showConfirmPassword)
-                    }
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white/80 transition-colors"
                   >
                     {showConfirmPassword ? (
@@ -417,7 +440,9 @@ function SignupForm() {
           {/* Main Heading */}
           <div className="space-y-4">
             <h2 className="text-4xl font-bold leading-tight">
-              <span className="text-[24px]">Powerful proxies. Simple pricing</span>
+              <span className="text-[24px]">
+                Powerful proxies. Simple pricing
+              </span>
             </h2>
             <p className="text-white/90 leading-relaxed">
               Low-latency IPs across hundreds of cities, HTTP/S and SOCKS
@@ -448,7 +473,13 @@ function SignupForm() {
 
 export default function SignupPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-neutral-950 flex items-center justify-center"><div className="text-white">Loading...</div></div>}>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
+          <div className="text-white">Loading...</div>
+        </div>
+      }
+    >
       <SignupForm />
     </Suspense>
   );
