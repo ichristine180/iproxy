@@ -50,7 +50,6 @@ export interface Database {
           id: string
           name: string
           channel: 'mobile' | 'residential' | 'datacenter'
-          price_usd_month: number
           rotation_api: boolean
           description: string | null
           features: Json
@@ -62,7 +61,6 @@ export interface Database {
           id?: string
           name: string
           channel?: 'mobile' | 'residential' | 'datacenter'
-          price_usd_month: number
           rotation_api?: boolean
           description?: string | null
           features?: Json
@@ -74,13 +72,35 @@ export interface Database {
           id?: string
           name?: string
           channel?: 'mobile' | 'residential' | 'datacenter'
-          price_usd_month?: number
           rotation_api?: boolean
           description?: string | null
           features?: Json
           is_active?: boolean
           created_at?: string
           updated_at?: string
+        }
+      }
+      plan_pricing: {
+        Row: {
+          id: string
+          plan_id: string
+          duration: 'daily' | 'weekly' | 'monthly' | 'yearly'
+          price_usd: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          plan_id: string
+          duration: 'daily' | 'weekly' | 'monthly' | 'yearly'
+          price_usd: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          plan_id?: string
+          duration?: 'daily' | 'weekly' | 'monthly' | 'yearly'
+          price_usd?: number
+          created_at?: string
         }
       }
       proxies: {

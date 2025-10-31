@@ -156,7 +156,10 @@ export const DashboardLayout = ({
   };
 
   return (
-    <div className="h-screen flex w-full bg-neutral-950 md:p-4 p-2 gap-2 md:gap-4 overflow-hidden">
+    <div
+      className="h-screen flex w-full md:p-4 p-2 gap-2 md:gap-4 overflow-hidden"
+      style={{ background: "rgb(15, 15, 15)" }}
+    >
       {/* Mobile Overlay */}
       {mobileMenuOpen && (
         <div
@@ -168,16 +171,23 @@ export const DashboardLayout = ({
       {/* Sidebar */}
       <aside
         className={`
-        w-64 ${sidebarCollapsed ? "lg:w-20" : "lg:w-64"} bg-neutral-900 border border-neutral-800 rounded-xl flex flex-col h-full
+        w-64 ${sidebarCollapsed ? "lg:w-20" : "lg:w-64"} rounded-xl flex flex-col h-full
         fixed lg:relative z-50 lg:z-auto
         transition-all duration-300 ease-in-out
         ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
         left-0 lg:left-auto top-0 lg:top-auto
-        m-2 lg:m-0
+        m-1 lg:m-0
       `}
+        style={{
+          border: "1px solid rgb(64, 64, 64)",
+          background: "rgb(23, 23, 23)",
+        }}
       >
         {/* Logo Section */}
-        <div className="h-16 border-b border-neutral-800 flex items-center justify-between px-4 rounded-t-xl flex-shrink-0">
+        <div
+          className="h-16 flex items-center justify-between px-4 rounded-t-xl flex-shrink-0"
+          style={{ borderBottom: "1px solid rgb(64, 64, 64)" }}
+        >
           <div className="flex items-center gap-2 overflow-hidden">
             <h2 className="font-bold text-white text-lg whitespace-nowrap lg:hidden">
               {" "}
@@ -232,8 +242,7 @@ export const DashboardLayout = ({
 
           {/* Invoices */}
           <Link
-            href={"#"}
-            // href="/dashboard/invoices"
+            href="/dashboard/invoices"
             className={`flex items-center gap-3 ${sidebarCollapsed ? "lg:justify-center" : ""} px-4 py-2.5 mx-2 rounded-lg transition-colors ${
               pathname === "/dashboard/invoices"
                 ? "bg-neutral-800 text-white"
@@ -251,19 +260,19 @@ export const DashboardLayout = ({
 
           {/* Deposit history */}
           <Link
-            href="#"
+            href="/dashboard/deposit"
             className={`flex items-center gap-3 ${sidebarCollapsed ? "lg:justify-center" : ""} px-4 py-2.5 mx-2 rounded-lg transition-colors ${
-              pathname === "/dashboard/deposit-history"
+              pathname === "/dashboard/deposit"
                 ? "bg-neutral-800 text-white"
                 : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
             }`}
-            title="Deposit history"
+            title="Deposit"
           >
             <CreditCard className="h-5 w-5 flex-shrink-0" />
             <span
               className={`text-sm font-medium lg:${sidebarCollapsed ? "hidden" : "block"}`}
             >
-              Deposit history
+              Deposit
             </span>
           </Link>
 
@@ -315,7 +324,7 @@ export const DashboardLayout = ({
           </div>
 
           {/* Resources Section */}
-          <div className="mt-6">
+          {/* <div className="mt-6">
             <button
               onClick={() => setResourcesOpen(!resourcesOpen)}
               className={`flex items-center justify-between w-full px-4 py-2 text-neutral-500 hover:text-neutral-400 transition-colors ${sidebarCollapsed ? "lg:hidden" : ""}`}
@@ -372,14 +381,20 @@ export const DashboardLayout = ({
                 </Link>
               </div>
             )}
-          </div>
+          </div> */}
         </nav>
       </aside>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col gap-2 md:gap-4 h-full overflow-hidden">
         {/* Header */}
-        <header className="h-16 border border-neutral-800 bg-neutral-900/50 backdrop-blur rounded-xl flex-shrink-0">
+        <header
+          className="h-16 backdrop-blur rounded-xl flex-shrink-0"
+          style={{
+            border: "1px solid rgb(64, 64, 64)",
+            background: "rgba(23, 23, 23, 0.8)",
+          }}
+        >
           <div className="h-full flex items-center justify-between px-3 md:px-6">
             {/* Left Section */}
             <div className="flex items-center gap-2 md:gap-3">
@@ -460,7 +475,7 @@ export const DashboardLayout = ({
         </header>
 
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto border border-neutral-800 rounded-xl scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-transparent">
+        <main className="flex-1 overflow-y-auto rounded-xl scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-transparent">
           {children}
         </main>
       </div>

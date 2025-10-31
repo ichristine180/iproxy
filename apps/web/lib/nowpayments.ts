@@ -103,8 +103,8 @@ export class NowPaymentsAPI {
         body: JSON.stringify({
           ...params,
           ipn_callback_url: params.ipn_callback_url || `${window.location.origin}/api/webhooks/nowpayments`,
-          success_url: params.success_url || `${window.location.origin}/dashboard/balance?payment=success`,
-          cancel_url: params.cancel_url || `${window.location.origin}/dashboard/balance?payment=cancelled`,
+          success_url: params.success_url || `${window.location.origin}/dashboard/deposit?payment=success`,
+          cancel_url: params.cancel_url || `${window.location.origin}/dashboard/deposit?payment=cancelled`,
         }),
       });
 
@@ -132,8 +132,8 @@ export class NowPaymentsAPI {
         body: JSON.stringify({
           ...params,
           ipn_callback_url: params.ipn_callback_url || `${window.location.origin}/api/webhooks/nowpayments`,
-          success_url: params.success_url || `${window.location.origin}/dashboard/balance?payment=success`,
-          cancel_url: params.cancel_url || `${window.location.origin}/dashboard/balance?payment=cancelled`,
+          success_url: params.success_url || `${window.location.origin}/dashboard/deposit?payment=success`,
+          cancel_url: params.cancel_url || `${window.location.origin}/dashboard/deposit?payment=cancelled`,
         }),
       });
 

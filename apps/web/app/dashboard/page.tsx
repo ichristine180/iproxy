@@ -976,7 +976,8 @@ function DashboardPageContent() {
   return (
     <div className="space-y-8">
       {/* Page Title */}
-      <h1 className="text-3xl font-bold text-white">Dashboard</h1>
+
+      <h1 className="text-2xl font-bold text-white">Dashboard</h1>
 
       {/* Success Messages */}
       {showSuccessMessage && (
@@ -1054,7 +1055,13 @@ function DashboardPageContent() {
       ) : (
         <>
           {/* Proxy Selection Card */}
-          <div className="bg-neutral-900 rounded-xl p-4 border border-neutral-800">
+          <div
+            className="bg-neutral-900 rounded-xl p-4"
+            style={{
+              border: "1px solid rgb(64, 64, 64)",
+              background: "rgb(23, 23, 23)",
+            }}
+          >
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Left Side - Plans List */}
               <div className="space-y-3">
@@ -1184,7 +1191,7 @@ function DashboardPageContent() {
             <h2 className="text-sm font-semibold text-[rgb(var(--accent-400))] uppercase tracking-wider mb-4">
               YOUR ORDERS
             </h2>
-            <div className="bg-neutral-900 rounded-xl p-6 border border-neutral-800">
+            <div className="bg-neutral-900 rounded-xl p-6" style={{ border: '1px solid rgb(64, 64, 64)', background: 'rgb(23, 23, 23)' }}>
               <h3 className="text-lg font-semibold text-white mb-4">
                 Most Recent
               </h3>

@@ -411,8 +411,8 @@ async function processWebhook(
         wallet_id: wallet.id,
         type: "deposit",
         amount: webhook.price_amount,
-        balance_before: currentBalance.toFixed(2),
-        balance_after: newBalance.toFixed(2),
+        balance_before: currentBalance,
+        balance_after: newBalance,
         description: `Crypto top-up: $${webhook.price_amount} via ${webhook.pay_currency.toUpperCase()}`,
         reference_type: "payment",
         reference_id: payment.id,
@@ -427,6 +427,8 @@ async function processWebhook(
     if (txError) {
       console.error("Error creating wallet transaction:", txError);
       // Don't throw - wallet was already updated
+      // But log the full error details for debugging
+      console.error("Transaction error details:", JSON.stringify(txError, null, 2));
     } else {
       console.log("Wallet transaction recorded");
     }

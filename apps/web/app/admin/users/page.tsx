@@ -203,7 +203,7 @@ export default function AdminUsersPage() {
 
       {/* Filters Section */}
       {showFilters && (
-        <div className="bg-neutral-900 rounded-xl p-6 border border-neutral-800 space-y-4">
+        <div className="bg-neutral-900 rounded-xl p-6 space-y-4" style={{ border: '1px solid rgb(38, 38, 38)' }}>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Role Filter */}
             <div>
@@ -259,7 +259,7 @@ export default function AdminUsersPage() {
       )}
 
       {/* Search and Users Table */}
-      <div className="bg-neutral-900 rounded-xl p-6 border border-neutral-800">
+      <div className="bg-neutral-900 rounded-xl p-6" style={{ border: '1px solid rgb(38, 38, 38)' }}>
         {/* Search Bar */}
         <div className="mb-6">
           <label className="block text-sm text-neutral-400 mb-2">
@@ -301,7 +301,7 @@ export default function AdminUsersPage() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-neutral-800">
+                  <tr className="border-b" style={{ borderBottomWidth: '1px', borderBottomColor: 'rgb(38, 38, 38)' }}>
                     <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
                       User ID
                     </th>
@@ -340,7 +340,8 @@ export default function AdminUsersPage() {
                     return (
                       <tr
                         key={user.id}
-                        className="border-b border-neutral-800 hover:bg-neutral-800/50 transition-colors"
+                        className="border-b hover:bg-neutral-800/50 transition-colors"
+                        style={{ borderBottomWidth: '1px', borderBottomColor: 'rgb(38, 38, 38)' }}
                       >
                         <td className="py-4 px-4 text-white font-mono text-sm">
                           #{user.id.slice(0, 8)}
@@ -373,7 +374,7 @@ export default function AdminUsersPage() {
             </div>
 
             {/* Pagination */}
-            <div className="flex items-center justify-between mt-6 pt-4 border-t border-neutral-800">
+            <div className="flex items-center justify-between mt-6 pt-4 border-t" style={{ borderTopWidth: '1px', borderTopColor: 'rgb(38, 38, 38)' }}>
               <div className="flex items-center gap-2">
                 <select
                   value={pagination.limit}

@@ -121,7 +121,7 @@ export default function ProcessingOrdersPage() {
       </div>
 
       {/* Orders Table */}
-      <div className="bg-neutral-900 rounded-xl p-6 border border-neutral-800">
+      <div className="bg-neutral-900 rounded-xl p-6" style={{ border: '1px solid rgb(38, 38, 38)' }}>
         {orders.length === 0 ? (
           <div className="text-center py-12">
             <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
@@ -134,7 +134,7 @@ export default function ProcessingOrdersPage() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-neutral-800">
+                <tr className="border-b" style={{ borderBottomWidth: '1px', borderBottomColor: 'rgb(38, 38, 38)' }}>
                   <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
                     ID
                   </th>
@@ -176,7 +176,8 @@ export default function ProcessingOrdersPage() {
                   return (
                     <tr
                       key={order.id}
-                      className="border-b border-neutral-800 hover:bg-neutral-800/50 transition-colors"
+                      className="border-b hover:bg-neutral-800/50 transition-colors"
+                      style={{ borderBottomWidth: '1px', borderBottomColor: 'rgb(38, 38, 38)' }}
                     >
                       <td className="py-4 px-4 text-white">
                         #{order.id.slice(0, 6)}

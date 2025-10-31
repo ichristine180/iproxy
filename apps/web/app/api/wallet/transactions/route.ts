@@ -15,18 +15,37 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get query parameters for pagination
+    // Get query parameters for pagination and filtering
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get('limit') || '50');
     const offset = parseInt(searchParams.get('offset') || '0');
+    const type = searchParams.get('type'); // e.g., 'deposit', 'withdrawal', etc.
 
-    // Fetch transactions using RLS - only user's own transactions will be returned
-    const { data: transactions, error, count } = await supabase
+    console.log('Fetching wallet transactions for user:', user.id);
+    console.log('Filter type:', type || 'all');
+
+    // Build query with RLS - only user's own transactions will be returned
+    let query = supabase
       .from('wallet_transactions')
       .select('*', { count: 'exact' })
-      .eq('user_id', user.id)
+      .eq('user_id', user.id);
+
+    // Apply type filter if provided
+    if (type) {
+      query = query.eq('type', type);
+      console.log('Filtering by type:', type);
+    }
+
+    // Execute query with ordering and pagination
+    const { data: transactions, error, count } = await query
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
+
+    console.log('Transactions query result:', {
+      count: transactions?.length || 0,
+      total: count,
+      error: error?.message,
+    });
 
     if (error) {
       console.error('Error fetching transactions:', error);

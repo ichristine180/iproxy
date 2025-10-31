@@ -19,6 +19,7 @@ import {
   AlertTriangle,
   Clock,
   Users,
+  Tags,
 } from "lucide-react";
 
 interface Stats {
@@ -28,6 +29,8 @@ interface Stats {
   availableQuota: number;
   stoplistCount: number;
   processingOrders: number;
+  totalPlans: number;
+  activePlans: number;
 }
 
 export default function AdminDashboardPage() {
@@ -39,6 +42,8 @@ export default function AdminDashboardPage() {
     availableQuota: 0,
     stoplistCount: 0,
     processingOrders: 0,
+    totalPlans: 0,
+    activePlans: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
 
@@ -46,17 +51,19 @@ export default function AdminDashboardPage() {
     const fetchStats = async () => {
       try {
         // Fetch all stats in parallel
-        const [statsResponse, quotaResponse, stoplistResponse, ordersResponse] = await Promise.all([
+        const [statsResponse, quotaResponse, stoplistResponse, ordersResponse, plansResponse] = await Promise.all([
           fetch("/api/admin/stats"),
           fetch("/api/admin/quota"),
           fetch("/api/admin/stoplist"),
           fetch("/api/admin/orders?status=processing"),
+          fetch("/api/admin/plans?includeInactive=true"),
         ]);
 
         const statsData = await statsResponse.json();
         const quotaData = await quotaResponse.json();
         const stoplistData = await stoplistResponse.json();
         const ordersData = await ordersResponse.json();
+        const plansData = await plansResponse.json();
 
         const availableQuota =
           quotaData.success && quotaData.quota
@@ -71,6 +78,11 @@ export default function AdminDashboardPage() {
           ? ordersData.orders.length
           : 0;
 
+        const totalPlans = plansData.success ? plansData.plans.length : 0;
+        const activePlans = plansData.success
+          ? plansData.plans.filter((p: any) => p.is_active).length
+          : 0;
+
         setStats({
           totalUsers: statsData.success ? statsData.stats.totalUsers : 0,
           totalProxies: statsData.success ? statsData.stats.totalProxies : 0,
@@ -78,6 +90,8 @@ export default function AdminDashboardPage() {
           availableQuota,
           stoplistCount,
           processingOrders,
+          totalPlans,
+          activePlans,
         });
       } catch (error) {
         console.error("Error fetching stats:", error);
@@ -111,7 +125,7 @@ export default function AdminDashboardPage() {
 
       {/* Low Quota Warning */}
       {stats.availableQuota < 3 && (
-        <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl flex items-center gap-3">
+        <div className="p-4 bg-yellow-500/10 rounded-xl flex items-center gap-3" style={{ border: '1px solid rgba(234, 179, 8, 0.2)' }}>
           <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0" />
           <div>
             <p className="text-sm font-medium text-yellow-600">
@@ -195,7 +209,25 @@ export default function AdminDashboardPage() {
             </p>
           </CardContent>
         </Card>
-       
+        <Card
+          className="shadow-sm bg-card/50 backdrop-blur cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => router.push('/admin/plans')}
+        >
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Plans</CardTitle>
+            <div className="h-8 w-8 rounded-lg bg-orange-500/10 flex items-center justify-center">
+              <Tags className="h-4 w-4 text-orange-600" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl md:text-3xl font-bold">
+              {stats.totalPlans}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {stats.activePlans} active
+            </p>
+          </CardContent>
+        </Card>
         <Card className="shadow-sm bg-card/50 backdrop-blur">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Stoplist</CardTitle>
@@ -215,7 +247,8 @@ export default function AdminDashboardPage() {
 
         {stats.processingOrders > 0 && (
           <Card
-            className="shadow-sm bg-card/50 backdrop-blur border-blue-500/20 cursor-pointer hover:shadow-md transition-shadow"
+            className="shadow-sm bg-card/50 backdrop-blur cursor-pointer hover:shadow-md transition-shadow"
+            style={{ border: '1px solid rgba(59, 130, 246, 0.2)' }}
             onClick={() => router.push("/admin/processing-orders")}
           >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -259,7 +292,8 @@ export default function AdminDashboardPage() {
 
         {stats.processingOrders > 0 && (
           <Card
-            className="cursor-pointer hover:shadow-md transition-shadow border-blue-500/20 bg-blue-500/5"
+            className="cursor-pointer hover:shadow-md transition-shadow bg-blue-500/5"
+            style={{ border: '1px solid rgba(59, 130, 246, 0.2)' }}
             onClick={() => router.push("/admin/processing-orders")}
           >
             <CardHeader>
@@ -348,6 +382,23 @@ export default function AdminDashboardPage() {
               <div>
                 <CardTitle>Order Management</CardTitle>
                 <CardDescription>View and track all orders</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+        </Card>
+
+        <Card
+          className="cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => router.push("/admin/plans")}
+        >
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-orange-500/10 flex items-center justify-center">
+                <Tags className="h-5 w-5 text-orange-600" />
+              </div>
+              <div>
+                <CardTitle>Plan Management</CardTitle>
+                <CardDescription>Create and manage subscription plans</CardDescription>
               </div>
             </div>
           </CardHeader>
