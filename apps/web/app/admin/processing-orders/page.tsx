@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 
 interface ProcessingOrder {
+  metadata: any;
   id: string;
   user_id: string;
   plan: {
@@ -139,7 +140,7 @@ export default function ProcessingOrdersPage() {
                     ID
                   </th>
                   <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
-                    Product
+                    Connection Id
                   </th>
                   <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
                     User
@@ -183,7 +184,7 @@ export default function ProcessingOrdersPage() {
                         #{order.id.slice(0, 6)}
                       </td>
                       <td className="py-4 px-4 text-white">
-                        {order.plan.name}
+                        {order.metadata.connection_id}
                       </td>
                       <td className="py-4 px-4">
                         <span className="font-mono text-sm text-neutral-300">
