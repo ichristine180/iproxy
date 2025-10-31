@@ -47,7 +47,7 @@ export async function sendProvisioningEmails({
   try {
     const { data: admins } = await supabase
       .from("profiles")
-      .select("email, notify_email, notify_telegram, telegram_chat_id")
+      .select("id, email, notify_email, notify_telegram, telegram_chat_id")
       .eq("role", "admin");
 
     if (admins && admins.length > 0) {
@@ -125,6 +125,18 @@ ${duration_days ? `• Duration: ${duration_days} days` : ""}
             if (telegramResponse.ok) {
               adminTelegramsSent++;
               console.log(`Manual provisioning notification sent via Telegram to admin ${admin.email}`);
+            } else {
+              const errorData = await telegramResponse.json();
+              console.error(`Failed to send Telegram to admin ${admin.email} (${admin.telegram_chat_id}):`, errorData.error);
+
+              // If chat not found, disable Telegram notifications for this admin
+              if (errorData.error?.includes('chat not found') || errorData.error?.includes('bot was blocked')) {
+                console.log(`Disabling Telegram notifications for admin ${admin.email} due to invalid chat_id`);
+                await supabase
+                  .from('profiles')
+                  .update({ notify_telegram: false })
+                  .eq('id', admin.id);
+              }
             }
           } catch (error) {
             console.error(`Failed to send Telegram notification to admin ${admin.email}:`, error);
@@ -230,6 +242,18 @@ Your proxies are being provisioned and will be available shortly. You'll receive
 
         if (telegramResponse.ok) {
           console.log(`Payment confirmation sent via Telegram to ${userEmail}`);
+        } else {
+          const errorData = await telegramResponse.json();
+          console.error(`Failed to send Telegram to ${userEmail} (${profile.telegram_chat_id}):`, errorData.error);
+
+          // If chat not found, disable Telegram notifications for this user
+          if (errorData.error?.includes('chat not found') || errorData.error?.includes('bot was blocked')) {
+            console.log(`Disabling Telegram notifications for ${userEmail} due to invalid chat_id`);
+            await supabase
+              .from('profiles')
+              .update({ notify_telegram: false })
+              .eq('id', userId);
+          }
         }
       } catch (telegramError) {
         console.error(`Failed to send Telegram notification to ${userEmail}:`, telegramError);
@@ -269,7 +293,7 @@ export async function sendConnectionConfigNeededEmail({
   try {
     const { data: admins } = await supabase
       .from("profiles")
-      .select("email, notify_email, notify_telegram, telegram_chat_id")
+      .select("id, email, notify_email, notify_telegram, telegram_chat_id")
       .eq("role", "admin");
 
     if (admins && admins.length > 0) {
@@ -334,6 +358,18 @@ A connection has been sold and needs to be configured on the Android device.
             if (telegramResponse.ok) {
               telegramsSent++;
               console.log(`Config notification sent via Telegram to admin ${admin.email}`);
+            } else {
+              const errorData = await telegramResponse.json();
+              console.error(`Failed to send Telegram to admin ${admin.email} (${admin.telegram_chat_id}):`, errorData.error);
+
+              // If chat not found, disable Telegram notifications for this admin
+              if (errorData.error?.includes('chat not found') || errorData.error?.includes('bot was blocked')) {
+                console.log(`Disabling Telegram notifications for admin ${admin.email} due to invalid chat_id`);
+                await supabase
+                  .from('profiles')
+                  .update({ notify_telegram: false })
+                  .eq('id', admin.id);
+              }
             }
           } catch (error) {
             console.error(`Failed to send Telegram notification to admin ${admin.email}:`, error);

@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { User, Lock, Bell, Loader2, CheckCircle2 } from "lucide-react";
+import { TelegramSetup } from "@/components/TelegramSetup";
 
 interface Profile {
   id: string;
@@ -47,7 +48,6 @@ export default function ProfilePage() {
   // Profile form state
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [telegramChatId, setTelegramChatId] = useState("");
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileSuccess, setProfileSuccess] = useState(false);
 
@@ -77,7 +77,6 @@ export default function ProfilePage() {
         setProfile(data.profile);
         setName(data.profile.name || "");
         setPhone(data.profile.phone || "");
-        setTelegramChatId(data.profile.telegram_chat_id || "");
 
         // Set notification preferences from profile
         console.log( data.profile);
@@ -127,7 +126,6 @@ export default function ProfilePage() {
         body: JSON.stringify({
           name,
           phone,
-          telegram_chat_id: telegramChatId,
         }),
       });
 
@@ -308,23 +306,6 @@ export default function ProfilePage() {
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="telegram_chat_id" className="text-neutral-200">
-                      Telegram Chat ID
-                    </Label>
-                    <Input
-                      id="telegram_chat_id"
-                      type="text"
-                      value={telegramChatId}
-                      onChange={(e) => setTelegramChatId(e.target.value)}
-                      placeholder="Enter your Telegram Chat ID"
-                      className="bg-neutral-900 border-neutral-700 text-white"
-                    />
-                    <p className="text-xs text-neutral-500">
-                      Get your Chat ID from @userinfobot on Telegram
-                    </p>
-                  </div>
-
                   <Separator className="bg-neutral-700" />
 
                   <div className="flex items-center justify-between">
@@ -467,8 +448,19 @@ export default function ProfilePage() {
                 )}
               </CardHeader>
               <CardContent className="space-y-6">
-                {notifications && (
+                {notifications && profile && (
                   <>
+                    {/* Telegram Setup */}
+                    <div>
+                      <TelegramSetup
+                        userId={profile.id}
+                        currentChatId={profile.telegram_chat_id}
+                        onUpdate={fetchProfile}
+                      />
+                    </div>
+
+                    <Separator className="bg-neutral-700" />
+
                     {/* Notification Channels */}
                     <div>
                       <h3 className="text-lg font-semibold text-white mb-4">
@@ -500,7 +492,7 @@ export default function ProfilePage() {
                               Telegram Notifications
                             </Label>
                             <p className="text-sm text-neutral-400">
-                              Receive notifications via Telegram
+                              Receive notifications via Telegram (must connect above)
                             </p>
                           </div>
                           <Switch
@@ -509,7 +501,7 @@ export default function ProfilePage() {
                             onCheckedChange={(checked) =>
                               handleNotificationUpdate("notify_telegram", checked)
                             }
-                            disabled={notificationsSaving}
+                            disabled={notificationsSaving || !profile.telegram_chat_id}
                           />
                         </div>
                       </div>

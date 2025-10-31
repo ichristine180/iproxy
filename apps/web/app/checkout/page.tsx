@@ -327,6 +327,13 @@ function CheckoutPageContent() {
     }
   };
 
+  // Auto-switch to crypto if wallet has insufficient balance
+  useEffect(() => {
+    if (!isLoadingBalance && walletBalance < finalPrice && paymentMethod === "wallet") {
+      setPaymentMethod("crypto");
+    }
+  }, [isLoadingBalance, walletBalance, finalPrice, paymentMethod]);
+
   // Fetch wallet balance, plan details, and load currencies on component mount
   useEffect(() => {
     const fetchWalletBalance = async () => {
@@ -406,12 +413,15 @@ function CheckoutPageContent() {
     );
   }
 
+  // Check if wallet has sufficient balance
+  const hasInsufficientBalance = walletBalance < finalPrice;
+
   return (
     <DashboardLayout>
-      <div className="p-3 md:p-6">
+      <div className="p-4 sm:p-6">
         {/* Header */}
         <div className="">
-          <h1 className="text-2xl md:text-xl font-bold text-white">{plan.name}</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-white">{plan.name}</h1>
 
           {/* Tabs */}
           {/* <div className="flex gap-4 md:gap-8 border-b border-neutral-800 mb-4 md:mb-6 overflow-x-auto">
@@ -427,37 +437,35 @@ function CheckoutPageContent() {
           </div> */}
 
           {/* Progress Steps */}
-          <div className="flex items-center justify-end gap-2 md:gap-3 mb-4 md:mb-6">
+          <div className="flex items-center justify-center sm:justify-end gap-2 sm:gap-3 mb-4 sm:mb-6">
             <button
               onClick={handleBackToDetails}
-              className={`flex items-center gap-2 px-3 py-2 border rounded-lg transition-colors ${
+              className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 border rounded-lg transition-colors ${
                 currentStep === 1
                   ? "border-neutral-700 bg-neutral-900 text-white"
                   : "border-neutral-800 text-neutral-500 hover:text-white"
               }`}
             >
-              <span className="text-base">1. Order details</span>
+              <span className="text-sm sm:text-base">1. Order details</span>
             </button>
-            <ArrowRight className="h-4 w-4 text-neutral-600" />
+            <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 text-neutral-600" />
             <button
               onClick={() => currentStep === 2 && setCurrentStep(2)}
-              className={`flex items-center gap-2 px-3 py-2 border rounded-lg transition-colors ${
+              className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 border rounded-lg transition-colors ${
                 currentStep === 2
                   ? "border-neutral-700 bg-neutral-900 text-blue-400"
                   : "border-neutral-800 text-neutral-500"
               }`}
             >
-              <span className="text-base">2. Payment</span>
+              <span className="text-sm sm:text-base">2. Payment</span>
             </button>
           </div>
         </div>
 
         {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-4" >
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6" >
           {/* Left Section - Steps */}
-          <div className="lg:col-span-2 space-y-3 md:space-y-4"  style={{
-                  border: "1px solid #2e2e30ff",
-                }}>
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
             {/* Step 1: Order Details */}
             <div
               id="order-details-section"
@@ -465,12 +473,12 @@ function CheckoutPageContent() {
                 currentStep === 1 ? "border-neutral-800" : "border-neutral-800/50"
               }`}
             >
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-md md:text-xl font-semibold text-white">Step 1: Order Details</h2>
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
+                <h2 className="text-lg sm:text-xl font-semibold text-white">Step 1: Order Details</h2>
                 {currentStep === 2 && (
                   <button
                     onClick={handleBackToDetails}
-                    className="text-base text-[rgb(var(--brand-400))] hover:text-[rgb(var(--brand-500))] transition-colors"
+                    className="text-sm sm:text-base text-[rgb(var(--brand-400))] hover:text-[rgb(var(--brand-500))] transition-colors"
                   >
                     Edit
                   </button>
@@ -478,9 +486,9 @@ function CheckoutPageContent() {
               </div>
 
               {/* Duration Selection */}
-              <div className="mb-4 md:mb-5">
-                <h3 className="text-sm md:text-lg  text-white mb-2 md:mb-3">Select billing period</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              <div className="mb-4 sm:mb-5">
+                <h3 className="text-base sm:text-lg text-white mb-2 sm:mb-3">Select billing period</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {durationOptions.map((option) => (
                     <button
                       key={option.value}
@@ -492,9 +500,9 @@ function CheckoutPageContent() {
                           : "border-neutral-700 bg-neutral-800 text-neutral-400 hover:border-neutral-600 hover:text-white"
                       } ${currentStep === 2 ? "opacity-50 cursor-not-allowed" : ""}`}
                     >
-                      <div className="flex flex-col items-center gap-1">
-                        <span className="text-lg font-semibold">{option.label}</span>
-                        <span className="text-base text-neutral-500">
+                      <div className="flex flex-col items-center gap-0.5 sm:gap-1">
+                        <span className="text-base sm:text-lg font-semibold">{option.label}</span>
+                        <span className="text-sm sm:text-base text-neutral-500">
                           ${option.price.toFixed(2)}/{option.label.toLowerCase()}
                         </span>
                       </div>
@@ -504,13 +512,13 @@ function CheckoutPageContent() {
               </div>
 
               {/* Duration Quantity Selection */}
-              <div className="mb-5">
-                <h3 className="text-lg font-medium text-white mb-3">
+              <div className="mb-4 sm:mb-5">
+                <h3 className="text-base sm:text-lg font-medium text-white mb-2 sm:mb-3">
                   How many {durationOptions.find(d => d.value === duration)?.labelPlural.toLowerCase()}?
                 </h3>
-                <div className="flex items-center gap-3">
-                  <div className="flex-1 bg-neutral-800 border border-neutral-700 rounded-lg px-4 py-3">
-                    <span className="text-2xl font-bold text-white">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="flex-1 bg-neutral-800 border border-neutral-700 rounded-lg px-3 sm:px-4 py-2 sm:py-3">
+                    <span className="text-xl sm:text-2xl font-bold text-white">
                       {durationQuantity} {durationQuantity === 1
                         ? durationOptions.find(d => d.value === duration)?.label.toLowerCase()
                         : durationOptions.find(d => d.value === duration)?.labelPlural.toLowerCase()
@@ -520,34 +528,34 @@ function CheckoutPageContent() {
                   <button
                     onClick={handleDecrementDuration}
                     disabled={currentStep === 2}
-                    className={`w-10 h-10 flex items-center justify-center bg-neutral-800 border-2 border-[rgb(var(--brand-400))] rounded-lg hover:bg-neutral-700 transition-colors ${
+                    className={`w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center bg-neutral-800 border-2 border-[rgb(var(--brand-400))] rounded-lg hover:bg-neutral-700 transition-colors ${
                       currentStep === 2 ? "opacity-50 cursor-not-allowed" : ""
                     }`}
                   >
-                    <Minus className="h-4 w-4 text-[rgb(var(--brand-400))]" />
+                    <Minus className="h-3 w-3 sm:h-4 sm:w-4 text-[rgb(var(--brand-400))]" />
                   </button>
                   <button
                     onClick={handleIncrementDuration}
                     disabled={currentStep === 2}
-                    className={`w-10 h-10 flex items-center justify-center bg-neutral-800 border-2 border-[rgb(var(--brand-400))] rounded-lg hover:bg-neutral-700 transition-colors ${
+                    className={`w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center bg-neutral-800 border-2 border-[rgb(var(--brand-400))] rounded-lg hover:bg-neutral-700 transition-colors ${
                       currentStep === 2 ? "opacity-50 cursor-not-allowed" : ""
                     }`}
                   >
-                    <Plus className="h-4 w-4 text-[rgb(var(--brand-400))]" />
+                    <Plus className="h-3 w-3 sm:h-4 sm:w-4 text-[rgb(var(--brand-400))]" />
                   </button>
                 </div>
               </div>
 
               {/* IP Rotation Selection */}
-              <div className="mb-4 md:mb-5">
-                <h3 className="text-base md:text-lg font-medium text-white mb-2 md:mb-3">Select IP rotation time</h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+              <div className="mb-4 sm:mb-5">
+                <h3 className="text-base sm:text-lg font-medium text-white mb-2 sm:mb-3">Select IP rotation time</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                   {rotationOptions.map((option) => (
                     <button
                       key={option.value}
                       onClick={() => setRotationMinutes(option.value)}
                       disabled={currentStep === 2}
-                      className={`relative px-3 py-2 rounded-lg border-2 transition-all ${
+                      className={`relative px-2 sm:px-3 py-2 rounded-lg border-2 transition-all ${
                         rotationMinutes === option.value
                           ? "border-[rgb(var(--brand-400))] bg-[rgb(var(--brand-400))]/10 text-white"
                           : option.isFree
@@ -555,15 +563,15 @@ function CheckoutPageContent() {
                           : "border-yellow-500/50 bg-yellow-500/5 text-white hover:border-yellow-500"
                       } ${currentStep === 2 ? "opacity-50 cursor-not-allowed" : ""}`}
                     >
-                      <div className="flex flex-col items-center gap-1">
-                        <span className="text-base font-medium">{option.label}</span>
+                      <div className="flex flex-col items-center gap-0.5 sm:gap-1">
+                        <span className="text-sm sm:text-base font-medium">{option.label}</span>
                         {!option.isFree && (
-                          <span className="text-sm font-semibold text-yellow-400">
+                          <span className="text-xs sm:text-sm font-semibold text-yellow-400">
                             {option.price}
                           </span>
                         )}
                         {option.isFree && (
-                          <span className="text-sm font-medium text-green-500">
+                          <span className="text-xs sm:text-sm font-medium text-green-500">
                             Free
                           </span>
                         )}
@@ -579,7 +587,7 @@ function CheckoutPageContent() {
                 <button
                   type="button"
                   onClick={handleContinueToPayment}
-                  className="w-full mt-5 px-5 py-3 bg-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-500))] text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2 text-lg"
+                  className="w-full mt-4 sm:mt-5 px-4 sm:px-5 py-2.5 sm:py-3 bg-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-500))] text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2 text-base sm:text-lg"
                 >
                   Continue to payment
                   <ArrowRight className="h-4 w-4" />
@@ -593,45 +601,56 @@ function CheckoutPageContent() {
                 id="payment-section"
                 className="bg-neutral-900 border border-neutral-800 rounded-xl p-3 md:p-5 transition-all"
               >
-                <div className="flex items-center justify-between mb-4">
-                 <h2 className="text-md md:text-xl font-semibold text-white">Step 2: Payment Method</h2>
+                <div className="flex items-center justify-between mb-3 sm:mb-4">
+                 <h2 className="text-lg sm:text-xl font-semibold text-white">Step 2: Payment Method</h2>
                 </div>
 
                 <div className="space-y-3">
                   {/* Wallet Payment */}
                   <button
-                    onClick={() => setPaymentMethod("wallet")}
-                    className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
-                      paymentMethod === "wallet"
+                    onClick={() => !hasInsufficientBalance && setPaymentMethod("wallet")}
+                    disabled={hasInsufficientBalance}
+                    className={`w-full p-3 sm:p-4 rounded-lg border-2 transition-all text-left ${
+                      hasInsufficientBalance
+                        ? "border-neutral-700 bg-neutral-800/30 opacity-60 cursor-not-allowed"
+                        : paymentMethod === "wallet"
                         ? "border-[rgb(var(--brand-400))] bg-neutral-800"
                         : "border-neutral-700 bg-neutral-800/50 hover:border-neutral-600"
                     }`}
                   >
-                    <div className="flex items-center gap-3 mb-2">
+                    <div className="flex items-center gap-2 sm:gap-3 mb-2">
                       <div
-                        className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                          paymentMethod === "wallet"
+                        className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                          paymentMethod === "wallet" && !hasInsufficientBalance
                             ? "border-[rgb(var(--brand-400))]"
                             : "border-neutral-600"
                         }`}
                       >
-                        {paymentMethod === "wallet" && (
+                        {paymentMethod === "wallet" && !hasInsufficientBalance && (
                           <div className="w-2 h-2 rounded-full bg-[rgb(var(--brand-400))]" />
                         )}
                       </div>
-                      <Wallet className="h-5 w-5" />
-                      <span className="text-lg font-semibold text-white">Account Balance</span>
+                      <Wallet className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+                      <span className="text-base sm:text-lg font-semibold text-white">Account Balance</span>
                     </div>
-                    <div className="ml-7 text-neutral-400 text-base">
-                      Current balance: <span className="text-white font-semibold">
-                        {isLoadingBalance ? "Loading..." : `$${walletBalance.toFixed(2)}`}
-                      </span>
+                    <div className="ml-6 sm:ml-7 text-sm sm:text-base">
+                      <div className="text-neutral-400">
+                        Current balance: <span className={`font-semibold ${hasInsufficientBalance ? "text-red-400" : "text-white"}`}>
+                          {isLoadingBalance ? "Loading..." : `$${walletBalance.toFixed(2)}`}
+                        </span>
+                      </div>
+                      {hasInsufficientBalance && !isLoadingBalance && (
+                        <div className="mt-1 text-xs sm:text-sm text-red-400 flex items-center gap-1">
+                          <AlertTriangle className="h-3 w-3 flex-shrink-0" />
+                          <span>Insufficient balance (need ${finalPrice.toFixed(2)})</span>
+                        </div>
+                      )}
                     </div>
                   </button>
 
                   {/* Crypto Payment */}
                   <div
-                    className={`w-full p-4 rounded-lg border-2 transition-all ${
+                    className={`w-full p-3 sm:p-4 rounded-lg border-2 transition-all ${
                       paymentMethod === "crypto"
                         ? "border-[rgb(var(--brand-400))] bg-neutral-800"
                         : "border-neutral-700 bg-neutral-800/50 hover:border-neutral-600"
@@ -639,10 +658,10 @@ function CheckoutPageContent() {
                   >
                     <button
                       onClick={() => setPaymentMethod("crypto")}
-                      className="w-full text-left flex items-center gap-3 mb-2"
+                      className="w-full text-left flex items-center gap-2 sm:gap-3 mb-2"
                     >
                       <div
-                        className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                        className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
                           paymentMethod === "crypto"
                             ? "border-[rgb(var(--brand-400))]"
                             : "border-neutral-600"
@@ -652,24 +671,24 @@ function CheckoutPageContent() {
                           <div className="w-2 h-2 rounded-full bg-[rgb(var(--brand-400))]" />
                         )}
                       </div>
-                      <Bitcoin className="h-5 w-5" />
-                      <span className="text-lg font-semibold text-white">Cryptocurrency</span>
+                      <Bitcoin className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+                      <span className="text-base sm:text-lg font-semibold text-white">Cryptocurrency</span>
                     </button>
 
                     {paymentMethod === "crypto" && (
-                      <div className="ml-7 mt-3 space-y-2">
-                        <label className="block text-base text-neutral-400 mb-2">
+                      <div className="ml-6 sm:ml-7 mt-2 sm:mt-3 space-y-2">
+                        <label className="block text-sm sm:text-base text-neutral-400 mb-2">
                           Select cryptocurrency
                         </label>
 
                         {/* Search Input */}
                         <div className="relative">
-                          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-neutral-500" />
+                          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3 w-3 sm:h-4 sm:w-4 text-neutral-500" />
                           <input
                             placeholder="Search cryptocurrencies..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-base text-white placeholder:text-neutral-500 focus:outline-none focus:border-[rgb(var(--brand-400))] transition-colors"
+                            className="w-full pl-9 sm:pl-10 pr-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-sm sm:text-base text-white placeholder:text-neutral-500 focus:outline-none focus:border-[rgb(var(--brand-400))] transition-colors"
                           />
                         </div>
 
@@ -720,26 +739,28 @@ function CheckoutPageContent() {
                 </div>
 
                 {/* Complete Payment Button */}
-                <div className="mt-5 space-y-3">
+                <div className="mt-4 sm:mt-5 space-y-3">
                   <button
                     type="button"
                     onClick={handleBackToDetails}
-                    className="w-full px-5 py-2.5 bg-neutral-800 hover:bg-neutral-700 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2 text-lg"
+                    className="w-full px-4 sm:px-5 py-2 sm:py-2.5 bg-neutral-800 hover:bg-neutral-700 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2 text-base sm:text-lg"
                   >
-                    <ArrowLeft className="h-4 w-4" />
+                    <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4" />
                     Back to order details
                   </button>
                   <button
                     type="button"
                     onClick={handleCompletePayment}
-                    disabled={isProcessingPayment}
-                    className="w-full px-5 py-3 bg-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-500))] text-white font-semibold rounded-lg transition-colors text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={isProcessingPayment || (paymentMethod === "wallet" && hasInsufficientBalance)}
+                    className="w-full px-4 sm:px-5 py-2.5 sm:py-3 bg-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-500))] text-white font-semibold rounded-lg transition-colors text-base sm:text-lg disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isProcessingPayment ? (
                       <>
                         <Loader2 className="inline-block h-4 w-4 mr-2 animate-spin" />
                         Processing...
                       </>
+                    ) : paymentMethod === "wallet" && hasInsufficientBalance ? (
+                      "Insufficient Balance"
                     ) : (
                       paymentMethod === "wallet"
                         ? `Pay $${finalPrice.toFixed(2)} with Wallet`
@@ -753,11 +774,11 @@ function CheckoutPageContent() {
 
           {/* Right Section - Order Summary (Sticky) */}
           <div className="lg:sticky lg:top-6 h-fit order-first lg:order-last">
-            <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-3 md:p-5">
-              <h3 className="text-xl md:text-2xl font-semibold text-white mb-3 md:mb-4">Order summary</h3>
+            <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-4 sm:p-5">
+              <h3 className="text-lg sm:text-xl md:text-2xl font-semibold text-white mb-3 sm:mb-4">Order summary</h3>
 
-              <div className="space-y-3">
-                <div className="flex items-center justify-between text-base">
+              <div className="space-y-2 sm:space-y-3">
+                <div className="flex items-center justify-between text-sm sm:text-base">
                   <span className="text-neutral-400">Billing Period</span>
                   <span className="font-semibold text-white">
                     {durationQuantity} {durationQuantity === 1
@@ -767,42 +788,42 @@ function CheckoutPageContent() {
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between text-base">
+                <div className="flex items-center justify-between text-sm sm:text-base">
                   <span className="text-neutral-400">IP Rotation</span>
                   <span className="font-semibold text-white">
                     {rotationMinutes === 0 ? "No rotation" : `${rotationMinutes} min`}
                   </span>
                 </div>
 
-                <div className="border-t border-neutral-800 pt-3 space-y-2">
-                  <div className="flex items-center justify-between text-base">
+                <div className="border-t border-neutral-800 pt-2 sm:pt-3 space-y-2">
+                  <div className="flex items-center justify-between text-sm sm:text-base">
                     <span className="text-neutral-400">Price per {durationOptions.find(d => d.value === duration)?.label}</span>
                     <span className="font-semibold text-white">${pricePerUnit.toFixed(2)}</span>
                   </div>
 
-                  <div className="flex items-center justify-between text-base">
+                  <div className="flex items-center justify-between text-sm sm:text-base">
                     <span className="text-neutral-400">Base Cost (×{durationQuantity})</span>
                     <span className="font-semibold text-white">${(pricePerUnit * durationQuantity).toFixed(2)}</span>
                   </div>
 
                   {totalRotationCost > 0 && (
                     <>
-                      <div className="flex items-center justify-between text-base">
-                        <span className="text-neutral-400">Rotation (+${rotationCostPerUnit}/{durationOptions.find(d => d.value === duration)?.label.toLowerCase()})</span>
+                      <div className="flex items-center justify-between text-sm sm:text-base">
+                        <span className="text-neutral-400 text-xs sm:text-sm">Rotation (+${rotationCostPerUnit}/{durationOptions.find(d => d.value === duration)?.label.toLowerCase()})</span>
                         <span className="font-semibold text-yellow-500">+${totalRotationCost.toFixed(2)}</span>
                       </div>
                     </>
                   )}
                 </div>
 
-                <div className="border-t border-neutral-800 pt-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-neutral-400 text-base">Total Price</span>
-                    <span className="text-3xl font-bold text-white">${finalPrice.toFixed(2)}</span>
+                <div className="border-t border-neutral-800 pt-2 sm:pt-3">
+                  <div className="flex items-center justify-between mb-1 sm:mb-2">
+                    <span className="text-neutral-400 text-sm sm:text-base">Total Price</span>
+                    <span className="text-2xl sm:text-3xl font-bold text-white">${finalPrice.toFixed(2)}</span>
                   </div>
 
                   {discount > 0 && (
-                    <div className="flex items-center justify-between text-base mb-3">
+                    <div className="flex items-center justify-between text-sm sm:text-base mb-2 sm:mb-3">
                       <span className="text-blue-400">Discount</span>
                       <span className="text-blue-400">-{discount}%</span>
                     </div>
@@ -814,9 +835,9 @@ function CheckoutPageContent() {
                   onClick={() => setShowCouponInput(!showCouponInput)}
                   className="w-full flex items-center justify-between px-3 py-2 bg-neutral-800 hover:bg-neutral-700 rounded-lg transition-colors"
                 >
-                  <span className="text-base font-medium text-white">Have a coupon code?</span>
+                  <span className="text-sm sm:text-base font-medium text-white">Have a coupon code?</span>
                   <Plus
-                    className={`h-4 w-4 transition-transform ${showCouponInput ? "rotate-45" : ""}`}
+                    className={`h-3 w-3 sm:h-4 sm:w-4 transition-transform ${showCouponInput ? "rotate-45" : ""}`}
                   />
                 </button>
 
@@ -827,9 +848,9 @@ function CheckoutPageContent() {
                       value={couponCode}
                       onChange={(e) => setCouponCode(e.target.value)}
                       placeholder="Enter code"
-                      className="flex-1 px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-base text-white focus:outline-none focus:border-[rgb(var(--brand-400))]"
+                      className="flex-1 px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-sm sm:text-base text-white focus:outline-none focus:border-[rgb(var(--brand-400))]"
                     />
-                    <button className="px-3 py-2 bg-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-500))] text-white text-base font-medium rounded-lg transition-colors">
+                    <button className="px-3 py-2 bg-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-500))] text-white text-sm sm:text-base font-medium rounded-lg transition-colors">
                       Apply
                     </button>
                   </div>

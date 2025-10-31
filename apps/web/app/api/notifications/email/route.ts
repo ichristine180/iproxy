@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { to, subject, html, from = 'ichristine180@gmail.com' } = body;
+    const { to, subject, html, from } = body;
 
     // Validate input
     if (!to || !subject || !html) {
@@ -22,8 +22,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get Resend API key
+    // Get email configuration from environment
     const resendApiKey = process.env.RESEND_API_KEY;
+    const defaultFromEmail = process.env.EMAIL_FROM;
 
     if (!resendApiKey) {
       console.error('RESEND_API_KEY is not configured');
@@ -33,6 +34,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Use provided 'from' or fall back to environment variable
+    const fromEmail = from || defaultFromEmail;
+
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -40,7 +44,7 @@ export async function POST(request: NextRequest) {
         'Authorization': `Bearer ${resendApiKey}`,
       },
       body: JSON.stringify({
-        from,
+        from: fromEmail,
         to,
         subject,
         html,
