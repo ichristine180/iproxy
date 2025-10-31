@@ -41,12 +41,25 @@ export default function DepositPage() {
     // Check for payment status from URL params
     const paymentStatus = searchParams.get("payment");
     if (paymentStatus === "success") {
+      // Show success message
       toast({
-        title: "Payment Successful",
-        description: "Your balance has been updated",
+        title: "Payment Successful!",
+        description: "Your balance has been updated. Thank you for your deposit!",
       });
+
+      // Switch to history tab to show the new transaction
+      setTimeout(() => {
+        setActiveTab("history");
+      }, 1000);
+
       // Remove payment param from URL
       window.history.replaceState({}, "", "/dashboard/deposit");
+
+      // Reload balance after a short delay to ensure webhook has processed
+      setTimeout(() => {
+        loadUserBalance();
+        loadDepositHistory();
+      }, 2000);
     } else if (paymentStatus === "cancelled") {
       toast({
         title: "Payment Cancelled",

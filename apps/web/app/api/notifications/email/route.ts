@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { to, subject, html, from = 'onboarding@resend.dev' } = body;
+    const { to, subject, html, from = 'ichristine180@gmail.com' } = body;
 
     // Validate input
     if (!to || !subject || !html) {

@@ -19,7 +19,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Copy, ExternalLink, CheckCircle, Search } from 'lucide-react';
+import { Loader2, Search } from 'lucide-react';
 import { nowPayments } from '@/lib/nowpayments';
 import { createClient } from '@/lib/supabase/client';
 
@@ -28,8 +28,6 @@ interface CryptoPaymentModalProps {
   onClose: () => void;
   amount: number;
   onSuccess?: () => void;
-  existingPaymentUrl?: string;
-  existingPaymentId?: string;
 }
 
 export function CryptoPaymentModal({
@@ -37,8 +35,6 @@ export function CryptoPaymentModal({
   onClose,
   amount,
   onSuccess,
-  existingPaymentUrl,
-  existingPaymentId,
 }: CryptoPaymentModalProps) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -47,28 +43,15 @@ export function CryptoPaymentModal({
   const [currencies, setCurrencies] = useState<string[]>(['btc', 'eth', 'usdt', 'usdc']);
   const [allCurrencies, setAllCurrencies] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [step, setStep] = useState<'select' | 'payment' | 'processing'>('select');
   const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
       loadCurrencies();
       getCurrentUser();
-      // Only reset search, but keep payment data for reuse
       setSearchQuery('');
-
-      // If existing payment URL provided, use it
-      if (existingPaymentUrl && existingPaymentId) {
-        setPaymentData({
-          invoice_url: existingPaymentUrl,
-          payment_id: existingPaymentId
-        });
-        setStep('payment');
-      } else if (!paymentData) {
-        setStep('select');
-      }
     }
-  }, [isOpen, existingPaymentUrl, existingPaymentId]);
+  }, [isOpen]);
 
   const getCurrentUser = async () => {
     try {
@@ -133,15 +116,10 @@ export function CryptoPaymentModal({
   // Webhook will handle creating payment record, no need to create it here
 
   const handleCreatePayment = async () => {
-    // If payment already exists, just open it and go to payment step
+    // If payment already exists, redirect to it
     if (paymentData?.invoice_url) {
       console.log('Reusing existing payment:', paymentData.invoice_url);
-      setStep('payment');
-      window.open(paymentData.invoice_url, '_blank');
-      toast({
-        title: 'Payment Reopened',
-        description: 'Continue your payment in the opened window',
-      });
+      window.location.href = paymentData.invoice_url;
       return;
     }
 
@@ -162,17 +140,17 @@ export function CryptoPaymentModal({
       console.log('📋 Invoice creation response:', payment);
 
       setPaymentData(payment);
-      setStep('payment');
 
-      // Open invoice URL in new tab if available
+      // Redirect to payment page
       if (payment.invoice_url) {
-        window.open(payment.invoice_url, '_blank');
+        window.location.href = payment.invoice_url;
+      } else {
+        toast({
+          title: 'Error',
+          description: 'Payment URL not available',
+          variant: 'destructive',
+        });
       }
-
-      toast({
-        title: 'Payment Created',
-        description: 'Complete your payment in the opened window',
-      });
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -184,67 +162,7 @@ export function CryptoPaymentModal({
     }
   };
 
-  const handleCopyAddress = () => {
-    if (paymentData?.pay_address) {
-      navigator.clipboard.writeText(paymentData.pay_address);
-      toast({
-        title: 'Copied',
-        description: 'Payment address copied to clipboard',
-      });
-    }
-  };
-
-  const checkPaymentStatus = async () => {
-    // Use invoice ID (stored in 'id' field) for invoice-based payments
-    const paymentId = paymentData?.id || paymentData?.payment_id;
-    if (!paymentId) return;
-
-    try {
-      const status = await nowPayments.getPaymentStatus(paymentId);
-      console.log('Payment status check:', status.payment_status, 'for ID:', paymentId);
-
-      // Check for all possible success statuses
-      if (
-        status.payment_status === 'finished' ||
-        status.payment_status === 'confirmed' ||
-        status.payment_status === 'sending' ||
-        status.payment_status === 'confirming'
-      ) {
-        if (status.payment_status === 'finished' || status.payment_status === 'confirmed') {
-          setStep('processing');
-          toast({
-            title: 'Payment Successful',
-            description: 'Your balance has been updated!',
-          });
-
-          // Call success callback and close modal
-          setTimeout(() => {
-            onSuccess?.();
-            handleClose();
-          }, 2000);
-        } else {
-          // Payment is being processed
-          setStep('processing');
-          toast({
-            title: 'Payment Received',
-            description: 'Processing your payment...',
-          });
-        }
-      }
-    } catch (error) {
-      console.error('Error checking payment status:', error);
-    }
-  };
-
-  useEffect(() => {
-    if (step === 'payment' && paymentData?.payment_id) {
-      const interval = setInterval(checkPaymentStatus, 5000); // Check every 5 seconds
-      return () => clearInterval(interval);
-    }
-  }, [step, paymentData]);
-
   const handleClose = () => {
-    setStep('select');
     setPaymentData(null);
     onClose();
   };
@@ -253,19 +171,13 @@ export function CryptoPaymentModal({
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>
-            {step === 'select' && 'Select Cryptocurrency'}
-            {step === 'payment' && 'Complete Payment'}
-            {step === 'processing' && 'Processing Payment'}
-          </DialogTitle>
+          <DialogTitle>Select Cryptocurrency</DialogTitle>
           <DialogDescription>
-            {step === 'select' && `Top up $${amount} using cryptocurrency`}
-            {step === 'payment' && 'Send payment to the address below'}
-            {step === 'processing' && 'Your payment is being processed'}
+            Top up $${amount} using cryptocurrency
           </DialogDescription>
         </DialogHeader>
 
-        {step === 'select' && (
+        {(
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>Select Cryptocurrency</Label>
@@ -353,73 +265,6 @@ export function CryptoPaymentModal({
                 'Continue to Payment'
               )}
             </Button>
-          </div>
-        )}
-
-        {step === 'payment' && paymentData && (
-          <div className="space-y-4">
-            {paymentData.invoice_url ? (
-              <div className="space-y-4">
-                <div className="bg-muted p-4 rounded-lg text-center">
-                  <p className="text-sm text-muted-foreground mb-2">
-                    Payment window opened in new tab
-                  </p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => window.open(paymentData.invoice_url, '_blank')}
-                  >
-                    <ExternalLink className="mr-2 h-4 w-4" />
-                    Open Payment Page
-                  </Button>
-                </div>
-
-                <div className="text-center text-sm text-muted-foreground">
-                  <Loader2 className="h-4 w-4 animate-spin inline mr-2" />
-                  Waiting for payment confirmation...
-                </div>
-              </div>
-            ) : (
-              <>
-                <div className="space-y-2">
-                  <Label>Send exactly</Label>
-                  <div className="bg-muted p-3 rounded-lg font-mono text-sm">
-                    {paymentData.pay_amount} {paymentData.pay_currency?.toUpperCase()}
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>To address</Label>
-                  <div className="bg-muted p-3 rounded-lg">
-                    <p className="font-mono text-xs break-all">{paymentData.pay_address}</p>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleCopyAddress}
-                      className="mt-2"
-                    >
-                      <Copy className="mr-2 h-4 w-4" />
-                      Copy Address
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="text-center text-sm text-muted-foreground">
-                  <Loader2 className="h-4 w-4 animate-spin inline mr-2" />
-                  Waiting for payment confirmation...
-                </div>
-              </>
-            )}
-          </div>
-        )}
-
-        {step === 'processing' && (
-          <div className="py-8 text-center">
-            <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-            <p className="text-lg font-medium">Payment Received!</p>
-            <p className="text-sm text-muted-foreground mt-2">
-              Your balance is being updated...
-            </p>
           </div>
         )}
       </DialogContent>
