@@ -36,61 +36,104 @@ export async function sendProvisioningEmails({
 }: SendProvisioningEmailsParams): Promise<{
   success: boolean;
   adminEmailsSent: number;
+  adminTelegramsSent: number;
   customerEmailSent: boolean;
 }> {
   let adminEmailsSent = 0;
+  let adminTelegramsSent = 0;
   let customerEmailSent = false;
 
-  // Send email notification to admins
+  // Send email and Telegram notifications to admins
   try {
     const { data: admins } = await supabase
       .from("profiles")
-      .select("email")
+      .select("email, notify_email, notify_telegram, telegram_chat_id")
       .eq("role", "admin");
 
     if (admins && admins.length > 0) {
-      const adminEmails = admins
-        .map((admin: any) => admin.email)
-        .filter(Boolean);
+      for (const admin of admins) {
+        // Send email notification if enabled
+        if (admin.email && admin.notify_email !== false) {
+          try {
+            const response = await fetch(`${origin}/api/notifications/email`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                to: admin.email,
+                subject: "⚠️ New Order Requires Manual Provisioning",
+                html: `
+                  <h2>Order Awaiting Activation</h2>
+                  <p>A new order requires manual provisioning due to inactive connection.</p>
+                  <h3>Order Details:</h3>
+                  <ul>
+                    <li><strong>Order ID:</strong> ${orderId}</li>
+                    <li><strong>User ID:</strong> ${userId}</li>
+                    <li><strong>User Email:</strong> ${userEmail}</li>
+                    <li><strong>Plan:</strong> ${plan.name}</li>
+                    <li><strong>Quantity:</strong> ${quantity}</li>
+                    <li><strong>Amount:</strong> $${totalAmount.toFixed(2)}</li>
+                    <li><strong>Connection ID:</strong> ${connectionId}</li>
+                    ${duration_days ? `<li><strong>Duration:</strong> ${duration_days} days</li>` : ""}
+                  </ul>
+                  <p><strong>Action Required:</strong> Please activate this order in the admin panel.</p>
+                  <p><a href="${origin}/admin/processing-orders" style="display: inline-block; padding: 10px 20px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 5px;">View Processing Orders</a></p>
+                `,
+              }),
+            });
 
-      for (const adminEmail of adminEmails) {
-        try {
-          const response = await fetch(`${origin}/api/notifications/email`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              to: adminEmail,
-              subject: "⚠️ New Order Requires Manual Provisioning",
-              html: `
-                <h2>Order Awaiting Activation</h2>
-                <p>A new order requires manual provisioning due to inactive connection.</p>
-                <h3>Order Details:</h3>
-                <ul>
-                  <li><strong>Order ID:</strong> ${orderId}</li>
-                  <li><strong>User ID:</strong> ${userId}</li>
-                  <li><strong>User Email:</strong> ${userEmail}</li>
-                  <li><strong>Plan:</strong> ${plan.name}</li>
-                  <li><strong>Quantity:</strong> ${quantity}</li>
-                  <li><strong>Amount:</strong> $${totalAmount.toFixed(2)}</li>
-                  <li><strong>Connection ID:</strong> ${connectionId}</li>
-                  ${duration_days ? `<li><strong>Duration:</strong> ${duration_days} days</li>` : ""}
-                </ul>
-                <p><strong>Action Required:</strong> Please activate this order in the admin panel.</p>
-                <p><a href="${origin}/admin/processing-orders" style="display: inline-block; padding: 10px 20px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 5px;">View Processing Orders</a></p>
-              `,
-            }),
-          });
-
-          if (response.ok) {
-            adminEmailsSent++;
+            if (response.ok) {
+              adminEmailsSent++;
+              console.log(`Manual provisioning email sent to admin ${admin.email}`);
+            }
+          } catch (error) {
+            console.error(`Failed to send email to admin ${admin.email}:`, error);
           }
-        } catch (error) {
-          console.error(`Failed to send email to admin ${adminEmail}:`, error);
+        }
+
+        // Send Telegram notification if enabled
+        if (admin.notify_telegram && admin.telegram_chat_id) {
+          try {
+            const telegramMessage = `
+⚠️ *New Order Requires Manual Provisioning*
+
+A new order requires manual provisioning due to inactive connection.
+
+*Order Details:*
+• Order ID: \`${orderId}\`
+• User ID: \`${userId}\`
+• User Email: ${userEmail}
+• Plan: *${plan.name}*
+• Quantity: ${quantity}
+• Amount: *$${totalAmount.toFixed(2)}*
+• Connection ID: \`${connectionId}\`
+${duration_days ? `• Duration: ${duration_days} days` : ""}
+
+*Action Required:* Please activate this order in the admin panel.
+
+[View Processing Orders](${origin}/admin/processing-orders)
+            `.trim();
+
+            const telegramResponse = await fetch(`${origin}/api/notifications/telegram`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                chat_id: admin.telegram_chat_id,
+                message: telegramMessage,
+              }),
+            });
+
+            if (telegramResponse.ok) {
+              adminTelegramsSent++;
+              console.log(`Manual provisioning notification sent via Telegram to admin ${admin.email}`);
+            }
+          } catch (error) {
+            console.error(`Failed to send Telegram notification to admin ${admin.email}:`, error);
+          }
         }
       }
     }
-  } catch (emailError) {
-    console.error("Failed to fetch admins or send admin emails:", emailError);
+  } catch (error) {
+    console.error("Failed to fetch admins or send admin notifications:", error);
   }
 
   // Send notification to customer
@@ -110,6 +153,7 @@ export async function sendProvisioningEmails({
       return {
         success: true,
         adminEmailsSent,
+        adminTelegramsSent,
         customerEmailSent: false,
       };
     }
@@ -198,12 +242,13 @@ Your proxies are being provisioned and will be available shortly. You'll receive
   return {
     success: true,
     adminEmailsSent,
+    adminTelegramsSent,
     customerEmailSent,
   };
 }
 
 /**
- * Sends email notification to admins when a connection needs configuration
+ * Sends email and Telegram notifications to admins when a connection needs configuration
  */
 export async function sendConnectionConfigNeededEmail({
   supabase,
@@ -217,53 +262,88 @@ export async function sendConnectionConfigNeededEmail({
   userEmail: string;
   connectionId: string;
   origin: string;
-}): Promise<{ success: boolean; emailsSent: number }> {
+}): Promise<{ success: boolean; emailsSent: number; telegramsSent: number }> {
   let emailsSent = 0;
+  let telegramsSent = 0;
 
   try {
     const { data: admins } = await supabase
       .from("profiles")
-      .select("email")
+      .select("email, notify_email, notify_telegram, telegram_chat_id")
       .eq("role", "admin");
 
     if (admins && admins.length > 0) {
-      const adminEmails = admins
-        .map((admin: any) => admin.email)
-        .filter(Boolean);
+      for (const admin of admins) {
+        // Send email notification if enabled
+        if (admin.email && admin.notify_email !== false) {
+          try {
+            const response = await fetch(`${origin}/api/notifications/email`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                to: admin.email,
+                subject: "⚠️ Connection Needs Configuration",
+                html: `
+                  <h2>Connection Requires Configuration</h2>
+                  <p>A connection has been sold and needs to be configured on the Android device.</p>
+                  <h3>Details:</h3>
+                  <ul>
+                    <li><strong>Order ID:</strong> ${orderId}</li>
+                    <li><strong>User Email:</strong> ${userEmail}</li>
+                    <li><strong>Connection ID:</strong> ${connectionId}</li>
+                  </ul>
+                  <p><strong>Action Required:</strong> Please configure this connection on the Android device.</p>
+                `,
+              }),
+            });
 
-      for (const adminEmail of adminEmails) {
-        try {
-          const response = await fetch(`${origin}/api/notifications/email`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              to: adminEmail,
-              subject: "⚠️ Connection Needs Configuration",
-              html: `
-                <h2>Connection Requires Configuration</h2>
-                <p>A connection has been sold and needs to be configured on the Android device.</p>
-                <h3>Details:</h3>
-                <ul>
-                  <li><strong>Order ID:</strong> ${orderId}</li>
-                  <li><strong>User Email:</strong> ${userEmail}</li>
-                  <li><strong>Connection ID:</strong> ${connectionId}</li>
-                </ul>
-                <p><strong>Action Required:</strong> Please configure this connection on the Android device.</p>
-              `,
-            }),
-          });
-
-          if (response.ok) {
-            emailsSent++;
+            if (response.ok) {
+              emailsSent++;
+              console.log(`Config notification email sent to admin ${admin.email}`);
+            }
+          } catch (error) {
+            console.error(`Failed to send email to admin ${admin.email}:`, error);
           }
-        } catch (error) {
-          console.error(`Failed to send email to admin ${adminEmail}:`, error);
+        }
+
+        // Send Telegram notification if enabled
+        if (admin.notify_telegram && admin.telegram_chat_id) {
+          try {
+            const telegramMessage = `
+⚠️ *Connection Needs Configuration*
+
+A connection has been sold and needs to be configured on the Android device.
+
+*Details:*
+• Order ID: \`${orderId}\`
+• User Email: ${userEmail}
+• Connection ID: \`${connectionId}\`
+
+*Action Required:* Please configure this connection on the Android device.
+            `.trim();
+
+            const telegramResponse = await fetch(`${origin}/api/notifications/telegram`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                chat_id: admin.telegram_chat_id,
+                message: telegramMessage,
+              }),
+            });
+
+            if (telegramResponse.ok) {
+              telegramsSent++;
+              console.log(`Config notification sent via Telegram to admin ${admin.email}`);
+            }
+          } catch (error) {
+            console.error(`Failed to send Telegram notification to admin ${admin.email}:`, error);
+          }
         }
       }
     }
-  } catch (emailError) {
-    console.error("Failed to send connection config emails:", emailError);
+  } catch (error) {
+    console.error("Failed to send connection config notifications:", error);
   }
 
-  return { success: true, emailsSent };
+  return { success: true, emailsSent, telegramsSent };
 }
