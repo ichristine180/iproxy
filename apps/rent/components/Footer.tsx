@@ -10,7 +10,7 @@ const Footer = () => {
               Highbid Proxies
             </a>
             <p className="text-sm text-muted-foreground">
-              Manage Your Proxies with Ease
+             Consistent Performence. Releable uptime
             </p>
           </div>
 
