@@ -1074,7 +1074,7 @@ function DashboardPageContent() {
                       onClick={() => setSelectedPlanId(plan.id)}
                       className={`w-full flex items-center justify-between px-4 py-4 rounded-full transition-all cursor-pointer ${
                         isSelected
-                          ? "bg-gradient-to-r from-[rgb(var(--brand-400))] to-[rgb(var(--brand-300))] text-white"
+                          ? "bg-[rgb(var(--brand-500))] text-white"
                           : "bg-neutral-800/50 text-neutral-400 hover:bg-neutral-800 hover:text-white"
                       }`}
                     >
@@ -1165,7 +1165,7 @@ function DashboardPageContent() {
                     <button
                       onClick={() => handleBuyNow(selectedPlan.id)}
                       disabled={isCheckingQuota}
-                      className="w-full px-6 py-3 bg-gradient-to-r from-[rgb(var(--brand-400))] to-[rgb(var(--brand-300))] text-white font-semibold rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full px-6 py-3 bg-[rgb(var(--brand-500))] text-white tp-button rounded-lg hover:bg-[rgb(var(--brand-400))] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isCheckingQuota ? (
                         <>
@@ -1188,7 +1188,7 @@ function DashboardPageContent() {
 
           {/* Orders Section */}
           <div className="px-4">
-            <h2 className="text-sm font-semibold text-[rgb(var(--accent-400))] uppercase tracking-wider mb-4">
+            <h2 className="text-sm font-semibold text-[rgb(var(--brand-400))] uppercase tracking-wider mb-4">
               YOUR ORDERS
             </h2>
             <div className="bg-neutral-900 rounded-xl p-6" style={{ border: '1px solid rgb(64, 64, 64)', background: 'rgb(23, 23, 23)' }}>

@@ -167,7 +167,7 @@ export default function PricingPage() {
       {/* Header */}
       <header className="border-b border-border/50 bg-background/80 backdrop-blur-sm">
         <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold [background-image:var(--gradient-primary)] bg-clip-text text-transparent">
+          <h1 className="tp-headline-m text-white">
             iProxy
           </h1>
           {user && (
