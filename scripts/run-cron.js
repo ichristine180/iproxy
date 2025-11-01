@@ -27,6 +27,13 @@ async function runCron() {
     process.exit(1);
   }
 
+  // Check if URL is localhost in production
+  if (APP_URL.includes('localhost') && process.env.NODE_ENV === 'production') {
+    console.error("❌ Error: APP_URL is set to localhost in production!");
+    console.error("Please set NEXT_PUBLIC_APP_BASE_URL to your production URL in Railway");
+    process.exit(1);
+  }
+
   if (!CRON_SECRET) {
     console.warn("⚠️  Warning: CRON_SECRET is not set (authentication may fail)");
   }
@@ -76,8 +83,18 @@ async function runCron() {
       process.exit(1);
     }
   } catch (error) {
-    console.error("❌ Error running cron job:", error.message);
-    console.error(error.stack);
+    console.error("❌ Cron job failed with error:", error.message);
+
+    if (error.cause) {
+      console.error("Cause:", error.cause);
+    }
+
+    if (APP_URL.includes('localhost')) {
+      console.error("\n⚠️  APP_URL is set to localhost - this won't work in production!");
+      console.error("Set NEXT_PUBLIC_APP_BASE_URL in Railway to your production URL");
+    }
+
+    console.error("Stack:", error.stack);
     process.exit(1);
   }
 }
