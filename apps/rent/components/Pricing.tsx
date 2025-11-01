@@ -71,7 +71,7 @@ const Pricing = () => {
         <div className="content-sizer">
           <div className="text-center">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4">
-              Our Pricing
+               Select Your Plan
             </h2>
             <p className="text-white/60">Loading pricing plans...</p>
           </div>
@@ -86,7 +86,7 @@ const Pricing = () => {
         <div className="content-sizer">
           <div className="text-center">
             <h2 className="text-2xl sm:text-3xl md:text-[32px] font-bold text-white mb-4">
-              Our Products
+            Select Your Plan
             </h2>
 
             <p className="text-red-400">{error}</p>
@@ -102,7 +102,7 @@ const Pricing = () => {
         {/* Section Header */}
         <div className="text-center mb-12 sm:mb-16">
          <h2 className="text-2xl sm:text-3xl md:text-[32px] font-bold text-white mb-4">
-            Our Products
+           Select Your Plan
           </h2>
         </div>
 
@@ -118,7 +118,7 @@ const Pricing = () => {
                 className="bg-neutral-800/50 border border-neutral-700/50 rounded-xl p-6 sm:p-8 hover:border-[rgb(var(--brand-400))]/30 transition-all duration-300 flex flex-col"
               >
                 {/* Icon & Title */}
-                <div className="flex items-center gap-3 mb-4">
+                <div className="flex items-center gap-3">
                   <div className="text-[rgb(var(--brand-400))]">
                     {getPlanIcon(plan.name)}
                   </div>
@@ -131,9 +131,7 @@ const Pricing = () => {
                 <div className="mb-4">
                   {plan.pricing && plan.pricing.length > 0 ? (
                     <>
-                      <p className="text-base text-white/60 mb-2">
-                        Pricing options
-                      </p>
+                     
                       <div className="flex flex-wrap gap-2">
                         {plan.pricing
                           .sort((a, b) => {
@@ -181,9 +179,9 @@ const Pricing = () => {
                 </div>
 
                 {/* Description */}
-                <div className="mb-4">
+                {/* <div className="mb-4">
                   <p className="text-sm text-white/70">{plan.description}</p>
-                </div>
+                </div> */}
 
                 {/* Features - always shown */}
                 <div className="mb-6 p-4 bg-neutral-900/50 rounded-lg border border-neutral-700/30 flex-grow">

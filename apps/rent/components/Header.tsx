@@ -52,9 +52,11 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 w-full select-none border-b border-b-[#3b82f6]/25 bg-neutral-900 shadow-[0_1px_0_rgba(59,130,246,0.2)]">
       <div className="content-sizer flex items-center justify-between h-[88px] gap-8">
-        {/* Logo */}
-        <div className="">
-          <div className="flex items-center gap-3">
+        {/* Logo + Proxies Combined */}
+        <div className="flex items-center gap-0">
+          {/* Logo Icon + Text + Proxies Dropdown All Together */}
+          <a href={"/"} className="flex items-center gap-3">
+            {/* Logo Icon */}
             <div className="relative">
               <div className="w-10 h-10 bg-gradient-to-br from-[rgb(var(--brand-400))] to-[rgb(var(--brand-600))] rounded-lg flex items-center justify-center">
                 <svg
@@ -73,33 +75,24 @@ export default function Header() {
               </div>
               <div className="absolute -inset-1 bg-gradient-to-br from-[rgb(var(--brand-400))] to-[rgb(var(--brand-600))] rounded-lg blur opacity-30"></div>
             </div>
-            <a
-              href={"/"}
-              className="text-2xl sm:text-xl font-bold bg-gradient-to-r from-[rgb(var(--brand-400))] via-[rgb(var(--brand-500))] to-purple-500 bg-clip-text text-transparent"
-            >
-              Highbid Proxies
-            </a>
-          </div>
-        </div>
-        {/* <Link
-          href={"/"}
-          className="flex items-center"
-        >
-          <span className="text-xl font-semibold text-white tracking-tight">
-            Highbid Proxies
-          </span>
-        </Link> */}
 
-        {/* Desktop Navigation Menu */}
-        <nav className="hidden lg:flex items-center gap-6 flex-1">
+            {/* Highbid Text */}
+            <span  className="text-2xl sm:text-3xl font-bold text-blue">
+              Highbid
+            </span>
+          </a>
+
+          {/* Proxies Dropdown */}
           <div
-            className="relative"
+            className="relative hidden lg:block"
             onMouseEnter={() => setProductsDropdownOpen(true)}
             onMouseLeave={() => setProductsDropdownOpen(false)}
           >
-            <button className="flex items-center gap-1.5 text-[17px] font-normal text-white hover:text-[rgb(var(--brand-400))] transition-colors">
+            <button 
+          className=" flex text-2xl sm:text-3xl font-bold text-blue ml-2"
+            >
               Proxies
-              <ChevronDown className="w-3.5 h-3.5" />
+              <ChevronDown className="w-6 h-6 mt-2" />
             </button>
 
             {/* Products Dropdown Menu */}
@@ -176,7 +169,7 @@ export default function Header() {
               </div>
             )}
           </div>
-        </nav>
+        </div>
 
         {/* Right Side Actions */}
         <div className="flex items-center gap-3">
