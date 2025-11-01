@@ -10,14 +10,16 @@
     "lint": "next lint --max-warnings 0",
     "check-types": "tsc --noEmit",
     "cron:auto-renew": "node scripts/run-cron.js",
-    "db:start": "supabase start",
-    "db:stop": "supabase stop",
-    "db:reset": "supabase db reset",
-    "db:push": "supabase db push",
+    "db:start": "npx supabase start",
+    "db:stop": "npx supabase stop",
+    "db:reset": "npx supabase db reset",
+    "db:push": "npx supabase db push",
     "db:setup": "./scripts/db-setup.sh",
-    "db:types": "supabase gen types typescript --local > types/supabase.ts",
-    "db:status": "supabase status",
-    "db:migrate": "supabase migration new"
+    "db:migrate:run": "./scripts/run-migrations.sh",
+    "db:migrate:new": "npx supabase migration new",
+    "db:migrate:combine": "./scripts/generate-combined-migration.sh && open combined-migrations.sql",
+    "db:types": "npx supabase gen types typescript --local > types/supabase.ts",
+    "db:status": "npx supabase status"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.12",
@@ -72,6 +74,7 @@
     "@types/react": "19.1.0",
     "@types/react-dom": "19.1.1",
     "eslint": "^9.34.0",
+    "supabase": "^2.54.11",
     "typescript": "5.9.2"
   },
   "engines": {

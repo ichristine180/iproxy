@@ -1,0 +1,13 @@
+-- ============================================
+-- Combined Migration Script for iProxy
+-- Generated from all migration files
+-- ============================================
+--
+-- Instructions:
+-- 1. Go to Supabase Dashboard > SQL Editor
+-- 2. Create a new query
+-- 3. Copy and paste this entire file
+-- 4. Click "Run" to execute
+--
+-- ============================================
+
