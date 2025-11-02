@@ -115,7 +115,7 @@ function SignupForm() {
                 <p className="text-white/70">
                   Already have an account?{" "}
                   <Link
-                    href={`/${searchParams.toString() ? `?${searchParams.toString()}` : ""}`}
+                    href={`/login`}
                     className="text-[rgb(var(--brand-400))] hover:underline"
                   >
                     Log In

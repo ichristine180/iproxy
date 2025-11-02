@@ -200,7 +200,7 @@ function LoginForm() {
 
                 {/* Forgot Password */}
                 <div className="text-center">
-                  <Link href="/forgot-password" className="tp-link tp-body-s">
+                  <Link href="#" className="tp-link tp-body-s">
                     Forgot Your Password?
                   </Link>
                 </div>
