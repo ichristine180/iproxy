@@ -5,18 +5,15 @@ import Image from "next/image";
 
 const Hero = () => {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-[28px]">
-      {/* Dark background */}
-      <div className="absolute inset-0 z-0 bg-neutral-900" />
-
-      {/* Glow effects - Blue glow (swapped from their orange) */}
-      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-[rgb(var(--brand-500))]/20 rounded-full blur-[150px]" />
-
+    <section className="content-sizer relative z-0 flex flex-col justify-center py-40 text-center sm:py-56 lg:py-80">
       {/* Content */}
-      <div className="relative z-10 content-sizer py-16 text-center">
+      <div className="my-auto flex flex-col gap-40 lg:mx-auto lg:max-w-[940px]">
         {/* Main Headline */}
-        <div className="flex flex-col items-center">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 md:gap-12 lg:gap-16 mb-8 w-full max-w-4xl px-4">
+        <div className="flex flex-col gap-24">
+          <div
+            className="relative flex flex-wrap justify-center items-center gap-12 self-center transition-opacity duration-700 
+  max-sm:grid max-sm:grid-cols-2 max-sm:gap-6 max-sm:w-full"
+          >
             {/* Global Coverage */}
             <div className="flex flex-col items-center group cursor-default">
               <div className="w-14 h-14 sm:w-16 sm:h-16  bg-[#fff] rounded-2xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-[rgb(var(--brand-500))]/30">
@@ -31,7 +28,7 @@ const Hero = () => {
               <p className="text-white text-xl sm:text-2xl md:text-3xl font-bold mb-1">
                 USA
               </p>
-              <p className="text-white/60 text-xs sm:text-sm text-center">
+              <p className="tp-body-s text-left font-medium leading-[20px] text-neutral-0">
                 IPs located in the US
               </p>
             </div>
@@ -56,7 +53,7 @@ const Hero = () => {
               <p className="text-white text-xl sm:text-2xl md:text-3xl font-bold mb-1">
                 3M+
               </p>
-              <p className="text-white/60 text-xs sm:text-sm text-center">
+              <p className="tp-body-s text-left font-medium leading-[20px] text-neutral-0">
                 IP Addresses
               </p>
             </div>
@@ -81,7 +78,7 @@ const Hero = () => {
               <p className="text-white text-xl sm:text-2xl md:text-3xl font-bold mb-1">
                 99.9%
               </p>
-              <p className="text-white/60 text-xs sm:text-sm text-center">
+              <p className="tp-body-s text-left font-medium leading-[20px] text-neutral-0">
                 Uptime SLA
               </p>
             </div>
@@ -106,56 +103,91 @@ const Hero = () => {
               <p className="text-white text-xl sm:text-2xl md:text-3xl font-bold mb-1">
                 100%
               </p>
-              <p className="text-white/60 text-xs sm:text-sm text-center">
+              <p className="tp-body-s text-left font-medium leading-[20px] text-neutral-0">
                 Anonymous
               </p>
             </div>
           </div>
-          <h1 className="headline tp-headline-m lg:tp-headline-xl mb-8 text-neutral-0 ">
-            5G USA Mobile Proxies Consistent performance. Reliable uptime
-          </h1>
-
-          {/* Feature Checkmarks */}
-          <div className="items-center mb-10 text-white flex">
-            <div className="flex items-center p-2">
-              <Check className="w-5 h-5" color="orange" />
-              <span className="lg:tp-sub-headline text-neutral-0 px-2">
-                Unlimited Bandwidth
-              </span>
-            </div>
-            <div className="flex items-center p-2">
-              <Check className="w-5 h-5" color="orange" />
-              <span className="lg:tp-sub-headline text-neutral-0 px-2">
-                Seamless Rotation
-              </span>
-            </div>
-            <div className="flex items-center p-2">
-              <Check className="w-5 h-5" color="orange" />
-              <span className="lg:tp-sub-headline text-neutral-0 px-2">
-                Dedicated Access
-              </span>
-            </div>
+          <div className="flex flex-col items-center">
+            <h1
+              className="headline tp-headline-m lg:tp-headline-xl mb-16 text-neutral-0 lg:w-[750px]"
+              data-astro-cid-hmzfjpzv
+            >
+              5G USA Mobile Proxies Consistent performance. Reliable uptime
+            </h1>
           </div>
+          <ul className="mx-auto flex max-w-[940px] flex-col flex-wrap justify-center gap-8 lg:flex-row lg:gap-24">
+            <li className="flex items-center gap-8">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fillRule="evenodd"
+                className="size-24 text-brand-400"
+              >
+                <path
+                  d="M18.62 6.659a1.795 1.795 0 0 1-.16.04c-.091.02-1.19 1.095-4.52 4.423L9.539 15.52 7.7 13.653c-1.012-1.027-1.92-1.918-2.018-1.98-.615-.391-1.394.288-1.085.947.05.108.79.873 2.289 2.366 2.421 2.411 2.315 2.323 2.759 2.283a.692.692 0 0 0 .424-.163c.105-.078 2.238-2.19 4.739-4.694 3.212-3.214 4.567-4.596 4.61-4.701.15-.36-.003-.798-.338-.97-.106-.055-.393-.106-.46-.082"
+                  fill="currentColor"
+                />
+              </svg>
+              <div className="lg:tp-sub-headline text-neutral-0">
+                Dedicated Access
+              </div>
+            </li>
+            <li className="flex items-center gap-8">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fillRule="evenodd"
+                className="size-24 text-brand-400"
+              >
+                <path
+                  d="M18.62 6.659a1.795 1.795 0 0 1-.16.04c-.091.02-1.19 1.095-4.52 4.423L9.539 15.52 7.7 13.653c-1.012-1.027-1.92-1.918-2.018-1.98-.615-.391-1.394.288-1.085.947.05.108.79.873 2.289 2.366 2.421 2.411 2.315 2.323 2.759 2.283a.692.692 0 0 0 .424-.163c.105-.078 2.238-2.19 4.739-4.694 3.212-3.214 4.567-4.596 4.61-4.701.15-.36-.003-.798-.338-.97-.106-.055-.393-.106-.46-.082"
+                  fill="currentColor"
+                />
+              </svg>
+              <div className="lg:tp-sub-headline text-neutral-0">
+                Seamless Rotation
+              </div>
+            </li>
+            <li className="flex items-center gap-8">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fillRule="evenodd"
+                className="size-24 text-brand-400"
+              >
+                <path
+                  d="M18.62 6.659a1.795 1.795 0 0 1-.16.04c-.091.02-1.19 1.095-4.52 4.423L9.539 15.52 7.7 13.653c-1.012-1.027-1.92-1.918-2.018-1.98-.615-.391-1.394.288-1.085.947.05.108.79.873 2.289 2.366 2.421 2.411 2.315 2.323 2.759 2.283a.692.692 0 0 0 .424-.163c.105-.078 2.238-2.19 4.739-4.694 3.212-3.214 4.567-4.596 4.61-4.701.15-.36-.003-.798-.338-.97-.106-.055-.393-.106-.46-.082"
+                  fill="currentColor"
+                />
+              </svg>
+              <div className="lg:tp-sub-headline text-neutral-0">
+                Unlimited Bandwidth
+              </div>
+            </li>
+          </ul>
         </div>
 
         {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center mb-4 px-10">
           <a
             href="/signup"
-            className="w-full lg:max-w-[524px] sm:w-[259px] px-8 sm:px-10 py-3 sm:py-4 text-sm sm:text-[15px] md:text-[16px] font-semibold text-white bg-[rgb(var(--brand-400))] rounded-lg hover:bg-[rgb(var(--brand-500))] transition-all min-w-[160px] sm:min-w-[180px] text-center"
+            className="w-full lg:max-w-[524px] sm:w-[259px] h-48 gap-10 tp-body px-24 py-16 rounded-8 focus-within:outline-brand-100 bg-brand-600 text-neutral-0 hover:bg-brand-300 active:bg-brand-700 flex cursor-pointer select-none items-center justify-center gap-[10px] font-bold outline-offset-2 transition-all md:rounded-8 w-full lg:max-w-[524px] sm:w-[259px] flex-row"
           >
             Buy Now
           </a>
         </div>
 
-     
         {/* Dashboard Preview */}
         <div className="mt-12 sm:mt-16 max-w-6xl mx-auto relative px-4">
           {/* Blue glow effect behind image */}
           <div className="absolute inset-0 bg-[rgb(var(--brand-500))]/30 rounded-3xl blur-[100px] scale-105" />
 
           {/* Hero Image */}
-          <div className="relative rounded-xl sm:rounded-2xl overflow-hidden border-2 border-[rgb(var(--brand-500))]/30 shadow-2xl">
+          <div className="relative rounded-xl sm:rounded-2xl overflow-hidden border-1 border-[rgb(var(--brand-700))] shadow-2xl">
             <Image
               src="/hero.png"
               alt="Dashboard Preview"

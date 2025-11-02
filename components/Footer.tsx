@@ -2,25 +2,25 @@ import Link from "next/link";
 
 const Footer = () => {
   return (
-    <footer className="border-t border-border py-12 px-4">
-      <div className="container mx-auto">
+    <footer className="mt-auto border-t border-solid border-neutral-700">
+      <div className="content-sizer flex flex-col gap-16 pb-32 pt-32 text-neutral-500 max-sm:pb-0 md:pt-40 lg:pt-[80px]">
         <div className="grid md:grid-cols-3 gap-8 mb-8 text-center">
           <div>
-            <a href="/" className="font-bold text-lg mb-4 gradient-text block">
+            <a href="/" className="tp-title mb-[19px] min-h-[24px] uppercase text-neutral-500">
               Highbid Proxies
             </a>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-neutral-0 hover:text-brand-300 transition-all cursor-pointer">
              Consistent Performence. Releable uptime
             </p>
           </div>
 
           <div>
-            <h4 className="font-semibold mb-4">Legal</h4>
+            <h4 className="ftp-title mb-[19px] min-h-[24px] uppercase text-neutral-500">Legal</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
                 <Link
                   href="/terms"
-                  className="hover:text-primary transition-colors"
+                  className="text-neutral-0 hover:text-brand-300 transition-all cursor-pointer"
                 >
                   Terms of Service
                 </Link>
@@ -28,7 +28,7 @@ const Footer = () => {
               <li>
                 <Link
                   href="/privacy"
-                  className="hover:text-primary transition-colors"
+                  className="text-neutral-0 hover:text-brand-300 transition-all cursor-pointer"
                 >
                   Privacy Policy
                 </Link>
@@ -36,7 +36,7 @@ const Footer = () => {
               <li>
                 <Link
                   href="/refund"
-                  className="hover:text-primary transition-colors"
+                  className="text-neutral-0 hover:text-brand-300 transition-all cursor-pointer"
                 >
                   Refund Policy
                 </Link>
@@ -46,7 +46,7 @@ const Footer = () => {
 
           <div>
             <h4 className="font-semibold mb-4">Contact Us</h4>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-neutral-0 hover:text-brand-300 transition-all cursor-pointer">
               If you have any issues, questions, or special requests, please don't hesitate to contact us:{" "}
               <a
                 href="https://t.me/HighbidProxyUS"
@@ -60,7 +60,7 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="flex justify-center items-center pt-8 border-t border-border">
+        <div className="flex items-center justify-between border-y border-solid border-neutral-600 py-16">
           <p className="text-sm text-muted-foreground">
             © 2025 iproxy. All rights reserved.
           </p>

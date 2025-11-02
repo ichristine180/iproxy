@@ -10,9 +10,9 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <div className="">
+      <div className="page-content-gap flex flex-col">
         <Hero />
-        <div id="pricing">
+        <div id="w-full">
           <Pricing />
         </div>
         <div id="features">

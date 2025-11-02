@@ -50,59 +50,56 @@ const Features = () => {
   const duplicatedFeatures = [...features, ...features];
 
   return (
-    <section className="relative bg-neutral-900 mb-10">
-      <div className="content-sizer px-4">
-        <div className="text-center mb-12 sm:mb-16">
-          <h2 className="text-2xl sm:text-3xl md:text-[32px] font-bold text-white mb-4">
-            Why Choose Our Proxies?
-          </h2>
-        </div>
-
-        {/* Mobile/Tablet Grid - Hidden on desktop */}
-        <div className="lg:hidden grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 max-w-7xl mx-auto">
-          {features.map((feature, index) => (
-            <div
-              key={index}
-              className="bg-neutral-800/50 border border-neutral-700/50 rounded-xl p-6 sm:p-8 hover:border-[rgb(var(--brand-400))]/30 transition-all duration-300"
-            >
-              {/* Icon + Title inline */}
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-12 h-12 rounded-lg bg-[rgb(var(--brand-400))]/10 border border-[rgb(var(--brand-400))]/20 flex items-center justify-center flex-shrink-0">
-                  <feature.icon className="w-6 h-6 text-[rgb(var(--brand-400))]" />
-                </div>
-                <h3 className="text-lg sm:text-xl font-semibold text-white">
-                  {feature.title}
-                </h3>
+    <section className="flex flex-col gap-24 content-sizer text-center mb-20">
+      <div className="mx-auto max-w-[938px]">
+        <h2 className="tp-headline-m lg:tp-headline-l text-neutral-0 mb-32 sm:mb-40 lg:mb-56">
+          Why choose our proxies?
+        </h2>
+      </div>
+      {/* Mobile/Tablet Grid - Hidden on desktop */}
+      <div className="lg:hidden grid grid-cols-1 sm:grid-cols-2 gap-10 sm:gap-6 max-w-7xl mx-auto">
+        {features.map((feature, index) => (
+          <div
+            key={index}
+            className="flex w-full flex-col justify-start gap-24 rounded-16 bg-neutral-800/50 p-24 max-lg:min-h-[220px] lg:max-w-[380px]"
+          >
+            {/* Icon + Title inline */}
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-12 h-12 rounded-lg bg-[rgb(var(--brand-400))]/10 border border-[rgb(var(--brand-400))] flex items-center justify-center flex-shrink-0">
+                <feature.icon className="w-6 h-6 text-[rgb(var(--brand-400))]" />
               </div>
-
-              <p className="text-sm text-white/70 leading-relaxed">
-                {feature.description}
-              </p>
+              <h3 className="tp-headline-s text-neutral-0">
+                {feature.title}
+              </h3>
             </div>
-          ))}
-        </div>
+
+            <p className="mb-24 last:mb-0">
+              {feature.description}
+            </p>
+          </div>
+        ))}
       </div>
 
       {/* Desktop Infinite Scroll - Hidden on mobile/tablet */}
       <div className="hidden lg:block relative overflow-hidden">
         <div className="pb-6">
-          <div className="flex gap-6 animate-scroll">
+          <div className="flex gap-20 animate-scroll">
             {duplicatedFeatures.map((feature, index) => (
               <div
                 key={index}
-                className="w-[380px] bg-neutral-800/50 border border-neutral-700/50 rounded-xl p-8 hover:border-[rgb(var(--brand-400))]/30 transition-all duration-300 flex-shrink-0"
+                className="w-[380px] bg-neutral-800/50 border border-neutral-700 rounded-xl p-8 hover:border-[rgb(var(--brand-400))]/30 transition-all duration-300 flex-shrink-0"
               >
                 {/* Icon + Title inline */}
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-12 h-12 rounded-lg bg-[rgb(var(--brand-400))]/10 border border-[rgb(var(--brand-400))]/20 flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-lg bg-[rgb(var(--brand-400))]/10 border border-[rgb(var(--brand-700))] flex items-center justify-center">
                     <feature.icon className="w-6 h-6 text-[rgb(var(--brand-400))]" />
                   </div>
-                  <h3 className="text-xl font-semibold text-white">
+                   <h3 className="tp-headline-s text-neutral-0">
                     {feature.title}
                   </h3>
                 </div>
 
-                <p className="text-sm text-white/70 leading-relaxed">
+                   <p className="mb-24 last:mb-0">
                   {feature.description}
                 </p>
               </div>

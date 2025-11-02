@@ -1,7 +1,12 @@
 #!/usr/bin/env node
 
 const CRON_SECRET = process.env.CRON_SECRET;
-const BASE_URL = process.env.NEXT_PUBLIC_APP_BASE_URL || 'http://localhost:3000';
+let BASE_URL = process.env.NEXT_PUBLIC_APP_BASE_URL || 'http://localhost:3000';
+
+// Ensure URL has a protocol
+if (!BASE_URL.startsWith('http://') && !BASE_URL.startsWith('https://')) {
+  BASE_URL = `https://${BASE_URL}`;
+}
 
 // Check if this is running during build phase
 if (process.env.RAILWAY_IS_BUILDER === 'true') {

@@ -5,8 +5,13 @@
  * This script is executed by Railway's cron service
  */
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_BASE_URL;
+let APP_URL = process.env.NEXT_PUBLIC_APP_BASE_URL;
 const CRON_SECRET = process.env.CRON_SECRET;
+
+// Ensure URL has a protocol
+if (APP_URL && !APP_URL.startsWith('http://') && !APP_URL.startsWith('https://')) {
+  APP_URL = `https://${APP_URL}`;
+}
 
 async function runCron() {
   console.log("==========================================");
