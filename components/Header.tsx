@@ -56,7 +56,7 @@ export default function Header() {
           {/* Left Section — Logo + Dropdown */}
           <div className="flex items-center gap-2 sm:gap-4">
             <a href="/" className="flex items-center gap-3">
-              <div className="relative">
+              {/* <div className="relative">
                 <div className="w-7 h-7 bg-[rgb(var(--brand-400))] rounded-lg flex items-center justify-center">
                   <svg
                     className="w-4 h-4 text-white"
@@ -72,7 +72,7 @@ export default function Header() {
                     />
                   </svg>
                 </div>
-              </div>
+              </div> */}
               <span className="text-brand-400 font-bold tp-headline-s pr-2">
                 Highbid
               </span>
@@ -106,7 +106,7 @@ export default function Header() {
                           <div className="text-[rgb(var(--brand-400))] flex items-center">
                             {getPlanIcon(plan.name)}
                           </div>
-                          <h3 className="font-semibold ">
+                          <h3 className="font-semibold tp-headline-s">
                             {plan.name}
                           </h3>
                         </div>
@@ -140,7 +140,7 @@ export default function Header() {
                                     key={index}
                                     className="flex items-center gap-1 bg-neutral-700/40 border border-neutral-600 rounded-md px-1 py-1 text-xs text-white hover:border-[rgb(var(--brand-400))] transition-all"
                                   >
-                                    <span className="text-[rgb(var(--brand-400))] font-semibold">
+                                    <span className="text-[rgb(var(--brand-400))] tp-headline-s">
                                       ${pricing.price_usd}
                                     </span>
                                     <span className="text-white/70">
@@ -167,13 +167,13 @@ export default function Header() {
           <div className="flex items-center gap-3">
             <a
               href="/login"
-              className="hidden sm:flex whitespace-nowrap h-40 gap-10 tp-body-s px-24 py-16 rounded-8 focus-within:outline-brand-100 border-brand-300 text-brand-300 hover:text-neutral-0 hover:bg-brand-300 active:bg-brand-700 active:text-neutral-0 border-2 border-solid hover:border-transparent active:border-transparent flex cursor-pointer select-none items-center justify-center gap-[10px] font-bold outline-offset-2 transition-all md:rounded-8 whitespace-nowrap flex-row"
+              className="hidden sm:flex whitespace-nowrap h-40 gap-10 tp-body-s px-24 py-16 rounded-8 focus-within:outline-brand-100 border-brand-400 text-brand-400 hover:text-brand-600 hover:bg-brand-300 active:bg-brand-700 active:text-neutral-0 border-2 border-solid hover:border-transparent active:border-transparent flex cursor-pointer select-none items-center justify-center gap-[10px] font-bold outline-offset-2 transition-all md:rounded-8 whitespace-nowrap flex-row"
             >
               Log in
             </a>
             <a
               href="/signup"
-              className="hidden sm:flex  whitespace-nowrap h-40 gap-10 tp-body-s px-24 py-16 rounded-8 focus-within:outline-brand-100 bg-brand-600 text-neutral-0 hover:bg-brand-300 active:bg-brand-700 flex cursor-pointer select-none items-center justify-center gap-[10px] font-bold outline-offset-2 transition-all md:rounded-8 whitespace-nowrap flex-row"
+              className="hidden sm:flex  whitespace-nowrap h-40 gap-10 tp-body-s px-24 py-16 rounded-8 focus-within:outline-brand-100 bg-brand-600 text-neutral-0 hover:text-brand-600 hover:bg-brand-300 active:bg-brand-700 flex cursor-pointer select-none items-center justify-center gap-[10px] font-bold outline-offset-2 transition-all md:rounded-8 whitespace-nowrap flex-row"
             >
               Register
             </a>

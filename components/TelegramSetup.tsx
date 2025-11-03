@@ -200,7 +200,7 @@ You will receive notifications for:
       ) : (
         <div className="space-y-4">
           {/* Instructions */}
-          <div className="bg-neutral-900 rounded-lg p-4">
+          <div className="bg-neutral-900 rounded-lg p-5">
             <p className="text-sm text-neutral-300 mb-3 font-semibold">
               How to connect:
             </p>

@@ -16,14 +16,52 @@ const Hero = () => {
           >
             {/* Global Coverage */}
             <div className="flex flex-col items-center group cursor-default">
-              <div className="w-14 h-14 sm:w-16 sm:h-16  bg-[#fff] rounded-2xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-[rgb(var(--brand-500))]/30">
-                <Image
-                  src="/usa.png"
-                  alt="USA Flag"
-                  width={32}
-                  height={32}
-                  className="w-10 h-10 sm:w-8 sm:h-8"
-                />
+              <div className="w-14 h-14 sm:w-16 sm:h-16  bg-brand-600 rounded-2xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-[rgb(var(--brand-500))]/30">
+                <svg
+                  className="w-7 h-7 sm:w-8 sm:h-8 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  {/* Flag outline */}
+                  <rect x="2" y="4" width="20" height="16" rx="1" />
+
+                  {/* Stripes */}
+                  <line x1="2" y1="7.2" x2="22" y2="7.2" />
+                  <line x1="2" y1="10.4" x2="22" y2="10.4" />
+                  <line x1="2" y1="13.6" x2="22" y2="13.6" />
+                  <line x1="2" y1="16.8" x2="22" y2="16.8" />
+
+                  {/* Canton (stars area) */}
+                  <rect
+                    x="2"
+                    y="4"
+                    width="8"
+                    height="7.2"
+                    fill="currentColor"
+                    stroke="none"
+                  />
+
+                  {/* Stars (now clearly visible) */}
+                  <g fill="white" stroke="none">
+                    {/* Row 1 */}
+                    <circle cx="3.5" cy="5.5" r="0.7" />
+                    <circle cx="5.5" cy="5.5" r="0.7" />
+                    <circle cx="7.5" cy="5.5" r="0.7" />
+
+                    {/* Row 2 */}
+                    <circle cx="4.5" cy="7" r="0.7" />
+                    <circle cx="6.5" cy="7" r="0.7" />
+                    <circle cx="8.5" cy="7" r="0.7" />
+
+                    {/* Row 3 */}
+                    <circle cx="3.5" cy="8.5" r="0.7" />
+                    <circle cx="5.5" cy="8.5" r="0.7" />
+                    <circle cx="7.5" cy="8.5" r="0.7" />
+                  </g>
+                </svg>
               </div>
               <p className="text-white text-xl sm:text-2xl md:text-3xl font-bold mb-1">
                 USA
@@ -113,7 +151,7 @@ const Hero = () => {
               className="headline tp-headline-m lg:tp-headline-xl mb-16 text-neutral-0 lg:w-[750px]"
               data-astro-cid-hmzfjpzv
             >
-              5G USA Mobile Proxies Consistent performance. Reliable uptime
+              5G USA Mobile Proxies. Consistent performance. Reliable uptime.
             </h1>
           </div>
           <ul className="mx-auto flex max-w-[940px] flex-col flex-wrap justify-center gap-8 lg:flex-row lg:gap-24">
@@ -123,7 +161,7 @@ const Hero = () => {
                 height="24"
                 viewBox="0 0 24 24"
                 fillRule="evenodd"
-                className="size-24 text-brand-400"
+                className="size-24 text-green-800"
               >
                 <path
                   d="M18.62 6.659a1.795 1.795 0 0 1-.16.04c-.091.02-1.19 1.095-4.52 4.423L9.539 15.52 7.7 13.653c-1.012-1.027-1.92-1.918-2.018-1.98-.615-.391-1.394.288-1.085.947.05.108.79.873 2.289 2.366 2.421 2.411 2.315 2.323 2.759 2.283a.692.692 0 0 0 .424-.163c.105-.078 2.238-2.19 4.739-4.694 3.212-3.214 4.567-4.596 4.61-4.701.15-.36-.003-.798-.338-.97-.106-.055-.393-.106-.46-.082"
@@ -140,7 +178,7 @@ const Hero = () => {
                 height="24"
                 viewBox="0 0 24 24"
                 fillRule="evenodd"
-                className="size-24 text-brand-400"
+                className="size-24 text-green-800"
               >
                 <path
                   d="M18.62 6.659a1.795 1.795 0 0 1-.16.04c-.091.02-1.19 1.095-4.52 4.423L9.539 15.52 7.7 13.653c-1.012-1.027-1.92-1.918-2.018-1.98-.615-.391-1.394.288-1.085.947.05.108.79.873 2.289 2.366 2.421 2.411 2.315 2.323 2.759 2.283a.692.692 0 0 0 .424-.163c.105-.078 2.238-2.19 4.739-4.694 3.212-3.214 4.567-4.596 4.61-4.701.15-.36-.003-.798-.338-.97-.106-.055-.393-.106-.46-.082"
@@ -157,7 +195,7 @@ const Hero = () => {
                 height="24"
                 viewBox="0 0 24 24"
                 fillRule="evenodd"
-                className="size-24 text-brand-400"
+                className="size-24 text-green-800"
               >
                 <path
                   d="M18.62 6.659a1.795 1.795 0 0 1-.16.04c-.091.02-1.19 1.095-4.52 4.423L9.539 15.52 7.7 13.653c-1.012-1.027-1.92-1.918-2.018-1.98-.615-.391-1.394.288-1.085.947.05.108.79.873 2.289 2.366 2.421 2.411 2.315 2.323 2.759 2.283a.692.692 0 0 0 .424-.163c.105-.078 2.238-2.19 4.739-4.694 3.212-3.214 4.567-4.596 4.61-4.701.15-.36-.003-.798-.338-.97-.106-.055-.393-.106-.46-.082"
@@ -175,7 +213,7 @@ const Hero = () => {
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center mb-4 px-10">
           <a
             href="/signup"
-            className="w-full lg:max-w-[524px] sm:w-[259px] h-48 gap-10 tp-body px-24 py-16 rounded-8 focus-within:outline-brand-100 bg-brand-600 text-neutral-0 hover:bg-brand-300 active:bg-brand-700 flex cursor-pointer select-none items-center justify-center gap-[10px] font-bold outline-offset-2 transition-all md:rounded-8 w-full lg:max-w-[524px] sm:w-[259px] flex-row"
+            className="w-full hover:text-neutral-0 lg:max-w-[524px] sm:w-[259px] h-48 gap-10 tp-body px-24 py-16 rounded-8 focus-within:outline-brand-100 bg-brand-600 text-neutral-0 hover:bg-brand-300 active:bg-brand-700 flex cursor-pointer select-none items-center justify-center gap-[10px] font-bold outline-offset-2 transition-all md:rounded-8 w-full lg:max-w-[524px] sm:w-[259px] flex-row"
           >
             Buy Now
           </a>

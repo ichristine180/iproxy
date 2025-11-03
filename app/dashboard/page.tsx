@@ -550,37 +550,9 @@ function DashboardPageContent() {
     if (hours > 0) return `${hours} hour${hours > 1 ? "s" : ""} remaining`;
     return "Less than 1 hour";
   };
-
+  const [searchQuery, setSearchQuery] = useState("");
   const isFreeTrial = (order: Order) => {
     return order.total_amount === 0;
-  };
-
-  const handleActivateOrder = async (orderId: string) => {
-    setActivatingOrder(orderId);
-    try {
-      const response = await fetch("/api/payments/activate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ order_id: orderId }),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        // Refresh data
-        await fetchData();
-        alert("Order activated successfully!");
-      } else {
-        alert(`Failed to activate: ${data.error}`);
-      }
-    } catch (error) {
-      console.error("Error activating order:", error);
-      alert("Failed to activate order");
-    } finally {
-      setActivatingOrder(null);
-    }
   };
 
   const selectedPlan = plans.find((p) => p.id === selectedPlanId);
@@ -609,14 +581,14 @@ function DashboardPageContent() {
   // Order Details View
   if (currentView === "details" && selectedOrder) {
     return (
-      <div className="space-y-6">
+      <div className="p-6">
         {/* Back Button */}
         <button
           onClick={() => setCurrentView("list")}
-          className="flex items-center gap-2 text-[rgb(var(--brand-400))] hover:text-[rgb(var(--brand-200))] transition-colors"
+          className="pb-3 flex items-center gap-2 text-[rgb(var(--brand-400))] hover:text-[rgb(var(--brand-200))] transition-colors"
         >
-          <ArrowLeft className="w-5 h-5" />
-          <span className="font-semibold">Back</span>
+          <ArrowLeft className="w-5 h-5 text-neutral-0" />
+          <h1 className="font-bold tp-sub-headline text-neutral-0">Back</h1>
         </button>
 
         {/* IP Rotation Success Message */}
@@ -624,10 +596,10 @@ function DashboardPageContent() {
           <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-xl flex items-center gap-3">
             <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
             <div>
-              <p className="font-semibold text-green-600">
+              <p className="tp-body text-green-600">
                 IP Rotated Successfully!
               </p>
-              <p className="text-sm text-neutral-400">
+              <p className="tp-body-s text-neutral-400">
                 Your proxy IP has been changed.
               </p>
             </div>
@@ -635,8 +607,8 @@ function DashboardPageContent() {
         )}
         {/* Product Information Card - Only show for active orders */}
         {orderProxies.length > 0 && selectedOrder.status === "active" && (
-          <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6">
-            <h3 className="text-xl font-semibold text-white mb-4">
+          <div className="bg-neutral-800/50 border border-neutral-700 rounded-xl p-6 mt-6">
+            <h3 className="tp-body-bold  text-white mb-4">
               Product information
             </h3>
 
@@ -665,7 +637,7 @@ function DashboardPageContent() {
               {/* HTTP Proxy */}
               {orderProxies[selectedProxyIndex]?.port_http && (
                 <div>
-                  <h4 className="text-white text-sm font-medium mb-2">
+                  <h4 className="text-white tb-body-s font-medium mb-2">
                     HTTP/HTTPS Proxy
                   </h4>
                   <div className="bg-neutral-800 border border-neutral-700 rounded-lg p-4">
@@ -798,15 +770,8 @@ function DashboardPageContent() {
             <div className="flex gap-3 mb-6">
               <Button
                 onClick={handleCopyAll}
-                className="bg-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-200))] text-white"
-              >
-                <Copy className="w-4 h-4 mr-2" />
-                {copiedField === "all" ? "Copied!" : "Copy"}
-              </Button>
-              <Button
-                onClick={handleCopyAll}
-                variant="outline"
-                className="border-[rgb(var(--brand-400))] text-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-400))]/10"
+                // variant="outline"
+                className="btn button-primary px-15 py-3  hover:bg-brand-300 hover:text-brand-600 mt-8"
               >
                 Copy all
               </Button>
@@ -814,7 +779,7 @@ function DashboardPageContent() {
 
             {/* Rotation Link */}
             <div>
-              <h4 className="text-white text-lg font-normal mb-4">
+              <h4 className=" tp-body mb-4">
                 Rotation link
               </h4>
               <div className="flex gap-3">
@@ -846,7 +811,7 @@ function DashboardPageContent() {
           </div>
         )}
         {/* Order Information Card */}
-        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6">
+        <div className="bg-neutral-800/50 border border-neutral-700 rounded-xl p-6 mt-15">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-semibold text-white">
               Order #{selectedOrder.id.slice(0, 6)} information
@@ -941,7 +906,7 @@ function DashboardPageContent() {
             </div>
 
             {/* Auto-renew toggle */}
-            <div className="flex justify-between items-center border-2 border-yellow-500 p-2 rounded">
+            <div className="flex justify-between items-center p-2 rounded">
               <span className="text-neutral-400">Auto-renew</span>
               <div className="flex items-center gap-2">
                 <Switch
@@ -952,7 +917,7 @@ function DashboardPageContent() {
                     border: "1px solid #73a3f1ff",
                   }}
                 />
-                <span className="text-white text-sm">
+                <span className="text-white tp-body-s mx-2">
                   {autoRenew ? "Enabled" : "Disabled"}
                 </span>
               </div>
@@ -974,18 +939,20 @@ function DashboardPageContent() {
 
   // Orders List View
   return (
-    <div className="space-y-8">
+    <div className="p-6">
       {/* Page Title */}
 
-      <h1 className="text-2xl font-bold text-white">Dashboard</h1>
+      <h1 className="tp-sub-headline text-neutral-0 pb-3">
+        Dashboard
+      </h1>
 
       {/* Success Messages */}
       {showSuccessMessage && (
         <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-xl flex items-center gap-3">
           <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
           <div className="flex-1">
-            <p className="font-semibold text-green-600">Payment Successful!</p>
-            <p className="text-sm text-neutral-400">
+            <p className="tp-body font-semibold text-green-600">Payment Successful!</p>
+            <p className="tp-body-s text-neutral-400">
               {isPolling
                 ? "Setting up your proxy connection... This page will update automatically."
                 : "Your order will be activated shortly once payment is confirmed."}
@@ -1001,8 +968,8 @@ function DashboardPageContent() {
         <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl flex items-center gap-3">
           <CheckCircle className="w-5 h-5 text-blue-600 flex-shrink-0" />
           <div>
-            <p className="font-semibold text-blue-600">Free Trial Activated!</p>
-            <p className="text-sm text-neutral-400">
+            <p className="tp-body font-semibold text-blue-600">Free Trial Activated!</p>
+            <p className="tp-body-s text-neutral-400">
               Your 7-day free trial has been activated. Enjoy full access to all
               features!
             </p>
@@ -1014,8 +981,8 @@ function DashboardPageContent() {
         <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-xl flex items-center gap-3">
           <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
           <div>
-            <p className="font-semibold text-green-600">Connection Ready!</p>
-            <p className="text-sm text-neutral-400">
+            <p className="tp-body font-semibold text-green-600">Connection Ready!</p>
+            <p className="tp-body-s text-neutral-400">
               Your proxy connection has been successfully activated and is ready
               to use.
             </p>
@@ -1028,8 +995,8 @@ function DashboardPageContent() {
         <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl flex items-start gap-3">
           <Clock className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
           <div className="flex-1">
-            <p className="font-semibold text-yellow-600">Free Trial Active</p>
-            <p className="text-sm text-neutral-400">
+            <p className="tp-body font-semibold text-yellow-600">Free Trial Active</p>
+            <p className="tp-body-s text-neutral-400">
               Your trial expires on{" "}
               {new Date(freeTrialOrder.expires_at).toLocaleDateString()}.{" "}
               {getTimeRemaining(freeTrialOrder.expires_at)}
@@ -1048,21 +1015,15 @@ function DashboardPageContent() {
       {/* Show plans if no active proxies */}
       {plans.length === 0 ? (
         <div className="bg-neutral-900 rounded-xl p-12 border border-neutral-800 text-center">
-          <p className="text-neutral-400">
+          <p className="tp-body text-neutral-400">
             No plans available. Please contact support.
           </p>
         </div>
       ) : (
-        <>
+        <div className="space-y-8">
           {/* Proxy Selection Card */}
-          <div
-            className="bg-neutral-900 rounded-xl p-4"
-            style={{
-              border: "1px solid rgb(64, 64, 64)",
-              background: "rgb(23, 23, 23)",
-            }}
-          >
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="bg-neutral-900 rounded-xl p-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 bg-neutral-800/50 border border-neutral-700 rounded-xl p-6">
               {/* Left Side - Plans List */}
               <div className="space-y-3">
                 {plans.map((plan) => {
@@ -1072,7 +1033,7 @@ function DashboardPageContent() {
                     <div
                       key={plan.id}
                       onClick={() => setSelectedPlanId(plan.id)}
-                      className={`w-full flex items-center justify-between px-4 py-4 rounded-full transition-all cursor-pointer ${
+                      className={`w-full flex items-center justify-between px-5 py-3 rounded-full transition-all cursor-pointer ${
                         isSelected
                           ? "bg-[rgb(var(--brand-500))] text-white"
                           : "bg-neutral-800/50 text-neutral-400 hover:bg-neutral-800 hover:text-white"
@@ -1086,7 +1047,7 @@ function DashboardPageContent() {
                         >
                           <Server className="h-5 w-5" />
                         </div>
-                        <span className="font-medium">{plan.name}</span>
+                        <span className="tp-body">{plan.name}</span>
                       </div>
                       {!isSelected && (
                         <button
@@ -1095,10 +1056,7 @@ function DashboardPageContent() {
                             handleBuyNow(plan.id);
                           }}
                           disabled={isCheckingQuota}
-                          style={{
-                            border: "1px solid #73a3f1ff",
-                          }}
-                          className="text-sm px-2 py-1  text-[rgb(var(--brand-400))] rounded-sm hover:bg-[rgb(var(--brand-400))]/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="whitespace-nowrap h-40 gap-10 tp-body-s px-24 py-16 rounded-8 focus-within:outline-brand-100 border-brand-400 text-brand-400 hover:text-neutral-0 hover:bg-brand-300 active:bg-brand-700 active:text-neutral-0 border-2 border-solid hover:border-transparent active:border-transparent flex cursor-pointer select-none items-center justify-center gap-[10px] font-bold outline-offset-2 transition-all md:rounded-8 whitespace-nowrap flex-row"
                         >
                           {isCheckingQuota ? "..." : "Buy now"}
                         </button>
@@ -1109,10 +1067,10 @@ function DashboardPageContent() {
               </div>
 
               {/* Right Side - Selected Plan Details */}
-              <div className="bg-neutral-800/30 rounded-xl p-6 border border-neutral-700">
+              <div className="p-6 border-l border-neutral-700">
                 {selectedPlan ? (
                   <>
-                    <h3 className="text-xl font-bold text-white mb-2">
+                    <h3 className="tp-body mb-2 text-neutral-0">
                       {selectedPlan.name}
                     </h3>
 
@@ -1122,17 +1080,17 @@ function DashboardPageContent() {
                           getLowestPrice(selectedPlan);
                         return (
                           <>
-                            <div className="flex items-baseline gap-2">
-                              <span className="text-3xl font-bold text-[rgb(var(--brand-400))]">
+                            <div className="flex items-baseline gap-2 mb-4">
+                              <span className="font-bold tp-sub-headline text-neutral-0">
                                 ${price}
                               </span>
-                              <span className="text-sm text-neutral-400">
+                              <span className="tp-body-s text-neutral-400">
                                 /{duration}
                               </span>
                             </div>
                             {selectedPlan.pricing &&
                               selectedPlan.pricing.length > 1 && (
-                                <div className="text-xs text-neutral-500 mt-1">
+                                <div className="tp-body-s text-neutral-500 mt-1">
                                   Starting from ${price}/{duration}
                                 </div>
                               )}
@@ -1141,31 +1099,38 @@ function DashboardPageContent() {
                       })()}
                     </div>
 
-                    {selectedPlan.description && (
-                      <p className="text-sm text-neutral-400 mb-4 pb-4 border-b border-neutral-700">
+                    {/* {selectedPlan.description && (
+                      <p className="tp-body-s text-neutral-400 mb-4 pb-4 border-b border-neutral-700">
                         {selectedPlan.description}
                       </p>
-                    )}
+                    )} */}
 
-                    {selectedPlan.features &&
-                      selectedPlan.features.length > 0 && (
-                        <ul className="space-y-3 mb-6">
-                          {selectedPlan.features.map((feature, index) => (
-                            <li
-                              key={index}
-                              className="flex items-start gap-3 text-neutral-300"
-                            >
-                              <Check className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                              <span className="text-sm">{feature}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
+                    {selectedPlan.features && (
+                      <ul className="space-y-2 mb-8">
+                        {[
+                          "Unlimited 5G traffic",
+                          "Fully Dedicated",
+                          "Automatic rotating IP pool",
+                          "HTTP / SOCKS5 support",
+                          "Unbeatable IP Reputation",
+                        ].map((feature, index) => (
+                          <li
+                            key={index}
+                            className="flex items-start gap-3 text-neutral-300"
+                          >
+                            <Check className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                            <span className="tp-body-s text-neutral-0">
+                              {feature}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
 
                     <button
                       onClick={() => handleBuyNow(selectedPlan.id)}
                       disabled={isCheckingQuota}
-                      className="w-full px-6 py-3 bg-[rgb(var(--brand-500))] text-white tp-button rounded-lg hover:bg-[rgb(var(--brand-400))] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="btn button-primary px-15 mt-8 w-full hover:bg-brand-300"
                     >
                       {isCheckingQuota ? (
                         <>
@@ -1187,58 +1152,61 @@ function DashboardPageContent() {
           </div>
 
           {/* Orders Section */}
-          <div className="px-4">
-            <h2 className="text-sm font-semibold text-[rgb(var(--brand-400))] uppercase tracking-wider mb-4">
-              YOUR ORDERS
-            </h2>
-            <div className="bg-neutral-900 rounded-xl p-6" style={{ border: '1px solid rgb(64, 64, 64)', background: 'rgb(23, 23, 23)' }}>
-              <h3 className="text-lg font-semibold text-white mb-4">
-                Most Recent
-              </h3>
-              <div className="mb-4">
-                <label className="block text-sm text-neutral-400 mb-2">
-                  Search by order ID or IP
-                </label>
-                <div className="relative">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-500" />
-                  <input
-                    type="text"
-                    placeholder="Search"
-                    className="w-full pl-12 pr-4 py-3 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder:text-neutral-500 focus:outline-none focus:border-[rgb(var(--brand-400))] transition-colors"
-                  />
+          <div>
+            <h2 className="tp-body-s text-neutral-0 uppercase tracking-wider mb-4 font-semibold">YOUR ORDERS</h2>
+            <div
+              className="rounded-xl overflow-hidden"
+              style={{
+                border: "1px solid rgb(64, 64, 64)",
+                background: "rgb(23, 23, 23)",
+              }}
+            >
+              <div className="p-6">
+                <h3 className="tp-body font-semibold text-neutral-0 mb-4">
+                  Most Recent
+                </h3>
+                <div>
+                  <label
+                    htmlFor="search-input"
+                    className="tp-body-s text-neutral-400 mb-2 block"
+                  >
+                    Search by order ID or IP
+                  </label>
+                  <div className="relative">
+                    <Search className="absolute right-1 top-1/3 -translate-y-1/2 h-5 w-5 text-neutral-500 pointer-events-none" />
+                    <input
+                      id="search-input"
+                      type="text"
+                      placeholder="Search"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full h-12 pl-12 pr-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder:text-neutral-500 focus:outline-none focus:border-[rgb(var(--brand-400))] focus:ring-1 focus:ring-[rgb(var(--brand-400))] transition-colors"
+                    />
+                  </div>
                 </div>
               </div>
 
               {orders.length === 0 ? (
-                <div className="text-center py-12 text-neutral-500">
-                  <p>No orders found</p>
+                <div className="text-center py-16 px-6">
+                  <p className="tp-body text-neutral-400">No orders found</p>
                 </div>
               ) : (
                 <>
                   {/* Orders Table */}
-                  <div className="overflow-x-auto">
+                  <div className="overflow-x-auto p-6">
                     <table className="w-full">
                       <thead>
                         <tr className="border-b border-neutral-800">
-                          <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
-                            ID ↑
+                          <th className="text-left py-3 px-4 text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+                            ID ↓
                           </th>
-                          <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
+                          <th className="text-left py-3 px-4 text-xs font-semibold text-neutral-500 uppercase tracking-wider">
                             Product
                           </th>
-                          <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
-                            Status
-                          </th>
-                          <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
-                            Auto-extend
-                          </th>
-                          <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
+                          <th className="text-left py-3 px-4 text-xs font-semibold text-neutral-500 uppercase tracking-wider">
                             Order date
                           </th>
-                          <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
-                            Amount
-                          </th>
-                          <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
+                          <th className="text-left py-3 px-4 text-xs font-semibold text-neutral-500 uppercase tracking-wider">
                             Actions
                           </th>
                         </tr>
@@ -1264,57 +1232,24 @@ function DashboardPageContent() {
                             }
                           );
 
-                          // Helper function to get status badge styles
-                          const getStatusBadge = (status: string) => {
-                            const statusStyles = {
-                              active:
-                                "bg-green-500/10 text-green-400 border-green-500/20",
-                              pending:
-                                "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
-                              expired:
-                                "bg-red-500/10 text-red-400 border-red-500/20",
-                              failed:
-                                "bg-red-500/10 text-red-400 border-red-500/20",
-                              cancelled:
-                                "bg-neutral-500/10 text-neutral-400 border-neutral-500/20",
-                            };
-
-                            return (
-                              <span
-                                className={`inline-flex px-3 py-1 rounded-full text-sm border capitalize ${statusStyles[status as keyof typeof statusStyles] || statusStyles.pending}`}
-                              >
-                                {status}
-                              </span>
-                            );
-                          };
-
                           return (
                             <tr
                               key={order.id}
-                              className="border-b border-neutral-800 hover:bg-neutral-800/50 transition-colors"
+                              className=" hover:bg-neutral-800/30 transition-colors"
                             >
-                              <td className="py-4 px-4 text-white">
+                              <td className="py-4 px-4 text-white text-sm font-medium">
                                 #{order.id.slice(0, 6)}
                               </td>
-                              <td className="py-4 px-4 text-white">
+                              <td className="py-4 px-4 text-white text-sm">
                                 {order.plan.name}
                               </td>
-                              <td className="py-4 px-4">
-                                {getStatusBadge(order.status)}
-                              </td>
-                              <td className="py-4 px-4">
-                                <span className="inline-flex px-3 py-1 rounded-full text-sm border border-neutral-600 text-neutral-400">
-                                  Disabled
-                                </span>
-                              </td>
-                              <td className="py-4 px-4 text-white">
-                                <div>{formattedDate}</div>
-                                <div className="text-sm text-neutral-500">
+                              <td className="py-4 px-4 text-white text-sm">
+                                <div className="font-medium">
+                                  {formattedDate}
+                                </div>
+                                <div className="text-xs text-neutral-500 mt-0.5">
                                   {formattedTime}
                                 </div>
-                              </td>
-                              <td className="py-4 px-4 text-white font-semibold">
-                                ${order.total_amount.toFixed(2)}
                               </td>
                               <td className="py-4 px-4">
                                 <div className="flex items-center gap-2">
@@ -1356,26 +1291,30 @@ function DashboardPageContent() {
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent
                                       align="end"
-                                      className="w-48"
+                                      className="w-58 z-50"
                                     >
                                       <DropdownMenuItem
                                         onClick={() => handleViewDetails(order)}
-                                        className="cursor-pointer"
+                                        className="cursor-pointer px-3"
                                       >
-                                        <Eye className="mr-2 h-4 w-4" />
-                                        <span>View Details</span>
+                                        <Eye className="mr-3 h-5 w-5" />
+                                        <span className="text-base">
+                                          View Details
+                                        </span>
                                       </DropdownMenuItem>
-                                      {order.status === "active" && (
+                                      {/* {order.status === "active" && (
                                         <DropdownMenuItem
                                           onClick={() =>
                                             handleExtendOrder(order)
                                           }
-                                          className="cursor-pointer"
+                                          className="cursor-pointer  px-3"
                                         >
-                                          <RefreshCw className="mr-2 h-4 w-4" />
-                                          <span>Extend Order</span>
+                                          <RefreshCw className="mr-3 h-5 w-5" />
+                                          <span className="text-base">
+                                            Extend Order
+                                          </span>
                                         </DropdownMenuItem>
-                                      )}
+                                      )} */}
                                     </DropdownMenuContent>
                                   </DropdownMenu>
                                 </div>
@@ -1388,16 +1327,14 @@ function DashboardPageContent() {
                   </div>
 
                   {/* Pagination */}
-                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-neutral-800">
-                    <div className="flex items-center gap-2">
-                      <select className="px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-[rgb(var(--brand-400))]">
-                        <option>5 per page</option>
-                        <option>10 per page</option>
-                        <option>20 per page</option>
-                        <option>50 per page</option>
-                      </select>
-                    </div>
-                    <div className="text-sm text-neutral-400">
+                  <div className="flex items-center justify-between px-6 py-5 border-t border-neutral-800">
+                    <select className="px-15 py-15 bg-neutral-800/80 border border-neutral-700 rounded-xl text-white text-sm font-medium focus:outline-none focus:border-[rgb(var(--brand-400))] cursor-pointer">
+                      <option>5 per page</option>
+                      <option>10 per page</option>
+                      <option>20 per page</option>
+                      <option>50 per page</option>
+                    </select>
+                    <div className="tp-body-s text-neutral-400 font-medium px-2">
                       1-{Math.min(5, orders.length)} of {orders.length}
                     </div>
                   </div>
@@ -1405,7 +1342,7 @@ function DashboardPageContent() {
               )}
             </div>
           </div>
-        </>
+        </div>
       )}
 
       {/* Quota Unavailable Dialog */}

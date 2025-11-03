@@ -3,7 +3,18 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
-import { CryptoPaymentModal } from "@/components/CryptoPaymentModal";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { nowPayments } from "@/lib/nowpayments";
+import { createClient } from "@/lib/supabase/client";
 import {
   Bitcoin,
   History,
@@ -11,6 +22,8 @@ import {
   Clock,
   CheckCircle,
   XCircle,
+  Search,
+  Loader2,
 } from "lucide-react";
 
 interface Transaction {
@@ -30,13 +43,22 @@ export default function DepositPage() {
   const [activeTab, setActiveTab] = useState<"deposit" | "history">("deposit");
   const [amount, setAmount] = useState("10");
   const [currentBalance, setCurrentBalance] = useState(0);
-  const [showCryptoModal, setShowCryptoModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
 
+  // Crypto payment state
+  const [selectedCurrency, setSelectedCurrency] = useState('btc');
+  const [paymentLoading, setPaymentLoading] = useState(false);
+  const [currencies, setCurrencies] = useState<string[]>(['btc', 'eth', 'usdt', 'usdc']);
+  const [allCurrencies, setAllCurrencies] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [userId, setUserId] = useState<string | null>(null);
+
   useEffect(() => {
     loadUserBalance();
+    loadCurrencies();
+    getCurrentUser();
 
     // Check for payment status from URL params
     const paymentStatus = searchParams.get("payment");
@@ -76,6 +98,55 @@ export default function DepositPage() {
     }
   }, [activeTab]);
 
+  const getCurrentUser = async () => {
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      setUserId(user?.id || null);
+    } catch (error) {
+      console.error('Error getting current user:', error);
+    }
+  };
+
+  const loadCurrencies = async () => {
+    try {
+      const availableCurrencies = await nowPayments.getAvailableCurrencies();
+      setAllCurrencies(availableCurrencies);
+
+      // Show popular currencies by default
+      const popularCurrencies = ['btc', 'eth', 'usdt', 'usdc', 'bnb', 'xrp', 'doge', 'ltc', 'ada', 'matic'];
+      const filtered = availableCurrencies.filter(c => popularCurrencies.includes(c));
+      if (filtered.length > 0) {
+        setCurrencies(filtered);
+      } else {
+        // Fallback to first 10 currencies if popular ones not found
+        setCurrencies(availableCurrencies.slice(0, 10));
+      }
+    } catch (error) {
+      console.error('Error loading currencies:', error);
+      // Set fallback currencies if API fails
+      const fallbackCurrencies = ['btc', 'eth', 'usdt', 'usdc', 'bnb', 'xrp', 'doge', 'ltc'];
+      setAllCurrencies(fallbackCurrencies);
+      setCurrencies(fallbackCurrencies);
+    }
+  };
+
+  const getCurrencyName = (code: string) => {
+    const names: Record<string, string> = {
+      btc: 'Bitcoin',
+      eth: 'Ethereum',
+      usdt: 'Tether (USDT)',
+      usdc: 'USD Coin',
+      bnb: 'Binance Coin',
+      xrp: 'Ripple',
+      doge: 'Dogecoin',
+      ltc: 'Litecoin',
+      ada: 'Cardano',
+      matic: 'Polygon',
+    };
+    return names[code] || code.toUpperCase();
+  };
+
   const loadUserBalance = async () => {
     try {
       const response = await fetch("/api/wallet");
@@ -114,7 +185,7 @@ export default function DepositPage() {
     }
   };
 
-  const handlePay = () => {
+  const handlePay = async () => {
     const depositAmount = parseFloat(amount);
 
     if (!depositAmount || depositAmount <= 0) {
@@ -126,18 +197,39 @@ export default function DepositPage() {
       return;
     }
 
-    setShowCryptoModal(true);
-  };
+    setPaymentLoading(true);
+    try {
+      const orderId = `topup-${Date.now()}-${userId}`;
 
-  const handlePaymentSuccess = () => {
-    const depositAmount = parseFloat(amount);
-    setCurrentBalance((prev) => prev + depositAmount);
-    toast({
-      title: "Balance Updated",
-      description: `$${depositAmount} has been added to your balance`,
-    });
-    // Reload the actual balance from database
-    loadUserBalance();
+      const payment = await nowPayments.createInvoice({
+        price_amount: depositAmount,
+        price_currency: 'usd',
+        pay_currency: selectedCurrency,
+        order_id: orderId,
+        order_description: `Balance top-up: $${depositAmount}`,
+      });
+
+      console.log('📋 Invoice creation response:', payment);
+
+      // Redirect to payment page
+      if (payment.invoice_url) {
+        window.location.href = payment.invoice_url;
+      } else {
+        toast({
+          title: 'Error',
+          description: 'Payment URL not available',
+          variant: 'destructive',
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to create payment',
+        variant: 'destructive',
+      });
+    } finally {
+      setPaymentLoading(false);
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -151,161 +243,218 @@ export default function DepositPage() {
   };
 
   return (
-    <div className="bg-neutral-950 flex items-center justify-center p-2 sm:p-4 md:p-6">
-      <div className="w-full max-w-6xl mx-auto">
-        <div
-          className="flex mb-4"
-          style={{ borderBottom: "1px solid rgb(64, 64, 64)" }}
-        >
+    <div className="p-6">
+      <div className="space-y-8">
+        {/* Page Title */}
+        <div>
+          <h1 className="tp-sub-headline text-neutral-0 pb-3">
+            Deposit
+          </h1>
+          <p className="tp-body-s text-neutral-400">
+            Add funds to your wallet using cryptocurrency
+          </p>
+        </div>
+
+        {/* Tabs */}
+        <div className="grid w-full grid-cols-2 bg-neutral-900 border border-neutral-700 rounded-xl p-1.5 mb-6">
           <button
             onClick={() => setActiveTab("deposit")}
-            className={`flex-1 flex items-center justify-center gap-2 px-3 sm:px-6 py-3 sm:py-4 font-semibold transition-colors text-sm sm:text-base ${
+            className={`tp-body-s flex items-center justify-center gap-2 rounded-lg py-3 transition-all ${
               activeTab === "deposit"
-                ? "text-[rgb(var(--brand-400))] border-b-2 border-[rgb(var(--brand-400))]"
-                : "text-neutral-400 hover:text-white"
+                ? "!bg-[rgb(var(--brand-300))] !text-neutral-900 font-semibold shadow-lg"
+                : "!bg-transparent text-neutral-500 hover:text-neutral-300"
             }`}
           >
-            <DollarSign className="h-4 w-4 sm:h-5 sm:w-5" />
-            <span className="hidden xs:inline">Deposit</span>
-            <span className="xs:hidden">Deposit</span>
+            <DollarSign className="h-4 w-4" />
+            Deposit
           </button>
           <button
             onClick={() => setActiveTab("history")}
-            className={`flex-1 flex items-center justify-center gap-2 px-3 sm:px-6 py-3 sm:py-4 font-semibold transition-colors text-sm sm:text-base ${
+            className={`tp-body-s flex items-center justify-center gap-2 rounded-lg py-3 transition-all ${
               activeTab === "history"
-                ? "text-[rgb(var(--brand-400))] border-b-2 border-[rgb(var(--brand-400))]"
-                : "text-neutral-400 hover:text-white"
+                ? "!bg-[rgb(var(--brand-300))] !text-neutral-900 font-semibold shadow-lg"
+                : "!bg-transparent text-neutral-500 hover:text-neutral-300"
             }`}
           >
-            <History className="h-4 w-4 sm:h-5 sm:w-5" />
+            <History className="h-4 w-4" />
             <span className="hidden sm:inline">Deposit History</span>
             <span className="sm:hidden">History</span>
           </button>
         </div>
+
+        {/* Content */}
         <div
-          className="bg-neutral-900 rounded-2xl"
-          style={{ border: "1px solid rgb(64, 64, 64)" }}
+          className="rounded-xl overflow-hidden"
+          style={{
+            border: "1px solid rgb(64, 64, 64)",
+            background: "rgb(23, 23, 23)",
+          }}
         >
-          {/* Tabs */}
-
-          {/* Tab Content */}
-          <div className="p-4 sm:p-6 md:p-8 lg:p-12">
+          <div className="p-6">
             {activeTab === "deposit" ? (
-              <>
-                {/* Header */}
-                <div className="flex items-center justify-between mb-8">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center">
-                      <div className="w-6 h-6 border-4 border-white rounded-full" />
+              <div className="max-w-2xl mx-auto">
+                {/* Amount Input Section */}
+                <div className="mb-8">
+                  <label className="tp-body font-semibold text-neutral-0 block mb-4">
+                    How much would you like to deposit?
+                  </label>
+                  <div className="relative">
+                    <div className="absolute left-6 top-1/2 -translate-y-1/2 tp-headline-s text-neutral-400">
+                      $
                     </div>
-                    <h1 className="text-3xl font-bold text-white">Crypto</h1>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    {/* Bitcoin Icon */}
-                    <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
-                      <Bitcoin className="w-6 h-6 text-white" />
-                    </div>
-
-                    {/* Ethereum Icon */}
-                    <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
-                      <svg
-                        className="w-6 h-6 text-white"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                      >
-                        <path d="M11.944 17.97L4.58 13.62 11.943 24l7.37-10.38-7.372 4.35h.003zM12.056 0L4.69 12.223l7.365 4.354 7.365-4.35L12.056 0z" />
-                      </svg>
-                    </div>
-
-                    {/* Tether Icon */}
-                    <div className="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center">
-                      <span className="text-white font-bold text-lg">₮</span>
-                    </div>
-
-                    {/* Plus Button */}
-                    <button className="w-10 h-10 bg-neutral-800 hover:bg-neutral-700 rounded-full flex items-center justify-center transition-colors">
-                      <span className="text-white text-2xl">+</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Info Banner */}
-                <div
-                  className="mb-8 p-4 rounded-xl"
-                  style={{
-                    border: "1px solid rgba(59, 130, 246, 0.3)",
-                    background: "rgba(59, 130, 246, 0.1)",
-                  }}
-                >
-                  <p className="text-blue-400 text-center text-lg">
-                    No refund will be available for cryptocurrency payments
-                  </p>
-                </div>
-
-                {/* Input Fields */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                  {/* Deposit Amount */}
-                  <div>
-                    <label className="block text-white text-xl font-medium mb-3">
-                      Deposit amount
-                    </label>
                     <input
                       type="number"
                       value={amount}
                       onChange={(e) => setAmount(e.target.value)}
-                      className="w-full px-6 py-4 bg-neutral-800 rounded-xl text-white text-2xl placeholder:text-neutral-500 focus:outline-none transition-colors"
-                      style={{ border: "1px solid rgb(64, 64, 64)" }}
-                      onFocus={(e) =>
-                        (e.target.style.borderColor = "rgb(114, 150, 245)")
-                      }
-                      onBlur={(e) =>
-                        (e.target.style.borderColor = "rgb(64, 64, 64)")
-                      }
-                      placeholder="10"
+                      className="border-0 form-control h-auto pl-12 pr-20 py-6 rounded-xl w-full text-3xl font-semibold text-neutral-0"
+                      placeholder="0.00"
                       min="0.01"
                       step="0.01"
                     />
+                    <div className="absolute right-6 top-1/2 -translate-y-1/2 tp-body text-neutral-400">
+                      USD
+                    </div>
+                  </div>
+                  <p className="tp-body-xs text-neutral-500 mt-3">
+                    Minimum deposit: $1.00
+                  </p>
+                </div>
+
+                {/* Quick Amount Buttons */}
+                <div className="mb-8">
+                  <div className="grid grid-cols-4 gap-3">
+                    {[10, 25, 50, 100].map((quickAmount) => (
+                      <button
+                        key={quickAmount}
+                        onClick={() => setAmount(quickAmount.toString())}
+                        className="py-3 px-4 rounded-lg bg-neutral-800 border border-neutral-700 hover:border-[rgb(var(--brand-400))] hover:bg-neutral-800/70 transition-all tp-body-s text-neutral-0"
+                      >
+                        ${quickAmount}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Cryptocurrency Selection */}
+                <div className="mb-8">
+                  <label className="tp-body font-semibold text-neutral-0 block mb-4">
+                    Select payment cryptocurrency
+                  </label>
+
+                  {/* Search Input */}
+                  <div className="relative mb-3">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-500 pointer-events-none" />
+                    <Input
+                      id="search-crypto"
+                      placeholder="Search cryptocurrencies..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="border-0 form-control h-auto pl-12 pr-8 py-4 rounded-lg w-full"
+                    />
                   </div>
 
-                  {/* Currency */}
-                  <div>
-                    <label className="block text-white text-xl font-medium mb-3">
-                      Currency
-                    </label>
-                    <div
-                      className="w-full px-6 py-4 bg-neutral-800 rounded-xl text-neutral-400 text-2xl flex items-center"
-                      style={{ border: "1px solid rgb(64, 64, 64)" }}
+                  {/* Currency Select */}
+                  <Select value={selectedCurrency} onValueChange={setSelectedCurrency}>
+                    <SelectTrigger className="border-0 form-control h-auto px-8 py-4 rounded-lg w-full text-neutral-0">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-64 bg-neutral-800 border-neutral-700">
+                      {(searchQuery
+                        ? allCurrencies.filter(currency =>
+                            currency.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            getCurrencyName(currency).toLowerCase().includes(searchQuery.toLowerCase())
+                          )
+                        : currencies
+                      ).map((currency) => (
+                        <SelectItem
+                          key={currency}
+                          value={currency}
+                          className="text-white hover:bg-neutral-700 focus:bg-neutral-700"
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{currency.toUpperCase()}</span>
+                            <span className="text-neutral-400">{getCurrencyName(currency)}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  {!searchQuery && allCurrencies.length > currencies.length && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrencies(allCurrencies)}
+                      className="w-full mt-3 text-sm h-9 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white"
                     >
-                      USD
+                      Show All {allCurrencies.length} Currencies
+                    </Button>
+                  )}
+                </div>
+
+                {/* Payment Summary Card */}
+                <div className="mb-8 p-6 rounded-xl bg-neutral-800/50 border border-neutral-700">
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="tp-body-s text-neutral-400">You will pay</span>
+                    <span className="tp-body-s text-neutral-400">Cryptocurrency</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="tp-headline font-bold text-neutral-0">
+                        ${parseFloat(amount || '0').toFixed(2)}
+                      </div>
+                      <div className="tp-body-xs text-neutral-500 mt-1">USD</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="tp-body font-semibold text-[rgb(var(--brand-400))]">
+                        {selectedCurrency.toUpperCase()}
+                      </div>
+                      <div className="tp-body-xs text-neutral-500 mt-1">
+                        {getCurrencyName(selectedCurrency)}
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Safe & Secure Badge */}
-                <div className="flex items-center justify-center gap-3 mb-8">
-                  <span className="text-neutral-400 text-lg">
-                    Safe & secure checkout
-                  </span>
+                {/* Info Banner */}
+                <div className="mb-8 p-4 rounded-lg bg-blue-500/10 border border-blue-500/30">
+                  <p className="tp-body-s text-blue-400 text-center">
+                    No refund will be available for cryptocurrency payments
+                  </p>
                 </div>
 
                 {/* Pay Button */}
                 <button
                   onClick={handlePay}
-                  disabled={isLoading}
-                  className="w-full py-5 bg-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-500))] text-white text-2xl font-semibold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={paymentLoading || isLoading}
+                  className="btn button-primary w-full py-5 text-lg hover:bg-brand-300 hover:text-brand-600 flex items-center justify-center gap-2"
                 >
-                  Pay
+                  {paymentLoading ? (
+                    <>
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      Creating Payment...
+                    </>
+                  ) : (
+                    'Continue to Payment'
+                  )}
                 </button>
-              </>
+
+                {/* Safe & Secure Badge */}
+                <div className="flex items-center justify-center gap-2 mt-6">
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  <span className="tp-body-xs text-neutral-500">
+                    Safe & secure checkout powered by NOWPayments
+                  </span>
+                </div>
+              </div>
             ) : (
               <>
                 {/* Deposit History */}
-                <div className="mb-6 px-2 sm:px-0">
-                  <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-2">
+                <div className="mb-6">
+                  <h2 className="tp-body font-semibold text-neutral-0 mb-2">
                     Deposit History
                   </h2>
-                  <p className="text-sm sm:text-base text-neutral-400">
+                  <p className="tp-body-s text-neutral-400">
                     View all your cryptocurrency deposits
                   </p>
                 </div>
@@ -313,22 +462,22 @@ export default function DepositPage() {
                 {isLoadingHistory ? (
                   <div className="text-center py-12 px-4">
                     <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[rgb(var(--brand-400))] border-r-transparent"></div>
-                    <p className="text-neutral-400 mt-4 text-sm sm:text-base">
+                    <p className="tp-body-s text-neutral-400 mt-4">
                       Loading transactions...
                     </p>
                   </div>
                 ) : transactions.length === 0 ? (
                   <div className="text-center py-12 px-4">
-                    <History className="h-12 w-12 sm:h-16 sm:w-16 text-neutral-600 mx-auto mb-4" />
-                    <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">
+                    <History className="h-16 w-16 text-neutral-600 mx-auto mb-4" />
+                    <h3 className="tp-body font-semibold text-neutral-0 mb-2">
                       No Deposits Yet
                     </h3>
-                    <p className="text-sm sm:text-base text-neutral-400 mb-6">
+                    <p className="tp-body-s text-neutral-400 mb-6">
                       You haven't made any deposits yet.
                     </p>
                     <button
                       onClick={() => setActiveTab("deposit")}
-                      className="px-4 sm:px-6 py-2 sm:py-3 bg-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-500))] text-white text-sm sm:text-base font-semibold rounded-lg transition-colors"
+                      className="btn button-primary px-6 py-3 hover:bg-brand-300 hover:text-brand-600"
                     >
                       Make Your First Deposit
                     </button>
@@ -338,29 +487,28 @@ export default function DepositPage() {
                     {transactions.map((transaction) => (
                       <div
                         key={transaction.id}
-                        className="p-4 md:p-6 bg-neutral-800 rounded-lg hover:bg-neutral-800/70 transition-colors"
-                        style={{ border: "1px solid rgb(64, 64, 64)" }}
+                        className="p-6 bg-neutral-800/50 rounded-lg hover:bg-neutral-800/70 transition-colors border border-neutral-700"
                       >
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                           {/* Left Side - Icon and Details */}
-                          <div className="flex items-start sm:items-center gap-3 sm:gap-4 flex-1 min-w-0">
-                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-500/10 rounded-full flex items-center justify-center flex-shrink-0">
-                              <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-green-400" />
+                          <div className="flex items-start sm:items-center gap-4 flex-1 min-w-0">
+                            <div className="w-12 h-12 bg-green-500/10 rounded-full flex items-center justify-center flex-shrink-0">
+                              <CheckCircle className="h-6 w-6 text-green-400" />
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex flex-wrap items-center gap-2">
-                                <h3 className="text-white font-semibold text-base sm:text-lg">
+                                <h3 className="tp-body font-semibold text-neutral-0">
                                   Deposit
                                 </h3>
-                                <span className="px-2 py-0.5 bg-green-500/10 text-green-400 text-xs font-medium rounded-full border border-green-500/20">
+                                <span className="px-3 py-1 bg-green-500/10 text-green-400 tp-body-xs font-medium rounded-full border border-green-500/20">
                                   Completed
                                 </span>
                               </div>
-                              <p className="text-sm text-neutral-400 mt-1 truncate">
+                              <p className="tp-body-s text-neutral-400 mt-1 truncate">
                                 {transaction.description ||
                                   "Cryptocurrency deposit"}
                               </p>
-                              <div className="flex items-center gap-2 mt-2 text-xs text-neutral-500">
+                              <div className="flex items-center gap-2 mt-2 tp-body-xs text-neutral-500">
                                 <Clock className="h-3 w-3 flex-shrink-0" />
                                 <span className="truncate">
                                   {formatDate(transaction.created_at)}
@@ -371,10 +519,10 @@ export default function DepositPage() {
 
                           {/* Right Side - Amount */}
                           <div className="text-left sm:text-right pl-[52px] sm:pl-0 flex-shrink-0">
-                            <div className="text-xl sm:text-2xl md:text-3xl font-bold text-green-400">
+                            <div className="tp-headline-s font-bold text-green-400">
                               +${transaction.amount.toFixed(2)}
                             </div>
-                            <div className="text-xs sm:text-sm text-neutral-500 mt-1">
+                            <div className="tp-body-xs text-neutral-500 mt-1">
                               Balance: ${transaction.balance_after.toFixed(2)}
                             </div>
                           </div>
@@ -388,13 +536,6 @@ export default function DepositPage() {
           </div>
         </div>
       </div>
-
-      <CryptoPaymentModal
-        isOpen={showCryptoModal}
-        onClose={() => setShowCryptoModal(false)}
-        amount={parseFloat(amount)}
-        onSuccess={handlePaymentSuccess}
-      />
     </div>
   );
 }

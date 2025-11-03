@@ -112,9 +112,6 @@ export function CryptoPaymentModal({
   // Auto-expand to all currencies when user starts searching
   const displayCurrencies = searchQuery ? filteredCurrencies : currencies;
 
-
-  // Webhook will handle creating payment record, no need to create it here
-
   const handleCreatePayment = async () => {
     // If payment already exists, redirect to it
     if (paymentData?.invoice_url) {
@@ -169,104 +166,109 @@ export function CryptoPaymentModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md bg-neutral-900 border-neutral-800">
         <DialogHeader>
-          <DialogTitle>Select Cryptocurrency</DialogTitle>
-          <DialogDescription>
-            Top up $${amount} using cryptocurrency
+          <DialogTitle className="text-white text-xl">Select Cryptocurrency</DialogTitle>
+          <DialogDescription className="text-neutral-400">
+            Top up ${amount} using cryptocurrency
           </DialogDescription>
         </DialogHeader>
 
-        {(
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Select Cryptocurrency</Label>
+        <div className="space-y-6 mt-4">
+          <div className="space-y-3">
+            <Label htmlFor="search-crypto" className="text-neutral-200 text-sm font-medium">
+              Select Cryptocurrency
+            </Label>
 
-              {/* Search Input */}
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search cryptocurrencies..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
+            {/* Search Input */}
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-500 pointer-events-none" />
+              <Input
+                id="search-crypto"
+                placeholder="Search cryptocurrencies..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-12 pl-12 pr-4 bg-neutral-800 border-neutral-700 text-white placeholder:text-neutral-500 focus:border-[rgb(var(--brand-400))] focus:ring-1 focus:ring-[rgb(var(--brand-400))]"
+              />
+            </div>
 
-              {/* Currency Selection */}
-              <Select value={selectedCurrency} onValueChange={setSelectedCurrency}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="max-h-64">
-                  {displayCurrencies.map((currency) => (
-                    <SelectItem key={currency} value={currency}>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{currency.toUpperCase()}</span>
-                        <span className="text-muted-foreground">{getCurrencyName(currency)}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                  {displayCurrencies.length === 0 && searchQuery && (
-                    <div className="px-2 py-1 text-sm text-muted-foreground">
-                      No cryptocurrencies found
-                    </div>
-                  )}
-                </SelectContent>
-              </Select>
-
-              {searchQuery && (
-                <div className="flex items-center justify-between">
-                  <p className="text-xs text-muted-foreground">
-                    Showing {displayCurrencies.length} of {allCurrencies.length} currencies
-                  </p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setSearchQuery('')}
-                    className="text-xs h-6"
+            {/* Currency Selection */}
+            <Select value={selectedCurrency} onValueChange={setSelectedCurrency}>
+              <SelectTrigger className="h-12 bg-neutral-800 border-neutral-700 text-white focus:border-[rgb(var(--brand-400))] focus:ring-1 focus:ring-[rgb(var(--brand-400))]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="max-h-64 bg-neutral-800 border-neutral-700">
+                {displayCurrencies.map((currency) => (
+                  <SelectItem 
+                    key={currency} 
+                    value={currency}
+                    className="text-white hover:bg-neutral-700 focus:bg-neutral-700"
                   >
-                    Clear
-                  </Button>
-                </div>
-              )}
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{currency.toUpperCase()}</span>
+                      <span className="text-neutral-400">{getCurrencyName(currency)}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+                {displayCurrencies.length === 0 && searchQuery && (
+                  <div className="px-3 py-2 text-sm text-neutral-400">
+                    No cryptocurrencies found
+                  </div>
+                )}
+              </SelectContent>
+            </Select>
 
-              {!searchQuery && allCurrencies.length > currencies.length && (
+            {searchQuery && (
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-neutral-400">
+                  Showing {displayCurrencies.length} of {allCurrencies.length} currencies
+                </p>
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setCurrencies(allCurrencies)}
-                  className="w-full text-xs"
+                  onClick={() => setSearchQuery('')}
+                  className="text-xs h-7 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white"
                 >
-                  Show All {allCurrencies.length} Currencies
+                  Clear
                 </Button>
-              )}
-            </div>
+              </div>
+            )}
 
-            <div className="bg-muted p-4 rounded-lg">
-              <p className="text-sm text-muted-foreground mb-1">You will pay</p>
-              <p className="text-2xl font-bold">${amount} USD</p>
-              <p className="text-sm text-muted-foreground mt-1">
-                in {getCurrencyName(selectedCurrency)}
-              </p>
-            </div>
-
-            <Button
-              onClick={handleCreatePayment}
-              disabled={loading}
-              className="w-full"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating Payment...
-                </>
-              ) : (
-                'Continue to Payment'
-              )}
-            </Button>
+            {!searchQuery && allCurrencies.length > currencies.length && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrencies(allCurrencies)}
+                className="w-full text-sm h-9 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white"
+              >
+                Show All {allCurrencies.length} Currencies
+              </Button>
+            )}
           </div>
-        )}
+
+          <div className="bg-neutral-800 border border-neutral-700 p-6 rounded-lg">
+            <p className="text-sm text-neutral-400 mb-2">You will pay</p>
+            <p className="text-3xl font-bold text-white">${amount} USD</p>
+            <p className="text-sm text-neutral-400 mt-2">
+              in {getCurrencyName(selectedCurrency)}
+            </p>
+          </div>
+
+          <Button
+            onClick={handleCreatePayment}
+            disabled={loading}
+            className="w-full h-12 bg-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-500))] text-white font-semibold"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                Creating Payment...
+              </>
+            ) : (
+              'Continue to Payment'
+            )}
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );

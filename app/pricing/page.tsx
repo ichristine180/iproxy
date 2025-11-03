@@ -240,7 +240,7 @@ export default function PricingPage() {
                         <p className="text-sm font-medium">Features:</p>
                         {plan.features.map((feature, index) => (
                           <div key={index} className="flex items-start gap-2">
-                            <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                            <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
                             <span className="text-sm text-muted-foreground">{feature}</span>
                           </div>
                         ))}

@@ -5,11 +5,16 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { User, Lock, Bell, Loader2, CheckCircle2 } from "lucide-react";
+import { User, Lock, Bell, Loader2, CheckCircle2, ToggleLeft, ToggleRight } from "lucide-react";
 import { TelegramSetup } from "@/components/TelegramSetup";
 
 interface Profile {
@@ -43,7 +48,8 @@ export default function ProfilePage() {
   const { refreshUser } = useAuth();
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [notifications, setNotifications] = useState<NotificationPreferences | null>(null);
+  const [notifications, setNotifications] =
+    useState<NotificationPreferences | null>(null);
 
   // Profile form state
   const [name, setName] = useState("");
@@ -79,8 +85,8 @@ export default function ProfilePage() {
         setPhone(data.profile.phone || "");
 
         // Set notification preferences from profile
-        console.log( data.profile);
-        
+        console.log(data.profile);
+
         setNotifications({
           user_id: data.profile.id,
           notify_email: data.profile.notify_email ?? true,
@@ -187,7 +193,10 @@ export default function ProfilePage() {
     }
   };
 
-  const handleNotificationUpdate = async (key: keyof NotificationPreferences, value: boolean) => {
+  const handleNotificationUpdate = async (
+    key: keyof NotificationPreferences,
+    value: boolean
+  ) => {
     if (!notifications) return;
 
     const updatedNotifications = {
@@ -226,95 +235,132 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <Loader2 className="h-8 w-8 animate-spin text-neutral-400" />
+        <Loader2 className="h-8 w-8 animate-spin text-[rgb(var(--brand-400))]" />
       </div>
     );
   }
 
   return (
-    <div className="h-full bg-neutral-900 p-6 overflow-y-auto">
-      <div className="max-w-4xl mx-auto space-y-6">
+    <div className="p-6">
+      <div className="space-y-8">
+        {/* Page Title */}
         <div>
-          <h1 className="text-3xl font-bold text-white">Profile Settings</h1>
-          <p className="text-neutral-400 mt-2">
+          <h1 className="tp-sub-headline text-neutral-0 pb-3">
+            Profile Settings
+          </h1>
+          <p className="tp-body-s text-neutral-400">
             Manage your account settings and preferences
           </p>
         </div>
 
         <Tabs defaultValue="profile" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 bg-neutral-800">
-            <TabsTrigger value="profile" className="data-[state=active]:bg-neutral-700">
+          <TabsList className="grid w-full grid-cols-3 !bg-neutral-900 border border-neutral-700 rounded-xl p-1.5 mb-6">
+            <TabsTrigger
+              value="profile"
+              className="tp-body-s !bg-transparent data-[state=active]:!bg-[rgb(var(--brand-300))] data-[state=active]:!text-neutral-900  data-[state=active]:font-semibold text-neutral-500 hover:text-neutral-300 rounded-lg py-3 transition-all"
+            >
               <User className="h-4 w-4 mr-2" />
               Profile
             </TabsTrigger>
-            <TabsTrigger value="password" className="data-[state=active]:bg-neutral-700">
+            <TabsTrigger
+              value="password"
+              className="tp-body-s !bg-transparent data-[state=active]:!bg-[rgb(var(--brand-300))] data-[state=active]:!text-neutral-900 data-[state=active]:!shadow-lg data-[state=active]:!shadow-[rgb(var(--brand-300))]/40 data-[state=active]:font-semibold text-neutral-500 hover:text-neutral-300 rounded-lg py-3 transition-all"
+            >
               <Lock className="h-4 w-4 mr-2" />
               Password
             </TabsTrigger>
-            <TabsTrigger value="notifications" className="data-[state=active]:bg-neutral-700">
+            <TabsTrigger
+              value="notifications"
+              className="tp-body-s !bg-transparent data-[state=active]:!bg-[rgb(var(--brand-300))] data-[state=active]:!text-neutral-900 data-[state=active]:!shadow-lg data-[state=active]:!shadow-[rgb(var(--brand-300))]/40 data-[state=active]:font-semibold text-neutral-500 hover:text-neutral-300 rounded-lg py-3 transition-all"
+            >
               <Bell className="h-4 w-4 mr-2" />
               Notifications
             </TabsTrigger>
           </TabsList>
 
           {/* Profile Tab */}
-          <TabsContent value="profile" className="mt-6">
-            <Card className="bg-neutral-800 border-neutral-700">
-              <CardHeader>
-                <CardTitle className="text-white">Profile Information</CardTitle>
-                <CardDescription className="text-neutral-400">
+          <TabsContent value="profile" className="mt-0">
+            <div
+              className="rounded-xl overflow-hidden"
+              style={{
+                border: "1px solid rgb(64, 64, 64)",
+                background: "rgb(23, 23, 23)",
+              }}
+            >
+              <div className="p-6 border-b border-neutral-800">
+                <h2 className="tp-body font-semibold text-neutral-0 mb-2">
+                  Profile Information
+                </h2>
+                <p className="tp-body-s text-neutral-400">
                   Update your personal information and contact details
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleProfileUpdate} className="space-y-4">
+                </p>
+              </div>
+              <div className="p-6">
+                <form onSubmit={handleProfileUpdate} className="space-y-6">
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="text-neutral-200">Email</Label>
+                    <Label
+                      htmlFor="email"
+                      className="tp-body-s text-neutral-400"
+                    >
+                      Email
+                    </Label>
                     <Input
                       id="email"
                       type="email"
                       value={profile?.email || ""}
                       disabled
-                      className="bg-neutral-900 border-neutral-700 text-neutral-400"
+                      className="border-0 form-control h-auto px-8 py-4 rounded-lg w-full"
                     />
-                    <p className="text-xs text-neutral-500">
-                      Email cannot be changed. {profile?.emailVerified && " Verified"}
+                    <p className="tp-body-xs text-neutral-500">
+                      Email cannot be changed.{" "}
+                      {profile?.emailVerified && " Verified"}
                     </p>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="name" className="text-neutral-200">Full Name</Label>
+                    <Label
+                      htmlFor="name"
+                      className="tp-body-s text-neutral-400"
+                    >
+                      Full Name
+                    </Label>
                     <Input
                       id="name"
                       type="text"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="Enter your full name"
-                      className="bg-neutral-900 border-neutral-700 text-white"
+                      className="border-0 form-control h-auto px-8 py-4 rounded-lg w-full"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="phone" className="text-neutral-200">Phone Number</Label>
+                    <Label
+                      htmlFor="phone"
+                      className="tp-body-s text-neutral-400"
+                    >
+                      Phone Number
+                    </Label>
                     <Input
                       id="phone"
                       type="tel"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="Enter your phone number"
-                      className="bg-neutral-900 border-neutral-700 text-white"
+                      className="border-0 form-control h-auto px-8 py-4 rounded-lg w-full"
                     />
                   </div>
 
-                  <Separator className="bg-neutral-700" />
+                  <Separator className="bg-neutral-800" />
 
                   <div className="flex items-center justify-between">
-                    <div className="text-sm text-neutral-400">
-                      Account created: {new Date(profile?.createdAt || "").toLocaleDateString()}
+                    <div className="tp-body-s text-neutral-400">
+                      Account created:{" "}
+                      {new Date(profile?.createdAt || "").toLocaleDateString()}
                     </div>
                     <div className="flex items-center gap-2">
                       {profileSuccess && (
-                        <span className="text-green-500 text-sm flex items-center gap-1">
+                        <span className="tp-body-s text-green-500 flex items-center gap-1">
                           <CheckCircle2 className="h-4 w-4" />
                           Saved
                         </span>
@@ -322,7 +368,7 @@ export default function ProfilePage() {
                       <Button
                         type="submit"
                         disabled={profileSaving}
-                        className="bg-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-500))] text-white"
+                        className="btn button-primary px-15 py-3  hover:bg-brand-300 hover:text-brand-600 mt-8"
                       >
                         {profileSaving ? (
                           <>
@@ -336,23 +382,34 @@ export default function ProfilePage() {
                     </div>
                   </div>
                 </form>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
 
           {/* Password Tab */}
-          <TabsContent value="password" className="mt-6">
-            <Card className="bg-neutral-800 border-neutral-700">
-              <CardHeader>
-                <CardTitle className="text-white">Change Password</CardTitle>
-                <CardDescription className="text-neutral-400">
+          <TabsContent value="password" className="mt-0">
+            <div
+              className="rounded-xl overflow-hidden"
+              style={{
+                border: "1px solid rgb(64, 64, 64)",
+                background: "rgb(23, 23, 23)",
+              }}
+            >
+              <div className="p-6 border-b border-neutral-800">
+                <h2 className="tp-body font-semibold text-neutral-0 mb-2">
+                  Change Password
+                </h2>
+                <p className="tp-body-s text-neutral-400">
                   Update your password to keep your account secure
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handlePasswordChange} className="space-y-4">
+                </p>
+              </div>
+              <div className="p-6">
+                <form onSubmit={handlePasswordChange} className="space-y-6">
                   <div className="space-y-2">
-                    <Label htmlFor="currentPassword" className="text-neutral-200">
+                    <Label
+                      htmlFor="currentPassword"
+                      className="tp-body-s text-neutral-400"
+                    >
                       Current Password
                     </Label>
                     <Input
@@ -361,13 +418,16 @@ export default function ProfilePage() {
                       value={currentPassword}
                       onChange={(e) => setCurrentPassword(e.target.value)}
                       placeholder="Enter your current password"
-                      className="bg-neutral-900 border-neutral-700 text-white"
+                      className="border-0 form-control h-auto px-8 py-4 rounded-lg w-full"
                       required
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="newPassword" className="text-neutral-200">
+                    <Label
+                      htmlFor="newPassword"
+                      className="tp-body-s text-neutral-400"
+                    >
                       New Password
                     </Label>
                     <Input
@@ -376,16 +436,18 @@ export default function ProfilePage() {
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       placeholder="Enter your new password"
-                      className="bg-neutral-900 border-neutral-700 text-white"
-                      required
+                      className="border-0 form-control h-auto px-8 py-4 rounded-lg w-full"
                     />
-                    <p className="text-xs text-neutral-500">
+                    <p className="tp-body-xs text-neutral-500">
                       Password must be at least 6 characters long
                     </p>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="confirmPassword" className="text-neutral-200">
+                    <Label
+                      htmlFor="confirmPassword"
+                      className="tp-body-s text-neutral-400"
+                    >
                       Confirm New Password
                     </Label>
                     <Input
@@ -394,20 +456,22 @@ export default function ProfilePage() {
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="Confirm your new password"
-                      className="bg-neutral-900 border-neutral-700 text-white"
+                      className="border-0 form-control h-auto px-8 py-4 rounded-lg w-full"
                       required
                     />
                   </div>
 
                   {passwordError && (
-                    <div className="text-red-500 text-sm">{passwordError}</div>
+                    <div className="tp-body-s text-red-500">
+                      {passwordError}
+                    </div>
                   )}
 
-                  <Separator className="bg-neutral-700" />
+                  <Separator className="bg-neutral-800" />
 
                   <div className="flex items-center justify-end gap-2">
                     {passwordSuccess && (
-                      <span className="text-green-500 text-sm flex items-center gap-1">
+                      <span className="tp-body-s text-green-500 flex items-center gap-1">
                         <CheckCircle2 className="h-4 w-4" />
                         Password changed successfully
                       </span>
@@ -415,7 +479,7 @@ export default function ProfilePage() {
                     <Button
                       type="submit"
                       disabled={passwordSaving}
-                      className="bg-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-500))] text-white"
+                      className="btn button-primary px-15 py-3  hover:bg-brand-300 hover:text-brand-600 mt-8"
                     >
                       {passwordSaving ? (
                         <>
@@ -428,26 +492,38 @@ export default function ProfilePage() {
                     </Button>
                   </div>
                 </form>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
 
           {/* Notifications Tab */}
-          <TabsContent value="notifications" className="mt-6">
-            <Card className="bg-neutral-800 border-neutral-700">
-              <CardHeader>
-                <CardTitle className="text-white">Notification Preferences</CardTitle>
-                <CardDescription className="text-neutral-400">
-                  Manage how you receive notifications and alerts
-                </CardDescription>
-                {notificationsSuccess && (
-                  <span className="text-green-500 text-sm flex items-center gap-1">
-                    <CheckCircle2 className="h-4 w-4" />
-                    Preferences saved
-                  </span>
-                )}
-              </CardHeader>
-              <CardContent className="space-y-6">
+          <TabsContent value="notifications" className="mt-0">
+            <div
+              className="rounded-xl overflow-hidden"
+              style={{
+                border: "1px solid rgb(64, 64, 64)",
+                background: "rgb(23, 23, 23)",
+              }}
+            >
+              <div className="p-6 border-b border-neutral-800">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="tp-body font-semibold text-neutral-0 mb-2">
+                      Notification Preferences
+                    </h2>
+                    <p className="tp-body-s text-neutral-400">
+                      Manage how you receive notifications and alerts
+                    </p>
+                  </div>
+                  {notificationsSuccess && (
+                    <span className="tp-body-s text-green-500 flex items-center gap-1">
+                      <CheckCircle2 className="h-4 w-4" />
+                      Saved
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="p-6 space-y-6">
                 {notifications && profile && (
                   <>
                     {/* Telegram Setup */}
@@ -459,143 +535,215 @@ export default function ProfilePage() {
                       />
                     </div>
 
-                    <Separator className="bg-neutral-700" />
+                    <Separator className="bg-neutral-800" />
 
                     {/* Notification Channels */}
                     <div>
-                      <h3 className="text-lg font-semibold text-white mb-4">
+                      <h3 className="tp-body font-semibold text-neutral-0 mb-4">
                         Notification Channels
                       </h3>
                       <div className="space-y-4">
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between py-3">
                           <div>
-                            <Label htmlFor="notify_email" className="text-neutral-200">
+                            <Label
+                              htmlFor="notify_email"
+                              className="tp-body-s text-neutral-0 font-medium"
+                            >
                               Email Notifications
                             </Label>
-                            <p className="text-sm text-neutral-400">
+                            <p className="tp-body-s text-neutral-400 mt-1">
                               Receive notifications via email
                             </p>
                           </div>
-                          <Switch
-                            id="notify_email"
-                            checked={notifications.notify_email}
-                            onCheckedChange={(checked) =>
-                              handleNotificationUpdate("notify_email", checked)
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleNotificationUpdate("notify_email", !notifications.notify_email)
                             }
                             disabled={notificationsSaving}
-                          />
+                            className="disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                          >
+                            {notifications.notify_email ? (
+                              <ToggleRight className="h-10 w-10 text-[rgb(var(--brand-400))]" />
+                            ) : (
+                              <ToggleLeft className="h-10 w-10 text-neutral-600" />
+                            )}
+                          </button>
                         </div>
 
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between py-3">
                           <div>
-                            <Label htmlFor="notify_telegram" className="text-neutral-200">
+                            <Label
+                              htmlFor="notify_telegram"
+                              className="tp-body-s text-neutral-0 font-medium"
+                            >
                               Telegram Notifications
                             </Label>
-                            <p className="text-sm text-neutral-400">
-                              Receive notifications via Telegram (must connect above)
+                            <p className="tp-body-s text-neutral-400 mt-1">
+                              Receive notifications via Telegram (must connect
+                              above)
                             </p>
                           </div>
-                          <Switch
-                            id="notify_telegram"
-                            checked={notifications.notify_telegram}
-                            onCheckedChange={(checked) =>
-                              handleNotificationUpdate("notify_telegram", checked)
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleNotificationUpdate(
+                                "notify_telegram",
+                                !notifications.notify_telegram
+                              )
                             }
-                            disabled={notificationsSaving || !profile.telegram_chat_id}
-                          />
+                            disabled={
+                              notificationsSaving || !profile.telegram_chat_id
+                            }
+                            className="disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                          >
+                            {notifications.notify_telegram ? (
+                              <ToggleRight className="h-10 w-10 text-[rgb(var(--brand-400))]" />
+                            ) : (
+                              <ToggleLeft className="h-10 w-10 text-neutral-600" />
+                            )}
+                          </button>
                         </div>
                       </div>
                     </div>
 
-                    <Separator className="bg-neutral-700" />
+                    <Separator className="bg-neutral-800" />
 
                     {/* Notification Types */}
                     <div>
-                      <h3 className="text-lg font-semibold text-white mb-4">
+                      <h3 className="tp-body font-semibold text-neutral-0 mb-4">
                         Notification Types
                       </h3>
                       <div className="space-y-4">
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between py-3">
                           <div>
-                            <Label htmlFor="proxy_expiry_alerts" className="text-neutral-200">
+                            <Label
+                              htmlFor="proxy_expiry_alerts"
+                              className="tp-body-s text-neutral-0 font-medium"
+                            >
                               Proxy Expiry Alerts
                             </Label>
-                            <p className="text-sm text-neutral-400">
+                            <p className="tp-body-s text-neutral-400 mt-1">
                               Get notified when your proxies are about to expire
                             </p>
                           </div>
-                          <Switch
-                            id="proxy_expiry_alerts"
-                            checked={notifications.proxy_expiry_alerts}
-                            onCheckedChange={(checked) =>
-                              handleNotificationUpdate("proxy_expiry_alerts", checked)
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleNotificationUpdate(
+                                "proxy_expiry_alerts",
+                                !notifications.proxy_expiry_alerts
+                              )
                             }
                             disabled={notificationsSaving}
-                          />
+                            className="disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                          >
+                            {notifications.proxy_expiry_alerts ? (
+                              <ToggleRight className="h-10 w-10 text-[rgb(var(--brand-400))]" />
+                            ) : (
+                              <ToggleLeft className="h-10 w-10 text-neutral-600" />
+                            )}
+                          </button>
                         </div>
 
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between py-3">
                           <div>
-                            <Label htmlFor="renewal_reminders" className="text-neutral-200">
+                            <Label
+                              htmlFor="renewal_reminders"
+                              className="tp-body-s text-neutral-0 font-medium"
+                            >
                               Renewal Reminders
                             </Label>
-                            <p className="text-sm text-neutral-400">
+                            <p className="tp-body-s text-neutral-400 mt-1">
                               Reminders for subscription renewals
                             </p>
                           </div>
-                          <Switch
-                            id="renewal_reminders"
-                            checked={notifications.renewal_reminders}
-                            onCheckedChange={(checked) =>
-                              handleNotificationUpdate("renewal_reminders", checked)
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleNotificationUpdate(
+                                "renewal_reminders",
+                                !notifications.renewal_reminders
+                              )
                             }
                             disabled={notificationsSaving}
-                          />
+                            className="disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                          >
+                            {notifications.renewal_reminders ? (
+                              <ToggleRight className="h-10 w-10 text-[rgb(var(--brand-400))]" />
+                            ) : (
+                              <ToggleLeft className="h-10 w-10 text-neutral-600" />
+                            )}
+                          </button>
                         </div>
 
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between py-3">
                           <div>
-                            <Label htmlFor="payment_confirmations" className="text-neutral-200">
+                            <Label
+                              htmlFor="payment_confirmations"
+                              className="tp-body-s text-neutral-0 font-medium"
+                            >
                               Payment Confirmations
                             </Label>
-                            <p className="text-sm text-neutral-400">
+                            <p className="tp-body-s text-neutral-400 mt-1">
                               Notifications for successful payments
                             </p>
                           </div>
-                          <Switch
-                            id="payment_confirmations"
-                            checked={notifications.payment_confirmations}
-                            onCheckedChange={(checked) =>
-                              handleNotificationUpdate("payment_confirmations", checked)
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleNotificationUpdate(
+                                "payment_confirmations",
+                                !notifications.payment_confirmations
+                              )
                             }
                             disabled={notificationsSaving}
-                          />
+                            className="disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                          >
+                            {notifications.payment_confirmations ? (
+                              <ToggleRight className="h-10 w-10 text-[rgb(var(--brand-400))]" />
+                            ) : (
+                              <ToggleLeft className="h-10 w-10 text-neutral-600" />
+                            )}
+                          </button>
                         </div>
 
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between py-3">
                           <div>
-                            <Label htmlFor="system_updates" className="text-neutral-200">
+                            <Label
+                              htmlFor="system_updates"
+                              className="tp-body-s text-neutral-0 font-medium"
+                            >
                               System Updates
                             </Label>
-                            <p className="text-sm text-neutral-400">
+                            <p className="tp-body-s text-neutral-400 mt-1">
                               Get notified about system maintenance and updates
                             </p>
                           </div>
-                          <Switch
-                            id="system_updates"
-                            checked={notifications.system_updates}
-                            onCheckedChange={(checked) =>
-                              handleNotificationUpdate("system_updates", checked)
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleNotificationUpdate(
+                                "system_updates",
+                                !notifications.system_updates
+                              )
                             }
                             disabled={notificationsSaving}
-                          />
+                            className="disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                          >
+                            {notifications.system_updates ? (
+                              <ToggleRight className="h-10 w-10 text-[rgb(var(--brand-400))]" />
+                            ) : (
+                              <ToggleLeft className="h-10 w-10 text-neutral-600" />
+                            )}
+                          </button>
                         </div>
                       </div>
                     </div>
                   </>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
         </Tabs>
       </div>

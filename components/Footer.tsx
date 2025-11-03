@@ -10,7 +10,7 @@ const Footer = () => {
               Highbid Proxies
             </a>
             <p className="text-neutral-0 hover:text-brand-300 transition-all cursor-pointer">
-             Consistent Performence. Releable uptime
+             Consistent Performence. Releable uptime.
             </p>
           </div>
 
@@ -62,7 +62,7 @@ const Footer = () => {
 
         <div className="flex items-center justify-between border-y border-solid border-neutral-600 py-16">
           <p className="text-sm text-muted-foreground">
-            © 2025 iproxy. All rights reserved.
+            © 2025 Highbid proxy. All rights reserved.
           </p>
         </div>
       </div>

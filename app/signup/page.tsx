@@ -76,11 +76,11 @@ function SignupForm() {
     <div className="min-h-screen bg-neutral-950 relative">
       {/* Logo - Fixed Top Left */}
       <div className="absolute top-6 left-6 z-50">
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <div className="w-10 h-10 bg-gradient-to-br from-[rgb(var(--brand-400))] to-[rgb(var(--brand-600))] rounded-lg flex items-center justify-center">
+        <a href="/" className="flex items-center gap-3">
+          {/* <div className="relative">
+            <div className="w-7 h-7 bg-[rgb(var(--brand-400))] rounded-lg flex items-center justify-center">
               <svg
-                className="w-6 h-6 text-white"
+                className="w-4 h-4 text-white"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -93,65 +93,54 @@ function SignupForm() {
                 />
               </svg>
             </div>
-            <div className="absolute -inset-1 bg-gradient-to-br from-[rgb(var(--brand-400))] to-[rgb(var(--brand-600))] rounded-lg blur opacity-30"></div>
-          </div>
-          <a
-            href={"/"}
-            className="text-2xl sm:text-3xl font-bold text-blue"
-          >
+          </div> */}
+          <span className="text-brand-400 font-bold tp-headline-s pr-2">
             Highbid Proxies
-          </a>
-        </div>
+          </span>
+        </a>
       </div>
 
-      <div className="min-h-screen flex">
+      <div className="min-h-screen flex flex-col lg:flex-row">
         {/* Left Side - Signup Form */}
-        <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-6 md:p-8 relative">
-          <div className="w-full max-w-[500px]">
+        <div
+          className="w-full lg:flex-1 flex items-center justify-center p-6 md:p-8 relative bg-neutral-950"
+          style={{ background: "#0D0F10", minWidth: "20%" }}
+        >
+          <div className="w-full">
             {/* Signup Form */}
             <div className="space-y-8">
-              <div className="text-center">
-                <h2 className="text-4xl font-bold text-white mb-2">Register</h2>
-                <p className="text-white/70">
-                  Already have an account?{" "}
-                  <Link
-                    href={`/login`}
-                    className="text-[rgb(var(--brand-400))] hover:underline"
-                  >
-                    Log In
-                  </Link>
-                </p>
+              <div className="flex justify-center mt-xl-0 mt-5">
+                <div className="mb-5 w-full max-w-lg">
+                  <div className="text-center">
+                    <h2 className="tp-headline-l mb-5 text-neutral-0">
+                      Register
+                    </h2>
+                   <div className="mt-5 text-center">
+                     <p className="tp-body text-neutral-0 mr-2">
+                      Already have an account?{" "}
+                      <Link
+                        href={`/login`}
+                        className="tp-body text-brand-400 font-weight-bold"
+                      >
+                        Log In
+                      </Link>
+                    </p>
+                   </div>
+                  </div>
+                </div>
               </div>
 
               {/* Signup Form */}
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className="form form-padding">
                 {error && (
                   <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-md">
                     <p className="text-sm text-red-400">{error}</p>
                   </div>
                 )}
 
-                {/* Name Input */}
-                {/* <div className="space-y-2">
-                  <label htmlFor="name" className="text-white/70">
-                    Full Name
-                  </label>
-                  <input
-                    id="name"
-                    type="text"
-                    placeholder="John Doe"
-                    value={formData.name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                    className="w-full px-4 py-3 bg-neutral-900 border border-neutral-700 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:border-[rgb(var(--brand-400))] transition-colors"
-                    required
-                  />
-                </div> */}
-
                 {/* Email Input */}
-                <div className="space-y-2">
-                  <label htmlFor="email" className="text-white/70">
+                <div className="form-group">
+                  <label htmlFor="email" className="text-color-secondary">
                     Email
                   </label>
                   <input
@@ -162,14 +151,14 @@ function SignupForm() {
                     onChange={(e) =>
                       setFormData({ ...formData, email: e.target.value })
                     }
-                    className="w-full px-4 py-3 bg-neutral-900 border border-neutral-700 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:border-[rgb(var(--brand-400))] transition-colors"
+                    className="border-0 form-control h-auto px-8 py-4 rounded-lg w-full"
                     required
                   />
                 </div>
 
                 {/* Password Input */}
-                <div className="space-y-2">
-                  <label htmlFor="password" className="text-white/70">
+                <div className="form-group">
+                  <label htmlFor="password" className="text-color-secondary">
                     Password
                   </label>
                   <div className="relative">
@@ -181,13 +170,13 @@ function SignupForm() {
                       onChange={(e) =>
                         setFormData({ ...formData, password: e.target.value })
                       }
-                      className="w-full px-4 py-3 bg-neutral-900 border border-neutral-700 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:border-[rgb(var(--brand-400))] transition-colors"
+                      className="border-0 form-control h-auto px-8 py-4 rounded-lg w-full"
                       required
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white/80 transition-colors"
+                      className="absolute right-3 top-4 -translate-y-1/2 text-white/50 hover:text-white/80 transition-colors"
                     >
                       {showPassword ? (
                         <EyeOff className="w-5 h-5" />
@@ -198,76 +187,42 @@ function SignupForm() {
                   </div>
                 </div>
 
-                {/* Confirm Password Input */}
-                {/* <div className="space-y-2">
-                  <label htmlFor="confirm-password" className="text-white/70">
-                    Confirm Password
-                  </label>
-                  <div className="relative">
-                    <input
-                      id="confirm-password"
-                      type={showConfirmPassword ? "text" : "password"}
-                      placeholder="••••••••"
-                      value={formData.confirmPassword}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          confirmPassword: e.target.value,
-                        })
-                      }
-                      className="w-full px-4 py-3 bg-neutral-900 border border-neutral-700 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:border-[rgb(var(--brand-400))] transition-colors"
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setShowConfirmPassword(!showConfirmPassword)
-                      }
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white/80 transition-colors"
-                    >
-                      {showConfirmPassword ? (
-                        <EyeOff className="w-5 h-5" />
-                      ) : (
-                        <Eye className="w-5 h-5" />
-                      )}
-                    </button>
-                  </div>
-                </div> */}
-
                 {/* Submit Button */}
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full px-6 py-3 bg-[rgb(var(--brand-400))] text-white font-semibold rounded-lg hover:bg-[rgb(var(--brand-300))] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isLoading ? "Creating account..." : "Create Account"}
-                </button>
+                <div className="form-group text-center mb-0">
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="btn button-primary px-15 py-3 w-full hover:bg-brand-300 hover:text-brand-600"
+                  >
+                    {isLoading ? "Creating account..." : "Create Account"}
+                  </button>
+                </div>
+
                 <div className="mt-2 text-center terms-text tp-body-xs">
                   By clicking Sign Up you agree with the{" "}
                   <a href="/terms" target="_blank" className="text-white">
-                    <u>Terms </u>
-                  </a>
-                  and{"  "}
+                    <u>Terms</u>
+                  </a>{" "}
+                  and{" "}
                   <a href="/privacy" target="_blank" className="text-white">
-                    <u> Privacy Policy</u>
+                    <u>Privacy Policy</u>
                   </a>
                 </div>
               </form>
             </div>
           </div>
 
-          {/* Exit Button - Fixed Bottom Left aligned with form */}
+          {/* Exit Button */}
           <a
-            href={"/"}
-            className="absolute bottom-4 left-4 sm:left-6 md:left-8 flex items-center gap-2 text-white hover:text-gray transition-colors exit-text"
+            href="/"
+            className="absolute bottom-4 left-4 flex items-center gap-2 text-white hover:text-gray-300 transition-colors"
           >
             <ChevronLeft className="w-5 h-5" /> Exit
           </a>
         </div>
 
         {/* Right Side - Promotional Content */}
-        <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden items-center justify-center p-6 xl:p-12">
-          {/* Background Image */}
+        <div className="hidden lg:flex flex-1 relative overflow-hidden p-6 xl:p-12">
           <Image
             src="/blue-bg.png"
             alt="Background"
@@ -280,33 +235,27 @@ function SignupForm() {
           <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-white/10 rounded-full blur-3xl"></div>
           <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-white/10 rounded-full blur-3xl"></div>
 
-          <div className="relative z-10 max-w-md space-y-6 lg:space-y-8 text-white">
-            {/* Main Heading */}
-            <div className="space-y-3 lg:space-y-4">
-              <h2 className="tp-headline-s">
-                Consistent performance Reliable uptime
-              </h2>
-              <p className="tp-body text-white">
-                Experience privacy and speed with real 5G mobile proxies. Using
-                real carrier networks and real smartphones ensures that your
-                traffic looks like genuine mobile user activity, reducing the
-                likelihood of flags in data centers, captchas, or sudden blocks.
-                Whether you’re automating social media or scraping data, our
-                mobile proxies help keep your operations smooth.
-              </p>
-            </div>
+          <div className="relative z-10 max-w-[29rem] space-y-6 lg:space-y-8 m-auto">
+            <h2 className="tp-headline-s text-white">
+              Consistent performance Reliable uptime
+            </h2>
+            <p className="tp-body text-white mt-16 mb-16">
+              Experience privacy and speed with real 5G mobile proxies. Using
+              real carrier networks and real smartphones ensures that your
+              traffic looks like genuine mobile user activity, reducing the
+              likelihood of flags in data centers, captchas, or sudden blocks.
+            </p>
 
-            {/* Features List */}
             <ul className="space-y-2 lg:space-y-3">
               {[
-                "Dedicated Access – private use during your rental period.",
+                "Dedicated Access – private use during your rental period",
                 "Unlimited Bandwidth – no throttling, no hidden caps",
-                "IP Rotation - Sticky • Automated (customizable) • URL/Link-triggered",
+                "IP Rotation - Sticky • Automated • URL-triggered",
                 "Speed – up to 50 Mbps on 5G",
-                "Protocols: HTTP / SOCKS5",
+                "Protocols-HTTP / SOCKS5",
               ].map((feature) => (
-                <li key={feature} className="flex items-center gap-2 lg:gap-3">
-                  <Check className="w-4 h-4 lg:w-5 lg:h-5 text-blue flex-shrink-0" />
+                <li key={feature} className="flex items-center gap-2 lg:gap-3 mt-1">
+                  <Check className="w-4 h-4 lg:w-5 lg:h-5 text-green-800 flex-shrink-0" />
                   <span className="tp-body-s text-white">{feature}</span>
                 </li>
               ))}

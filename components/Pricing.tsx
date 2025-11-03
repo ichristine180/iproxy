@@ -111,20 +111,24 @@ const Pricing = () => {
               className="flex flex-col gap-16 rounded-16 border border-solid border-neutral-600 bg-neutral-800 p-24 max-sm:px-[22px]"
             >
               {/* Icon & Title */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center gap-3">
                 <div className="text-[rgb(var(--brand-400))]">
                   {getPlanIcon(plan.name)}
                 </div>
-                <h3 className="tp-headline-s text-left text-neutral-0">
+                <h3 className="tp-headline-s text-center text-neutral-0">
                   {plan.name}
                 </h3>
               </div>
-
+              {plan.pricing && (
+                <span className="tp-body text-center">
+                  {plan.pricing[0]?.duration}
+                </span>
+              )}
               {/* Price */}
               <div className="mb-4">
                 {plan.pricing && plan.pricing.length > 0 ? (
                   <>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-2 justify-center">
                       {plan.pricing
                         .sort((a, b) => {
                           const order = {
@@ -162,21 +166,21 @@ const Pricing = () => {
                     </div>
                   </>
                 ) : (
-                  <>
+                  <div className="text-center">
                     <p className="text-sm text-white/60 mb-1">Pricing</p>
                     <p className="text-lg text-white/80">Custom pricing</p>
-                  </>
+                  </div>
                 )}
               </div>
 
               {/* Description */}
               {/* <div className="mb-4">
-                  <p className="text-sm text-white/70">{plan.description}</p>
-                </div> */}
+      <p className="text-sm text-white/70">{plan.description}</p>
+    </div> */}
 
               {/* Features - always shown */}
               <div className="">
-                <ul className="space-y-2">
+                <ul className="space-y-2 flex flex-col items-center">
                   {allFeatures.map((feature, index) => (
                     <li
                       key={index}
@@ -193,7 +197,7 @@ const Pricing = () => {
               <div className="mt-auto">
                 <a
                   href={`/login?plan=${plan.id}&redirect=/checkout`}
-                  className="w-full h-48 gap-10 tp-body px-24 py-16 rounded-8 focus-within:outline-brand-100 bg-brand-600 text-neutral-0 hover:bg-brand-300 active:bg-brand-700 flex cursor-pointer select-none items-center justify-center gap-[10px] font-bold outline-offset-2 transition-all md:rounded-8 w-full flex-row"
+                  className="w-full hover:text-brand-600 h-48 gap-10 tp-body px-24 py-16 rounded-8 focus-within:outline-brand-100 bg-brand-600 text-neutral-0 hover:bg-brand-300 active:bg-brand-700 flex cursor-pointer select-none items-center justify-center gap-[10px] font-bold outline-offset-2 transition-all md:rounded-8 w-full flex-row"
                 >
                   Buy now
                 </a>
