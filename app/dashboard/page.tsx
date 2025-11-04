@@ -557,10 +557,6 @@ function DashboardPageContent() {
 
   const selectedPlan = plans.find((p) => p.id === selectedPlanId);
   const activeOrders = orders.filter((order) => order.status === "active");
-  const pendingOrders = orders.filter((order) => order.status === "pending");
-  const processingOrders = orders.filter(
-    (order) => order.status === "processing"
-  );
 
   const freeTrialOrder = orders.find(
     (order) => isFreeTrial(order) && order.status === "active"
@@ -596,9 +592,7 @@ function DashboardPageContent() {
           <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-xl flex items-center gap-3">
             <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
             <div>
-              <p className="tp-body text-green-600">
-                IP Rotated Successfully!
-              </p>
+              <p className="tp-body text-green-600">IP Rotated Successfully!</p>
               <p className="tp-body-s text-neutral-400">
                 Your proxy IP has been changed.
               </p>
@@ -614,13 +608,13 @@ function DashboardPageContent() {
               background: "rgb(23, 23, 23)",
             }}
           >
-            <h3 className="tp-body-bold  text-white mb-4">
+            <h3 className="tp-body-bold text-white mb-4 p-3">
               Product information
             </h3>
 
             {/* Proxy Selector */}
             {orderProxies.length > 1 && (
-              <div className="mb-4">
+              <div className="mb-4 p-3">
                 <select
                   value={selectedProxyIndex}
                   onChange={(e) =>
@@ -639,14 +633,14 @@ function DashboardPageContent() {
             )}
 
             {/* Proxy Details */}
-            <div className="space-y-4 mb-4">
+            <div className="space-y-4 mb-4 p-3">
               {/* HTTP Proxy */}
               {orderProxies[selectedProxyIndex]?.port_http && (
                 <div>
-                  <h4 className="text-white tb-body-s font-medium mb-2">
+                  <h4 className="text-white tb-body-s font-medium py-2">
                     HTTP/HTTPS Proxy
                   </h4>
-                  <div className="bg-neutral-800/50 border border-neutral-700 rounded-lg p-4">
+                  <div className="bg-neutral-800/50 border border-neutral-700 rounded-lg p-6">
                     <div className="space-y-2 text-sm text-neutral-300 font-mono">
                       <div className="pb-2 mb-2 border-b border-neutral-700">
                         <p className="text-xs text-neutral-500 mb-1">
@@ -708,10 +702,10 @@ function DashboardPageContent() {
               {/* SOCKS5 Proxy */}
               {orderProxies[selectedProxyIndex]?.port_socks5 && (
                 <div>
-                  <h4 className="text-white text-sm font-medium mb-2">
+                  <h4 className="text-white text-sm font-medium py-2">
                     SOCKS5 Proxy
                   </h4>
-                  <div className="bg-neutral-800/50 border border-neutral-700 rounded-lg p-4">
+                  <div className="bg-neutral-800/50 border border-neutral-700 rounded-lg p-6">
                     <div className="space-y-2 text-sm text-neutral-300 font-mono">
                       <div className="pb-2 mb-2 border-b border-neutral-700">
                         <p className="text-xs text-neutral-500 mb-1">
@@ -770,24 +764,20 @@ function DashboardPageContent() {
                   </div>
                 </div>
               )}
-            </div>
-
-            {/* Copy Buttons */}
-            <div className="flex gap-3 mb-6">
-              <Button
-                onClick={handleCopyAll}
-                // variant="outline"
-                className="btn button-primary px-15 py-3  hover:bg-brand-300 hover:text-brand-600 mt-8"
-              >
-                Copy all
-              </Button>
+              {/* Copy Buttons */}
+              <div className="flex gap-3 mb-6">
+                <Button
+                  onClick={handleCopyAll}
+                  className="btn button-primary px-15 py-3 hover:bg-brand-300 hover:text-brand-600 mt-8"
+                >
+                  Copy all
+                </Button>
+              </div>
             </div>
 
             {/* Rotation Link */}
-            <div>
-              <h4 className=" tp-body mb-4">
-                Rotation link
-              </h4>
+            <div className="p-3">
+              <h4 className="text-white tb-body-s font-medium py-2">Rotation link</h4>
               <div className="flex flex-col sm:flex-row gap-3">
                 <input
                   type="text"
@@ -798,7 +788,7 @@ function DashboardPageContent() {
                 <Button
                   onClick={handleRotateIP}
                   disabled={isRotatingIP}
-                  className="bg-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-400))] text-white px-6 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                 className="btn button-primary px-15 py-3 hover:bg-brand-300 hover:text-brand-600 mt-8"
                 >
                   {isRotatingIP ? (
                     <>
@@ -818,24 +808,17 @@ function DashboardPageContent() {
         )}
         {/* Order Information Card */}
         <div
-          className="rounded-xl p-4 sm:p-6 mt-15"
+          className="rounded-xl p-6  mt-6"
           style={{
-            border: "1px solid rgb(64, 64, 64)",
-            background: "rgb(23, 23, 23)",
-          }}
+              border: "1px solid rgb(64, 64, 64)",
+              background: "rgb(23, 23, 23)",
+            }}
         >
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
             <h2 className="text-xl sm:text-2xl font-semibold text-white">
               Order #{selectedOrder.id.slice(0, 6)} information
             </h2>
-            {selectedOrder.status === "active" && (
-              <Button
-                onClick={() => handleExtendOrder(selectedOrder)}
-                className="bg-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-200))] text-white w-full sm:w-auto"
-              >
-                Extend
-              </Button>
-            )}
+           
           </div>
 
           <div className="space-y-4">
@@ -954,16 +937,16 @@ function DashboardPageContent() {
     <div className="p-3 sm:p-6">
       {/* Page Title */}
 
-      <h1 className="tp-sub-headline text-neutral-0 pb-3">
-        Dashboard
-      </h1>
+      <h1 className="tp-sub-headline text-neutral-0 pb-3">Dashboard</h1>
 
       {/* Success Messages */}
       {showSuccessMessage && (
         <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-xl flex items-center gap-3">
           <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
           <div className="flex-1">
-            <p className="tp-body font-semibold text-green-600">Payment Successful!</p>
+            <p className="tp-body font-semibold text-green-600">
+              Payment Successful!
+            </p>
             <p className="tp-body-s text-neutral-400">
               {isPolling
                 ? "Setting up your proxy connection... This page will update automatically."
@@ -980,7 +963,9 @@ function DashboardPageContent() {
         <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl flex items-center gap-3">
           <CheckCircle className="w-5 h-5 text-blue-600 flex-shrink-0" />
           <div>
-            <p className="tp-body font-semibold text-blue-600">Free Trial Activated!</p>
+            <p className="tp-body font-semibold text-blue-600">
+              Free Trial Activated!
+            </p>
             <p className="tp-body-s text-neutral-400">
               Your 7-day free trial has been activated. Enjoy full access to all
               features!
@@ -993,7 +978,9 @@ function DashboardPageContent() {
         <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-xl flex items-center gap-3">
           <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
           <div>
-            <p className="tp-body font-semibold text-green-600">Connection Ready!</p>
+            <p className="tp-body font-semibold text-green-600">
+              Connection Ready!
+            </p>
             <p className="tp-body-s text-neutral-400">
               Your proxy connection has been successfully activated and is ready
               to use.
@@ -1007,7 +994,9 @@ function DashboardPageContent() {
         <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl flex items-start gap-3">
           <Clock className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
           <div className="flex-1">
-            <p className="tp-body font-semibold text-yellow-600">Free Trial Active</p>
+            <p className="tp-body font-semibold text-yellow-600">
+              Free Trial Active
+            </p>
             <p className="tp-body-s text-neutral-400">
               Your trial expires on{" "}
               {new Date(freeTrialOrder.expires_at).toLocaleDateString()}.{" "}
@@ -1091,7 +1080,7 @@ function DashboardPageContent() {
               </div>
 
               {/* Right Side - Selected Plan Details */}
-              <div className="p-6 sm:p-6 border-l  lg:border-t-0 lg:border-l border-neutral-700">
+              <div className="p-6 sm:p-6 border-l lg:border-t-0 lg:border-l border-neutral-700">
                 {selectedPlan ? (
                   <>
                     <h3 className="tp-body mb-2 text-neutral-0">
@@ -1159,7 +1148,6 @@ function DashboardPageContent() {
                       {isCheckingQuota ? (
                         <>
                           <Loader2 className="inline-block h-4 w-4 mr-2 animate-spin" />
-                       
                         </>
                       ) : (
                         `Buy now`
@@ -1177,7 +1165,9 @@ function DashboardPageContent() {
 
           {/* Orders Section */}
           <div>
-            <h2 className="tp-body-s text-neutral-0 uppercase tracking-wider mb-4 font-semibold">YOUR ORDERS</h2>
+            <h2 className="tp-body-s text-neutral-0 uppercase tracking-wider mb-4 font-semibold">
+              YOUR ORDERS
+            </h2>
             <div
               className="rounded-xl overflow-hidden"
               style={{
@@ -1331,7 +1321,7 @@ function DashboardPageContent() {
                                           onClick={() =>
                                             handleExtendOrder(order)
                                           }
-                                          className="cursor-pointer  px-3"
+                                          className="cursor-pointer px-3"
                                         >
                                           <RefreshCw className="mr-3 h-5 w-5" />
                                           <span className="text-base">

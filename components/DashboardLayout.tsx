@@ -420,7 +420,7 @@ console.log(mobileMenuOpen);
               {/* User Menu */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                   <button className="flex items-center gap-2 text-white hover:text-neutral-300 transition-colors">
+                   <button className="hidden lg:flex  flex items-center gap-2 text-white hover:text-neutral-300 transition-colors">
                       <span className="tp-body-bold mr-3">
                       Hi, {user?.email?.split("@")[0]}
                     </span>
