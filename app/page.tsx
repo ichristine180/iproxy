@@ -10,15 +10,25 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <div className="page-content-gap flex flex-col">
-        <Hero />
-        <div id="w-full">
+
+      {/* Main content area with responsive section spacing */}
+      <main className="page-content-gap flex flex-col">
+        {/* Hero section */}
+        <section>
+          <Hero />
+        </section>
+
+        {/* Pricing section with semantic spacing */}
+        <section id="pricing" className="section-spacing">
           <Pricing />
-        </div>
-        <div id="features">
+        </section>
+
+        {/* Features section with semantic spacing */}
+        <section id="features" className="section-spacing">
           <Features />
-        </div>
-      </div>
+        </section>
+      </main>
+
       <Footer />
     </div>
   );

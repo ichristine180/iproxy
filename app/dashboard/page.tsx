@@ -1080,7 +1080,7 @@ function DashboardPageContent() {
                             handleBuyNow(plan.id);
                           }}
                           disabled={isCheckingQuota}
-                          className="whitespace-nowrap h-40 gap-10 tp-body-s px-12 sm:px-24 py-16 rounded-8 focus-within:outline-brand-100 border-brand-400 text-brand-400 hover:text-neutral-0 hover:bg-brand-300 active:bg-brand-700 active:text-neutral-0 border-2 border-solid hover:border-transparent active:border-transparent flex cursor-pointer select-none items-center justify-center gap-[10px] font-bold outline-offset-2 transition-all md:rounded-8 whitespace-nowrap flex-row"
+                          className="whitespace-nowrap h-40 gap-10 tp-body-s px-12 sm:px-24 py-16 rounded-8 focus-within:outline-brand-100 border-brand-400 text-brand-400 hover:text-brand-600 hover:bg-brand-300 active:bg-brand-700 active:text-neutral-0 border-2 border-solid hover:border-transparent active:border-transparent flex cursor-pointer select-none items-center justify-center gap-[10px] font-bold outline-offset-2 transition-all md:rounded-8 whitespace-nowrap flex-row"
                         >
                           {isCheckingQuota ? "..." : "Buy now"}
                         </button>
@@ -1091,7 +1091,7 @@ function DashboardPageContent() {
               </div>
 
               {/* Right Side - Selected Plan Details */}
-              <div className="p-4 sm:p-6 border-t lg:border-t-0 lg:border-l border-neutral-700">
+              <div className="p-6 sm:p-6 border-l  lg:border-t-0 lg:border-l border-neutral-700">
                 {selectedPlan ? (
                   <>
                     <h3 className="tp-body mb-2 text-neutral-0">
@@ -1154,12 +1154,12 @@ function DashboardPageContent() {
                     <button
                       onClick={() => handleBuyNow(selectedPlan.id)}
                       disabled={isCheckingQuota}
-                      className="btn button-primary px-15 mt-8 w-full hover:bg-brand-300"
+                      className="btn button-primary px-15 mt-8 w-full hover:bg-brand-300 hover:text-brand-600"
                     >
                       {isCheckingQuota ? (
                         <>
                           <Loader2 className="inline-block h-4 w-4 mr-2 animate-spin" />
-                          Checking...
+                       
                         </>
                       ) : (
                         `Buy now`
@@ -1197,7 +1197,7 @@ function DashboardPageContent() {
                     Search by order ID or IP
                   </label>
                   <div className="relative">
-                    <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-500 pointer-events-none" />
+                    <Search className="absolute right-3 top-1/3 -translate-y-1/2 h-5 w-5 text-neutral-500 pointer-events-none" />
                     <input
                       id="search-input"
                       type="text"

@@ -93,14 +93,14 @@ const Pricing = () => {
   }
 
   return (
-    <section className="flex flex-col gap-24 content-sizer text-center">
+    <section className="flex flex-col inner-spacing-md content-sizer text-center">
       <div className="mx-auto max-w-[938px]">
         <h2 className="tp-headline-m lg:tp-headline-l text-neutral-0 mb-32 sm:mb-40 lg:mb-56">
           Select Your Plan
         </h2>
       </div>
       {/* Products Grid */}
-      <div className="grid grid-cols-1 flex-col gap-x-20 gap-y-24 lg:grid-cols-3">
+      <div className="grid grid-cols-1 flex-col inner-spacing-md lg:grid-cols-3">
         {plans.map((plan) => {
           // Combine common features with plan-specific features
           const allFeatures = [...commonFeatures];
@@ -108,7 +108,7 @@ const Pricing = () => {
           return (
             <div
               key={plan.id}
-              className="flex flex-col gap-16 rounded-16 border border-solid border-neutral-600 bg-neutral-800 p-24 max-sm:px-[22px]"
+              className="flex flex-col inner-spacing-xs rounded-16 border border-solid border-neutral-600 bg-neutral-800 card-padding max-sm:px-[22px]"
             >
               {/* Icon & Title */}
               <div className="flex items-center justify-center gap-3">
@@ -157,7 +157,7 @@ const Pricing = () => {
                               <span className="tp-headline-m text-neutral-0">
                                 ${pricing.price_usd}
                               </span>
-                              <span className="tp-sub-headline mt-8">
+                              <span className="tp-body mt-8">
                                 / {durationUnit}
                               </span>
                             </div>
@@ -186,7 +186,7 @@ const Pricing = () => {
                       key={index}
                       className="flex items-start gap-2 text-sm text-white/80"
                     >
-                      <Check className="w-4 h-4 text-[rgb(var(--brand-400))] mt-0.5 flex-shrink-0" />
+                      <Check className="w-4 h-4 text-green-800 mt-0.5 flex-shrink-0" />
                       <span>{feature}</span>
                     </li>
                   ))}

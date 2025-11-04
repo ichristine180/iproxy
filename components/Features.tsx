@@ -50,18 +50,18 @@ const Features = () => {
   const duplicatedFeatures = [...features, ...features];
 
   return (
-    <section className="flex flex-col gap-24 content-sizer text-center mb-20">
+    <section className="flex flex-col inner-spacing-md content-sizer text-center">
       <div className="mx-auto max-w-[938px]">
         <h2 className="tp-headline-m lg:tp-headline-l text-neutral-0 mb-32 sm:mb-40 lg:mb-56">
           Why choose our proxies?
         </h2>
       </div>
       {/* Mobile/Tablet Grid - Hidden on desktop */}
-      <div className="lg:hidden grid grid-cols-1 sm:grid-cols-2 gap-10 sm:gap-6 max-w-7xl mx-auto">
+      <div className="lg:hidden grid grid-cols-1 sm:grid-cols-2 inner-spacing-sm max-w-7xl mx-auto">
         {features.map((feature, index) => (
           <div
             key={index}
-            className="flex w-full flex-col justify-start gap-24 rounded-16 bg-neutral-800/50 p-24 max-lg:min-h-[220px] lg:max-w-[380px]"
+            className="flex w-full flex-col justify-start inner-spacing-md rounded-16 bg-neutral-800/50 card-padding max-lg:min-h-[220px] lg:max-w-[380px]"
           >
             {/* Icon + Title inline */}
             <div className="flex items-center gap-3 mb-3">
@@ -83,7 +83,7 @@ const Features = () => {
       {/* Desktop Infinite Scroll - Hidden on mobile/tablet */}
       <div className="hidden lg:block relative overflow-hidden">
         <div className="pb-6">
-          <div className="flex gap-20 animate-scroll">
+          <div className="flex inner-spacing-sm animate-scroll">
             {duplicatedFeatures.map((feature, index) => (
               <div
                 key={index}

@@ -61,7 +61,7 @@ function CheckoutPageContent() {
   const [currentStep, setCurrentStep] = useState(1);
   const [rotationMinutes, setRotationMinutes] = useState(0);
   const [durationQuantity, setDurationQuantity] = useState(1); // How many days/weeks/months/years
-  const [duration, setDuration] = useState<Duration>("daily");
+  const [duration, setDuration] = useState<Duration>();
   const [paymentMethod, setPaymentMethod] = useState<"wallet" | "crypto">(
     "wallet"
   );
@@ -428,6 +428,8 @@ function CheckoutPageContent() {
           const selectedPlan = data.plans.find((p: Plan) => p.id === planId);
           if (selectedPlan) {
             setPlan(selectedPlan);
+            
+            setDuration(selectedPlan.pricing[0].duration)
           } else {
             console.error("Plan not found:", planId);
           }

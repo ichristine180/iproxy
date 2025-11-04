@@ -87,7 +87,7 @@ function LoginForm() {
     <div className="min-h-screen bg-neutral-950 relative">
       {/* Logo - Fixed Top Left */}
       <div className="absolute top-6 left-6 z-50">
-        <a href="/" className="flex items-center gap-3">
+        <a href="/" className="flex items-center inner-spacing-xs">
           {/* <div className="relative">
             <div className="w-7 h-7 bg-[rgb(var(--brand-400))] rounded-lg flex items-center justify-center">
               <svg
@@ -118,13 +118,13 @@ function LoginForm() {
           style={{ background: "#0D0F10", minWidth: "20%" }}
         >
           <div className="w-full">
-            {/* Signup Form */}
-            <div className="space-y-8">
+            {/* Login Form Container */}
+            <div className="stack-lg">
               <div className="flex justify-center mt-xl-0 mt-5">
                 <div className="mb-5 w-full max-w-lg">
                   <div className="text-center">
-                    <h2 className="tp-headline-l mb-5 text-neutral-0">Login</h2>
-                    <div className="mt-5 text-center">
+                    <h2 className="tp-headline-l text-neutral-0" style={{ marginBottom: 'var(--space-5)' }}>Login</h2>
+                    <div className="text-center" style={{ marginTop: 'var(--space-5)' }}>
                       <p className="tp-body text-neutral-0 mr-2">
                         Don't have an account yet?{" "}
                         <Link
@@ -142,7 +142,7 @@ function LoginForm() {
               {/* Login Form */}
               <form onSubmit={handleSubmit} className="form form-padding">
                 {error && (
-                  <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-md">
+                  <div className="component-padding bg-red-500/10 border border-red-500/20 rounded-md">
                     <p className="text-sm text-red-400">{error}</p>
                   </div>
                 )}
@@ -160,7 +160,8 @@ function LoginForm() {
                     onChange={(e) =>
                       setFormData({ ...formData, email: e.target.value })
                     }
-                    className="border-0 form-control h-auto px-8 py-4 rounded-lg w-full"
+                    style={{ paddingLeft: 'var(--space-8)', paddingRight: 'var(--space-8)', paddingTop: 'var(--space-4)', paddingBottom: 'var(--space-4)' }}
+                    className="border-0 form-control h-auto rounded-lg w-full"
                     required
                   />
                 </div>
@@ -179,7 +180,8 @@ function LoginForm() {
                       onChange={(e) =>
                         setFormData({ ...formData, password: e.target.value })
                       }
-                      className="border-0 form-control h-auto px-8 py-4 rounded-lg w-full"
+                      style={{ paddingLeft: 'var(--space-8)', paddingRight: 'var(--space-8)', paddingTop: 'var(--space-4)', paddingBottom: 'var(--space-4)' }}
+                    className="border-0 form-control h-auto rounded-lg w-full"
                       required
                     />
                     <button
@@ -219,14 +221,14 @@ function LoginForm() {
           {/* Exit Button */}
           <a
             href="/"
-            className="absolute bottom-4 left-4 flex items-center gap-2 text-white hover:text-gray-300 transition-colors"
+            className="absolute bottom-4 left-4 flex items-center inner-spacing-xs text-white hover:text-gray-300 transition-colors"
           >
             <ChevronLeft className="w-5 h-5" /> Exit
           </a>
         </div>
 
         {/* Right Side - Promotional Content */}
-        <div className="hidden lg:flex flex-1 relative overflow-hidden p-6 xl:p-12">
+        <div className="hidden lg:flex flex-1 relative overflow-hidden container-padding">
           <Image
             src="/blue-bg.png"
             alt="Background"
@@ -239,18 +241,18 @@ function LoginForm() {
           <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-white/10 rounded-full blur-3xl"></div>
           <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-white/10 rounded-full blur-3xl"></div>
 
-          <div className="relative z-10 max-w-[29rem] space-y-6 lg:space-y-8 m-auto">
+          <div className="relative z-10 max-w-[29rem] stack-md m-auto">
             <h2 className="tp-headline-s text-white">
               Consistent performance Reliable uptime
             </h2>
-            <p className="tp-body text-white mt-16 mb-16">
+            <p className="tp-body text-white" style={{ marginTop: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
               Experience privacy and speed with real 5G mobile proxies. Using
               real carrier networks and real smartphones ensures that your
               traffic looks like genuine mobile user activity, reducing the
               likelihood of flags in data centers, captchas, or sudden blocks.
             </p>
 
-            <ul className="space-y-2 lg:space-y-3">
+            <ul className="stack-xs">
               {[
                 "Dedicated Access – private use during your rental period",
                 "Unlimited Bandwidth – no throttling, no hidden caps",
@@ -260,7 +262,7 @@ function LoginForm() {
               ].map((feature) => (
                 <li
                   key={feature}
-                  className="flex items-center gap-2 lg:gap-3 mt-1"
+                  className="flex items-center inner-spacing-xs mt-1"
                 >
                   <Check className="w-4 h-4 lg:w-5 lg:h-5 text-green-800 flex-shrink-0" />
                   <span className="tp-body-s text-white">{feature}</span>

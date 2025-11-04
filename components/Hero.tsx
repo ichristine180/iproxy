@@ -5,13 +5,13 @@ import Image from "next/image";
 
 const Hero = () => {
   return (
-    <section className="content-sizer relative z-0 flex flex-col justify-center py-40 text-center sm:py-56 lg:py-80">
+    <section className="content-sizer section-spacing relative z-0 flex flex-col justify-center text-center">
       {/* Content */}
-      <div className="my-auto flex flex-col gap-40 lg:mx-auto lg:max-w-[940px]">
+      <div className="my-auto flex flex-col inner-spacing-responsive lg:mx-auto lg:max-w-[940px]">
         {/* Main Headline */}
-        <div className="flex flex-col gap-24">
+        <div className="flex flex-col inner-spacing-md">
           <div
-            className="relative flex flex-wrap justify-center items-center gap-12 self-center transition-opacity duration-700 
+            className="relative flex flex-wrap justify-center items-center inner-spacing-xs self-center transition-opacity duration-700
   max-sm:grid max-sm:grid-cols-2 max-sm:gap-6 max-sm:w-full"
           >
             {/* Global Coverage */}
@@ -154,8 +154,8 @@ const Hero = () => {
               5G USA Mobile Proxies. Consistent performance. Reliable uptime.
             </h1>
           </div>
-          <ul className="mx-auto flex max-w-[940px] flex-col flex-wrap justify-center gap-8 lg:flex-row lg:gap-24">
-            <li className="flex items-center gap-8">
+          <ul className="mx-auto flex max-w-[940px] flex-col flex-wrap justify-center inner-spacing-xs lg:flex-row lg:inner-spacing-md">
+            <li className="flex items-center inner-spacing-xs">
               <svg
                 width="24"
                 height="24"
@@ -172,7 +172,7 @@ const Hero = () => {
                 Dedicated Access
               </div>
             </li>
-            <li className="flex items-center gap-8">
+            <li className="flex items-center inner-spacing-xs">
               <svg
                 width="24"
                 height="24"
@@ -189,7 +189,7 @@ const Hero = () => {
                 Seamless Rotation
               </div>
             </li>
-            <li className="flex items-center gap-8">
+            <li className="flex items-center inner-spacing-xs">
               <svg
                 width="24"
                 height="24"
@@ -210,7 +210,7 @@ const Hero = () => {
         </div>
 
         {/* CTA Buttons */}
-        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center mb-4 px-10">
+        <div className="flex flex-col sm:flex-row component-gap justify-center items-center mb-4 px-10">
           <a
             href="/signup"
             className="w-full hover:text-neutral-0 lg:max-w-[524px] sm:w-[259px] h-48 gap-10 tp-body px-24 py-16 rounded-8 focus-within:outline-brand-100 bg-brand-600 text-neutral-0 hover:bg-brand-300 active:bg-brand-700 flex cursor-pointer select-none items-center justify-center gap-[10px] font-bold outline-offset-2 transition-all md:rounded-8 w-full lg:max-w-[524px] sm:w-[259px] flex-row"

@@ -199,7 +199,7 @@ console.log(mobileMenuOpen);
           <a href="/" className="flex items-center gap-2 overflow-hidden">
            
             <span
-              className={`text-brand-400 font-bold tp-sub-headline whitespace-nowrap ${
+              className={`text-brand-400 font-bold tp-sub-headline-s whitespace-nowrap ${
                 sidebarCollapsed ? "lg:hidden" : ""
               }`}
             >
@@ -389,7 +389,7 @@ console.log(mobileMenuOpen);
               </button>
               <a
                 href="/dashboard/profile"
-                className="hidden lg:flex whitespace-nowrap h-40 gap-10 tp-body-s px-24 py-16 rounded-8 focus-within:outline-brand-100 border-brand-400 text-brand-400 hover:text-neutral-0 hover:bg-brand-300 active:bg-brand-700 active:text-neutral-0 border-2 border-solid hover:border-transparent active:border-transparent cursor-pointer select-none items-center justify-center gap-[10px] font-bold outline-offset-2 transition-all md:rounded-8 whitespace-nowrap flex-row"
+                className="hidden lg:flex whitespace-nowrap h-40 gap-10 tp-body-s px-24 py-16 hover:text-brand-600 rounded-8 focus-within:outline-brand-100 border-brand-400 text-brand-400 hover:bg-brand-300 active:bg-brand-700 active:text-neutral-0 border-2 border-solid hover:border-transparent active:border-transparent cursor-pointer select-none items-center justify-center gap-[10px] font-bold outline-offset-2 transition-all md:rounded-8 whitespace-nowrap flex-row"
               >
                 <User className="h-4 w-4" />
                 <span className="text-xs md:text-sm font-medium">
@@ -398,7 +398,7 @@ console.log(mobileMenuOpen);
               </a>
               <a
                 href="/dashboard/deposit"
-                className="hidden lg:flex whitespace-nowrap h-40 gap-10 tp-body-s px-24 py-16 rounded-8 focus-within:outline-brand-100 border-brand-400 text-brand-400 hover:text-neutral-0 hover:bg-brand-300 active:bg-brand-700 active:text-neutral-0 border-2 border-solid hover:border-transparent active:border-transparent cursor-pointer select-none items-center justify-center gap-[10px] font-bold outline-offset-2 transition-all md:rounded-8 whitespace-nowrap flex-row"
+                className="hidden lg:flex whitespace-nowrap h-40 gap-10 tp-body-s px-24 py-16 rounded-8 focus-within:outline-brand-100 border-brand-400 text-brand-400 hover:text-brand-600 hover:bg-brand-300 active:bg-brand-700 active:text-neutral-0 border-2 border-solid hover:border-transparent active:border-transparent cursor-pointer select-none items-center justify-center gap-[10px] font-bold outline-offset-2 transition-all md:rounded-8 whitespace-nowrap flex-row"
               >
                 <DollarSign className="h-4 w-4" />
                 <span className="text-xs md:text-sm font-medium">Deposit</span>

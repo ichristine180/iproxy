@@ -45,7 +45,7 @@ const Footer = () => {
           </div>
 
           <div>
-            <h4 className="font-semibold mb-4">Contact Us</h4>
+            <h4 className="ftp-title mb-[19px] min-h-[24px] uppercase text-neutral-500">Contact Us</h4>
             <p className="text-neutral-0 hover:text-brand-300 transition-all cursor-pointer">
               If you have any issues, questions, or special requests, please don't hesitate to contact us:{" "}
               <a

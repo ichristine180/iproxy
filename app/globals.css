@@ -43,7 +43,80 @@
   --font-accent: Poppins, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-  /* Spacing */
+  /* ============================================
+     SPACING SYSTEM (Base Unit: 8px)
+
+     OVERVIEW:
+     This spacing system ensures consistent layout and rhythm across
+     the entire website. All spacing values are based on an 8px grid
+     system for mathematical harmony and scalability.
+
+     USAGE GUIDELINES:
+     1. Use semantic tokens (--space-inner-*, --space-section-*) over raw values
+     2. Apply utility classes (.section-spacing, .inner-spacing-md) when possible
+     3. Maintain vertical rhythm by using consistent spacing within sections
+     4. Follow responsive spacing patterns defined below
+
+     RESPONSIVE SPACING RULES:
+     - Mobile (< 768px):    Section: 32px, Inner: 16px, Container: 16px
+     - Tablet (768-1089px): Section: 48px, Inner: 24px, Container: 32px
+     - Desktop (≥ 1090px):  Section: 64px, Inner: 24-32px, Container: 80px+
+
+     QUICK REFERENCE:
+     --space-4 (16px):  Inner spacing, tight grouping
+     --space-6 (24px):  Standard inner spacing, component padding
+     --space-8 (32px):  Large inner spacing, mobile section spacing
+     --space-12 (48px): Tablet section spacing
+     --space-16 (64px): Desktop section spacing
+     --space-20 (80px): Desktop container padding
+
+     ============================================ */
+
+  /* Base Spacing Scale */
+  --space-0: 0;
+  --space-1: 0.25rem;   /* 4px - Minimal spacing */
+  --space-2: 0.5rem;    /* 8px - Base unit */
+  --space-3: 0.75rem;   /* 12px */
+  --space-4: 1rem;      /* 16px - Small spacing */
+  --space-5: 1.25rem;   /* 20px */
+  --space-6: 1.5rem;    /* 24px - Medium spacing */
+  --space-8: 2rem;      /* 32px - Large spacing */
+  --space-10: 2.5rem;   /* 40px */
+  --space-12: 3rem;     /* 48px - Section spacing */
+  --space-14: 3.5rem;   /* 56px */
+  --space-16: 4rem;     /* 64px - Extra large spacing */
+  --space-20: 5rem;     /* 80px */
+  --space-24: 6rem;     /* 96px */
+  --space-28: 7rem;     /* 112px */
+  --space-32: 8rem;     /* 128px */
+
+  /* Semantic Spacing Tokens */
+  /* Inner Block Spacing (within sections) */
+  --space-inner-xs: var(--space-4);   /* 16px - Tight grouping */
+  --space-inner-sm: var(--space-5);   /* 20px */
+  --space-inner-md: var(--space-6);   /* 24px - Standard inner spacing */
+  --space-inner-lg: var(--space-8);   /* 32px - Loose inner spacing */
+
+  /* Section-Level Spacing (between major sections) */
+  --space-section-mobile: var(--space-8);    /* 32px */
+  --space-section-tablet: var(--space-12);   /* 48px */
+  --space-section-desktop: var(--space-16);  /* 64px */
+  --space-section-xl: var(--space-24);       /* 96px */
+
+  /* Horizontal Container Padding */
+  --space-container-mobile: var(--space-4);   /* 16px */
+  --space-container-tablet: var(--space-8);   /* 32px */
+  --space-container-desktop: var(--space-20); /* 80px */
+  --space-container-xl: var(--space-28);      /* 112px */
+
+  /* Component Spacing */
+  --space-component-gap: var(--space-4);      /* 16px - Gap between related elements */
+  --space-component-padding: var(--space-6);  /* 24px - Internal component padding */
+  --space-card-padding: var(--space-6);       /* 24px - Card internal spacing */
+  --space-button-padding-y: var(--space-3);   /* 12px - Button vertical padding */
+  --space-button-padding-x: var(--space-6);   /* 24px - Button horizontal padding */
+
+  /* Legacy support (gradually migrate away from these) */
   --ct-heading-spacing: 2.5rem;
 }
 
@@ -520,6 +593,131 @@ a:hover {
   cursor: not-allowed;
 }
 
+/* ============================================
+   SPACING UTILITY CLASSES
+   Usage: Apply consistent spacing using semantic tokens
+   ============================================ */
+
+/* Section Spacing - Vertical spacing between major sections
+   Usage: Add to section wrappers for consistent vertical rhythm */
+.section-spacing {
+  padding-top: var(--space-section-mobile);
+  padding-bottom: var(--space-section-mobile);
+}
+
+@media (min-width: 768px) {
+  .section-spacing {
+    padding-top: var(--space-section-tablet);
+    padding-bottom: var(--space-section-tablet);
+  }
+}
+
+@media (min-width: 1090px) {
+  .section-spacing {
+    padding-top: var(--space-section-desktop);
+    padding-bottom: var(--space-section-desktop);
+  }
+}
+
+@media (min-width: 1320px) {
+  .section-spacing {
+    padding-top: var(--space-section-xl);
+    padding-bottom: var(--space-section-xl);
+  }
+}
+
+/* Section Spacing Variants */
+.section-spacing-sm {
+  padding-top: var(--space-8);
+  padding-bottom: var(--space-8);
+}
+
+.section-spacing-lg {
+  padding-top: var(--space-section-desktop);
+  padding-bottom: var(--space-section-desktop);
+}
+
+/* Container Horizontal Padding - Responsive horizontal spacing
+   Usage: Apply to container elements for consistent edge spacing */
+.container-padding {
+  padding-left: var(--space-container-mobile);
+  padding-right: var(--space-container-mobile);
+}
+
+@media (min-width: 640px) {
+  .container-padding {
+    padding-left: var(--space-6);
+    padding-right: var(--space-6);
+  }
+}
+
+@media (min-width: 768px) {
+  .container-padding {
+    padding-left: var(--space-container-tablet);
+    padding-right: var(--space-container-tablet);
+  }
+}
+
+@media (min-width: 1090px) {
+  .container-padding {
+    padding-left: var(--space-14);
+    padding-right: var(--space-14);
+  }
+}
+
+@media (min-width: 1280px) {
+  .container-padding {
+    padding-left: var(--space-container-desktop);
+    padding-right: var(--space-container-desktop);
+  }
+}
+
+/* Inner Block Spacing - Spacing within sections
+   Usage: Apply to content blocks for consistent internal spacing */
+.inner-spacing-xs { gap: var(--space-inner-xs); }
+.inner-spacing-sm { gap: var(--space-inner-sm); }
+.inner-spacing-md { gap: var(--space-inner-md); }
+.inner-spacing-lg { gap: var(--space-inner-lg); }
+
+/* Vertical Stack Spacing */
+.stack-xs > * + * { margin-top: var(--space-inner-xs); }
+.stack-sm > * + * { margin-top: var(--space-inner-sm); }
+.stack-md > * + * { margin-top: var(--space-inner-md); }
+.stack-lg > * + * { margin-top: var(--space-inner-lg); }
+
+/* Component Spacing - Pre-defined component spacing
+   Usage: Apply to cards, panels, and other UI components */
+.component-gap {
+  gap: var(--space-component-gap);
+}
+
+.component-padding {
+  padding: var(--space-component-padding);
+}
+
+.card-padding {
+  padding: var(--space-card-padding);
+}
+
+/* Responsive Inner Spacing */
+@media (max-width: 767px) {
+  .inner-spacing-responsive {
+    gap: var(--space-4); /* 16px on mobile */
+  }
+}
+
+@media (min-width: 768px) {
+  .inner-spacing-responsive {
+    gap: var(--space-6); /* 24px on tablet+ */
+  }
+}
+
+@media (min-width: 1090px) {
+  .inner-spacing-responsive {
+    gap: var(--space-8); /* 32px on desktop */
+  }
+}
+
 .no-gradient,
 .gradient-text {
   background: none !important;
@@ -529,29 +727,35 @@ a:hover {
   color: rgb(var(--brand-400)) !important;
 }
 
+/* Content Container - Max-width container with responsive padding
+   Usage: Wrap page content for consistent max-width and edge spacing */
 .content-sizer {
   margin: 0 auto;
   max-width: 1360px;
   width: 100%;
-  padding: 0 16px;
+  padding-left: var(--space-container-mobile);
+  padding-right: var(--space-container-mobile);
 }
 @media (min-width: 640px) {
   .content-sizer {
     max-width: 1408px;
-    padding: 0 40px;
+    padding-left: var(--space-10);
+    padding-right: var(--space-10);
   }
 }
 @media (min-width: 768px) {
   .content-sizer {
     max-width: 1440px;
-    padding: 0 56px;
+    padding-left: var(--space-14);
+    padding-right: var(--space-14);
   }
 }
 
+/* Tailwind-compatible spacing utilities */
 .space-y-8 > :not([hidden]) ~ :not([hidden]) {
   --tw-space-y-reverse: 0;
-  margin-top: calc(32px * calc(1 - var(--tw-space-y-reverse)));
-  margin-bottom: calc(32px * var(--tw-space-y-reverse));
+  margin-top: calc(var(--space-8) * calc(1 - var(--tw-space-y-reverse)));
+  margin-bottom: calc(var(--space-8) * var(--tw-space-y-reverse));
 }
 
 *,
@@ -1124,35 +1328,39 @@ summary::-webkit-details-marker {
   }
 }
 
+/* Page Content Gap - Vertical spacing between major page sections
+   Usage: Apply to page-level flex/grid containers */
 .page-content-gap {
-  row-gap: 40px;
+  row-gap: var(--space-10); /* 40px */
 }
 
 @media (min-width: 640px) {
   .page-content-gap {
-    row-gap: 56px;
+    row-gap: var(--space-14); /* 56px */
   }
 }
 
 @media (min-width: 1090px) {
   .page-content-gap {
-    row-gap: 80px;
+    row-gap: var(--space-20); /* 80px */
   }
 }
 
+/* Block Content Gap - Vertical spacing within content blocks
+   Usage: Apply to section-level flex/grid containers */
 .block-content-gap {
-  row-gap: 32px;
+  row-gap: var(--space-8); /* 32px */
 }
 
 @media (min-width: 640px) {
   .block-content-gap {
-    row-gap: 40px;
+    row-gap: var(--space-10); /* 40px */
   }
 }
 
 @media (min-width: 1090px) {
   .block-content-gap {
-    row-gap: 56px;
+    row-gap: var(--space-14); /* 56px */
   }
 }
 
