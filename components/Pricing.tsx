@@ -120,7 +120,7 @@ const Pricing = () => {
                 </h3>
               </div>
               {plan.pricing && (
-                <span className="tp-body text-center">
+                <span className="tp-body text-center capitalize">
                   {plan.pricing[0]?.duration}
                 </span>
               )}
@@ -179,15 +179,15 @@ const Pricing = () => {
     </div> */}
 
               {/* Features - always shown */}
-              <div className="">
-                <ul className="space-y-2 flex flex-col items-center">
+              <div>
+                <ul className="space-y-2 flex flex-col mx-auto w-fit">
                   {allFeatures.map((feature, index) => (
                     <li
                       key={index}
                       className="flex items-start gap-2 text-sm text-white/80"
                     >
                       <Check className="w-4 h-4 text-green-800 mt-0.5 flex-shrink-0" />
-                      <span>{feature}</span>
+                      <span className="mx-1">{feature}</span>
                     </li>
                   ))}
                 </ul>

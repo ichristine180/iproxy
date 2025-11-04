@@ -252,7 +252,7 @@ function SignupForm() {
                 "Unlimited Bandwidth – no throttling, no hidden caps",
                 "IP Rotation - Sticky • Automated • URL-triggered",
                 "Speed – up to 50 Mbps on 5G",
-                "Protocols-HTTP / SOCKS5",
+                "Protocols - HTTP / SOCKS5",
               ].map((feature) => (
                 <li key={feature} className="flex items-center gap-2 lg:gap-3 mt-1">
                   <Check className="w-4 h-4 lg:w-5 lg:h-5 text-green-800 flex-shrink-0" />

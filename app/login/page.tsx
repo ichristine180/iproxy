@@ -258,7 +258,7 @@ function LoginForm() {
                 "Unlimited Bandwidth – no throttling, no hidden caps",
                 "IP Rotation - Sticky • Automated • URL-triggered",
                 "Speed – up to 50 Mbps on 5G",
-                "Protocols-HTTP / SOCKS5",
+                "Protocols - HTTP / SOCKS5",
               ].map((feature) => (
                 <li
                   key={feature}
