@@ -101,7 +101,7 @@
   --space-section-mobile: var(--space-8);    /* 32px */
   --space-section-tablet: var(--space-12);   /* 48px */
   --space-section-desktop: var(--space-16);  /* 64px */
-  --space-section-xl: var(--space-24);       /* 96px */
+  --space-section-xl: var(--space-20);       /* 80px */
 
   /* Horizontal Container Padding */
   --space-container-mobile: var(--space-4);   /* 16px */

@@ -13,20 +13,9 @@ export default function Home() {
 
       {/* Main content area with responsive section spacing */}
       <main className="page-content-gap flex flex-col">
-        {/* Hero section */}
-        <section>
-          <Hero />
-        </section>
-
-        {/* Pricing section with semantic spacing */}
-        <section id="pricing" className="section-spacing">
-          <Pricing />
-        </section>
-
-        {/* Features section with semantic spacing */}
-        <section id="features" className="section-spacing">
-          <Features />
-        </section>
+        <Hero />
+        <Pricing />
+        <Features />
       </main>
 
       <Footer />
