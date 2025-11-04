@@ -210,7 +210,7 @@ function LoginForm() {
                 </div>
 
                 <div className="mt-2 text-center terms-text tp-body-xs">
-                  <Link href="#" className="text-brand-400 font-weight-bold tp-body">
+                  <Link href="/forgot-password" className="text-brand-400 font-weight-bold tp-body">
                     Forgot Your Password?
                   </Link>
                 </div>
@@ -241,9 +241,9 @@ function LoginForm() {
           <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-white/10 rounded-full blur-3xl"></div>
           <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-white/10 rounded-full blur-3xl"></div>
 
-          <div className="relative z-10 max-w-[29rem] stack-md m-auto">
+          <div className="relative z-10  stack-md m-auto">
             <h2 className="tp-headline-s text-white">
-              Consistent performance Reliable uptime
+              Consistent performance. Reliable uptime.
             </h2>
             <p className="tp-body text-white" style={{ marginTop: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
               Experience privacy and speed with real 5G mobile proxies. Using

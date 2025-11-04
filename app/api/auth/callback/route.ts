@@ -7,6 +7,7 @@ export async function GET(request: NextRequest) {
     const code = searchParams.get('code');
     const error = searchParams.get('error');
     const errorDescription = searchParams.get('error_description');
+    const type = searchParams.get('type'); // Check if this is a recovery (password reset) flow
     const next = searchParams.get('next') || '/dashboard'; // Redirect to pricing after email verification
 
     // Handle OAuth/email verification errors
@@ -21,12 +22,20 @@ export async function GET(request: NextRequest) {
     if (code) {
       const supabase = await createClient();
 
-      const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+      const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
 
       if (exchangeError) {
         console.error('Code exchange error:', exchangeError);
         return NextResponse.redirect(
           `${process.env.NEXT_PUBLIC_APP_BASE_URL}?error=${encodeURIComponent('auth_failed')}`
+        );
+      }
+
+      // Check if this is a password reset flow
+      // Supabase sets the user's session with recovery mode for password resets
+      if (type === 'recovery' || data.user?.recovery_sent_at) {
+        return NextResponse.redirect(
+          `${process.env.NEXT_PUBLIC_APP_BASE_URL}/reset-password`
         );
       }
 
