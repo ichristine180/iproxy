@@ -314,7 +314,7 @@ export default function AdminPlansPage() {
                 {plans.map((plan) => (
                   <tr
                     key={plan.id}
-                    className="border-b hover:bg-neutral-800/50 transition-colors"
+                    className="border-b hover:bg-neutral-800/50/50 transition-colors"
                     style={{ borderBottomWidth: '1px', borderBottomColor: 'rgb(38, 38, 38)' }}
                   >
                     <td className="py-4 px-4">
@@ -410,7 +410,7 @@ export default function AdminPlansPage() {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   required
-                  className="w-full px-4 py-2 bg-neutral-800 rounded-lg text-white focus:outline-none"
+                  className="w-full px-4 py-2 bg-neutral-800/50 rounded-lg text-white focus:outline-none"
                   style={{ border: '1px solid rgb(64, 64, 64)' }}
                   onFocus={(e) => e.target.style.borderColor = 'rgb(114, 150, 245)'}
                   onBlur={(e) => e.target.style.borderColor = 'rgb(64, 64, 64)'}
@@ -426,7 +426,7 @@ export default function AdminPlansPage() {
                   value={formData.channel}
                   onChange={(e) => setFormData({ ...formData, channel: e.target.value as any })}
                   required
-                  className="w-full px-4 py-2 bg-neutral-800 rounded-lg text-white focus:outline-none"
+                  className="w-full px-4 py-2 bg-neutral-800/50 rounded-lg text-white focus:outline-none"
                   style={{ border: '1px solid rgb(64, 64, 64)' }}
                   onFocus={(e) => e.target.style.borderColor = 'rgb(114, 150, 245)'}
                   onBlur={(e) => e.target.style.borderColor = 'rgb(64, 64, 64)'}
@@ -453,7 +453,7 @@ export default function AdminPlansPage() {
                             setFormData({ ...formData, pricing: newPricing });
                           }
                         }}
-                        className="px-4 py-2 bg-neutral-800 rounded-lg text-white focus:outline-none"
+                        className="px-4 py-2 bg-neutral-800/50 rounded-lg text-white focus:outline-none"
                         style={{ border: '1px solid rgb(64, 64, 64)' }}
                         onFocus={(e) => e.target.style.borderColor = 'rgb(114, 150, 245)'}
                         onBlur={(e) => e.target.style.borderColor = 'rgb(64, 64, 64)'}
@@ -476,7 +476,7 @@ export default function AdminPlansPage() {
                           }
                         }}
                         required
-                        className="flex-1 px-4 py-2 bg-neutral-800 rounded-lg text-white focus:outline-none"
+                        className="flex-1 px-4 py-2 bg-neutral-800/50 rounded-lg text-white focus:outline-none"
                         style={{ border: '1px solid rgb(64, 64, 64)' }}
                         onFocus={(e) => e.target.style.borderColor = 'rgb(114, 150, 245)'}
                         onBlur={(e) => e.target.style.borderColor = 'rgb(64, 64, 64)'}
@@ -504,7 +504,7 @@ export default function AdminPlansPage() {
                         pricing: [...formData.pricing, { duration: 'monthly', price_usd: '' }],
                       });
                     }}
-                    className="w-full px-4 py-2 bg-neutral-800 text-neutral-300 rounded-lg hover:bg-neutral-700 transition-colors text-sm"
+                    className="w-full px-4 py-2 bg-neutral-800/50 text-neutral-300 rounded-lg hover:bg-neutral-700 transition-colors text-sm"
                     style={{ border: '1px solid rgb(64, 64, 64)' }}
                   >
                     + Add Pricing Tier
@@ -520,7 +520,7 @@ export default function AdminPlansPage() {
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   rows={3}
-                  className="w-full px-4 py-2 bg-neutral-800 rounded-lg text-white focus:outline-none resize-none"
+                  className="w-full px-4 py-2 bg-neutral-800/50 rounded-lg text-white focus:outline-none resize-none"
                   style={{ border: '1px solid rgb(64, 64, 64)' }}
                   onFocus={(e) => e.target.style.borderColor = 'rgb(114, 150, 245)'}
                   onBlur={(e) => e.target.style.borderColor = 'rgb(64, 64, 64)'}
@@ -534,7 +534,7 @@ export default function AdminPlansPage() {
                   id="rotation_api"
                   checked={formData.rotation_api}
                   onChange={(e) => setFormData({ ...formData, rotation_api: e.target.checked })}
-                  className="w-4 h-4 rounded border-neutral-700 bg-neutral-800 text-[rgb(var(--brand-400))] focus:ring-[rgb(var(--brand-400))] focus:ring-offset-0"
+                  className="w-4 h-4 rounded border-neutral-700 bg-neutral-800/50 text-[rgb(var(--brand-400))] focus:ring-[rgb(var(--brand-400))] focus:ring-offset-0"
                 />
                 <label htmlFor="rotation_api" className="text-sm text-neutral-300">
                   Enable Rotation API
@@ -547,7 +547,7 @@ export default function AdminPlansPage() {
                   id="is_active"
                   checked={formData.is_active}
                   onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                  className="w-4 h-4 rounded border-neutral-700 bg-neutral-800 text-[rgb(var(--brand-400))] focus:ring-[rgb(var(--brand-400))] focus:ring-offset-0"
+                  className="w-4 h-4 rounded border-neutral-700 bg-neutral-800/50 text-[rgb(var(--brand-400))] focus:ring-[rgb(var(--brand-400))] focus:ring-offset-0"
                 />
                 <label htmlFor="is_active" className="text-sm text-neutral-300">
                   Active (visible to users)

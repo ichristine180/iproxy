@@ -108,7 +108,7 @@ const Pricing = () => {
           return (
             <div
               key={plan.id}
-              className="flex flex-col inner-spacing-xs rounded-16 border border-solid border-neutral-600 bg-neutral-800 card-padding max-sm:px-[22px]"
+              className="flex flex-col inner-spacing-xs rounded-16 border border-solid border-neutral-600 bg-neutral-800/50 card-padding max-sm:px-[22px]"
             >
               {/* Icon & Title */}
               <div className="flex items-center justify-center gap-3">

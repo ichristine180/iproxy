@@ -245,8 +245,8 @@ console.log(mobileMenuOpen);
               sidebarCollapsed ? "lg:justify-center" : ""
             } px-4 py-2.5 mx-2 rounded-lg transition-colors ${
               pathname === "/dashboard"
-                ? "bg-neutral-800 text-white"
-                : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
+                ? "bg-neutral-800/50 text-white"
+                : "text-neutral-400 hover:text-white hover:bg-neutral-800/50/50"
             }`}
             title="Dashboard"
           >
@@ -266,8 +266,8 @@ console.log(mobileMenuOpen);
               sidebarCollapsed ? "lg:justify-center" : ""
             } px-4 py-2.5 mx-2 rounded-lg transition-colors ${
               pathname === "/dashboard/invoices"
-                ? "bg-neutral-800 text-white"
-                : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
+                ? "bg-neutral-800/50 text-white"
+                : "text-neutral-400 hover:text-white hover:bg-neutral-800/50/50"
             }`}
             title="Invoices"
           >
@@ -289,8 +289,8 @@ console.log(mobileMenuOpen);
               sidebarCollapsed ? "lg:justify-center" : ""
             } px-4 py-2.5 mx-2 rounded-lg transition-colors ${
               pathname === "/dashboard/deposit"
-                ? "bg-neutral-800 text-white"
-                : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
+                ? "bg-neutral-800/50 text-white"
+                : "text-neutral-400 hover:text-white hover:bg-neutral-800/50/50"
             }`}
             title="Deposit"
           >
@@ -342,8 +342,8 @@ console.log(mobileMenuOpen);
                         sidebarCollapsed ? "lg:justify-center" : ""
                       } px-4 py-2.5 mx-2 rounded-lg transition-colors ${
                         pathname === `/dashboard/proxies/${channelInfo.id}`
-                          ? "bg-neutral-800 text-white"
-                          : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
+                          ? "bg-neutral-800/50 text-white"
+                          : "text-neutral-400 hover:text-white hover:bg-neutral-800/50/50"
                       }`}
                       title={channelInfo.name}
                     >

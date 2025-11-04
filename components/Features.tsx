@@ -61,7 +61,7 @@ const Features = () => {
         {features.map((feature, index) => (
           <div
             key={index}
-            className="flex w-full flex-col justify-start inner-spacing-md rounded-16 bg-neutral-800/50 card-padding max-lg:min-h-[220px] lg:max-w-[380px]"
+            className="flex w-full flex-col justify-start inner-spacing-md rounded-16 bg-neutral-800/50/50 card-padding max-lg:min-h-[220px] lg:max-w-[380px]"
           >
             {/* Icon + Title inline */}
             <div className="flex items-center gap-3 mb-3">
@@ -87,7 +87,7 @@ const Features = () => {
             {duplicatedFeatures.map((feature, index) => (
               <div
                 key={index}
-                className="w-[380px] bg-neutral-800/50 border border-neutral-700 rounded-xl p-8 hover:border-[rgb(var(--brand-400))]/30 transition-all duration-300 flex-shrink-0"
+                className="w-[380px] bg-neutral-800/50/50 border border-neutral-700 rounded-xl p-8 hover:border-[rgb(var(--brand-400))]/30 transition-all duration-300 flex-shrink-0"
               >
                 {/* Icon + Title inline */}
                 <div className="flex items-center gap-3 mb-3">

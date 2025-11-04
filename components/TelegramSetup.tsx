@@ -123,7 +123,7 @@ You will receive notifications for:
 
   return (
     <div
-      className="bg-neutral-800 rounded-xl p-6"
+      className="bg-neutral-800/50 rounded-xl p-6"
       style={{ border: "1px solid rgb(64, 64, 64)" }}
     >
       {/* Header */}

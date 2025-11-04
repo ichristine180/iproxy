@@ -129,8 +129,8 @@ export const AdminLayout = ({
             onClick={() => setMobileMenuOpen(false)}
             className={`flex items-center gap-3 ${sidebarCollapsed ? "lg:justify-center" : ""} px-4 py-2.5 mx-2 rounded-lg transition-colors ${
               pathname === "/admin"
-                ? "bg-neutral-800 text-white"
-                : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
+                ? "bg-neutral-800/50 text-white"
+                : "text-neutral-400 hover:text-white hover:bg-neutral-800/50/50"
             }`}
             title="Dashboard"
           >
@@ -167,8 +167,8 @@ export const AdminLayout = ({
                   onClick={() => setMobileMenuOpen(false)}
                   className={`flex items-center gap-3 ${sidebarCollapsed ? "lg:justify-center" : ""} px-4 py-2.5 mx-2 rounded-lg transition-colors ${
                     pathname.includes("/admin/users")
-                      ? "bg-neutral-800 text-white"
-                      : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
+                      ? "bg-neutral-800/50 text-white"
+                      : "text-neutral-400 hover:text-white hover:bg-neutral-800/50/50"
                   }`}
                   title="Users"
                 >
@@ -185,8 +185,8 @@ export const AdminLayout = ({
                   onClick={() => setMobileMenuOpen(false)}
                   className={`flex items-center gap-3 ${sidebarCollapsed ? "lg:justify-center" : ""} px-4 py-2.5 mx-2 rounded-lg transition-colors ${
                     pathname.includes("/admin/orders")
-                      ? "bg-neutral-800 text-white"
-                      : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
+                      ? "bg-neutral-800/50 text-white"
+                      : "text-neutral-400 hover:text-white hover:bg-neutral-800/50/50"
                   }`}
                   title="Orders"
                 >
@@ -203,8 +203,8 @@ export const AdminLayout = ({
                   onClick={() => setMobileMenuOpen(false)}
                   className={`flex items-center gap-3 ${sidebarCollapsed ? "lg:justify-center" : ""} px-4 py-2.5 mx-2 rounded-lg transition-colors ${
                     pathname.includes("/admin/plans")
-                      ? "bg-neutral-800 text-white"
-                      : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
+                      ? "bg-neutral-800/50 text-white"
+                      : "text-neutral-400 hover:text-white hover:bg-neutral-800/50/50"
                   }`}
                   title="Plans"
                 >
@@ -221,8 +221,8 @@ export const AdminLayout = ({
                   onClick={() => setMobileMenuOpen(false)}
                   className={`flex items-center gap-3 ${sidebarCollapsed ? "lg:justify-center" : ""} px-4 py-2.5 mx-2 rounded-lg transition-colors ${
                     pathname.includes("/admin/processing-orders")
-                      ? "bg-neutral-800 text-white"
-                      : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
+                      ? "bg-neutral-800/50 text-white"
+                      : "text-neutral-400 hover:text-white hover:bg-neutral-800/50/50"
                   }`}
                   title="Processing Orders"
                 >
@@ -239,8 +239,8 @@ export const AdminLayout = ({
                   onClick={() => setMobileMenuOpen(false)}
                   className={`flex items-center gap-3 ${sidebarCollapsed ? "lg:justify-center" : ""} px-4 py-2.5 mx-2 rounded-lg transition-colors ${
                     pathname.includes("/admin/quota")
-                      ? "bg-neutral-800 text-white"
-                      : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
+                      ? "bg-neutral-800/50 text-white"
+                      : "text-neutral-400 hover:text-white hover:bg-neutral-800/50/50"
                   }`}
                   title="Quota"
                 >
@@ -257,8 +257,8 @@ export const AdminLayout = ({
                   onClick={() => setMobileMenuOpen(false)}
                   className={`flex items-center gap-3 ${sidebarCollapsed ? "lg:justify-center" : ""} px-4 py-2.5 mx-2 rounded-lg transition-colors ${
                     pathname.includes("/admin/stoplist")
-                      ? "bg-neutral-800 text-white"
-                      : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
+                      ? "bg-neutral-800/50 text-white"
+                      : "text-neutral-400 hover:text-white hover:bg-neutral-800/50/50"
                   }`}
                   title="Stoplist"
                 >
@@ -279,7 +279,7 @@ export const AdminLayout = ({
           <Link
             href="/dashboard"
             onClick={() => setMobileMenuOpen(false)}
-            className={`flex items-center gap-3 ${sidebarCollapsed ? "lg:justify-center" : ""} px-4 py-2.5 rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-800/50 transition-colors`}
+            className={`flex items-center gap-3 ${sidebarCollapsed ? "lg:justify-center" : ""} px-4 py-2.5 rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-800/50/50 transition-colors`}
             title="Back to Dashboard"
           >
             <LayoutDashboard className="h-5 w-5 flex-shrink-0" />

@@ -209,7 +209,7 @@ export default function InvoicesPage() {
                 className={`px-5 py-2 rounded-lg font-medium tp-body-s transition-colors whitespace-nowrap ${
                   statusFilter === filter.value
                     ? "bg-[rgb(var(--brand-400))] text-white"
-                    : "bg-neutral-800 text-neutral-400 hover:text-white"
+                    : "bg-neutral-800/50 text-neutral-400 hover:text-white"
                 }`}
               >
                 {filter.label}
@@ -251,7 +251,7 @@ export default function InvoicesPage() {
                 {filteredOrders.map((order) => (
                   <div
                     key={order.id}
-                    className="p-3 sm:p-5 bg-neutral-800/50 rounded-xl hover:bg-neutral-800/70 transition-colors border border-neutral-700"
+                    className="p-3 sm:p-5 bg-neutral-800/50/50 rounded-xl hover:bg-neutral-800/50/70 transition-colors border border-neutral-700"
                   >
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 sm:gap-4">
                       {/* Left Side - Order Details */}

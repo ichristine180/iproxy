@@ -103,8 +103,8 @@ function SignupForm() {
       <div className="min-h-screen flex flex-col lg:flex-row">
         {/* Left Side - Signup Form */}
         <div
-          className="w-full lg:flex-1 flex items-center justify-center p-6 md:p-8 relative bg-neutral-950"
-          style={{ background: "#0D0F10", minWidth: "20%" }}
+          className="w-full lg:flex-1 flex items-center justify-center p-6 md:p-8 relative"
+          style={{ background: "radial-gradient(ellipse at top, rgba(30, 45, 70, 1) 0%, rgba(18, 22, 28, 1) 60%, rgba(13, 15, 16, 1) 100%)", minWidth: "20%" }}
         >
           <div className="w-full">
             {/* Signup Form */}

@@ -216,7 +216,7 @@ export default function AdminUsersPage() {
                   setRoleFilter(e.target.value);
                   setPagination((prev) => ({ ...prev, page: 1 }));
                 }}
-                className="w-full px-4 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-[rgb(var(--brand-400))]"
+                className="w-full px-4 py-2 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-[rgb(var(--brand-400))]"
               >
                 <option value="">All Roles</option>
                 <option value="user">User</option>
@@ -235,7 +235,7 @@ export default function AdminUsersPage() {
                   setActiveFilter(e.target.value);
                   setPagination((prev) => ({ ...prev, page: 1 }));
                 }}
-                className="w-full px-4 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-[rgb(var(--brand-400))]"
+                className="w-full px-4 py-2 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-[rgb(var(--brand-400))]"
               >
                 <option value="">All Users</option>
                 <option value="true">Active Users</option>
@@ -274,7 +274,7 @@ export default function AdminUsersPage() {
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                className="w-full pl-12 pr-4 py-3 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder:text-neutral-500 focus:outline-none focus:border-[rgb(var(--brand-400))] transition-colors"
+                className="w-full pl-12 pr-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder:text-neutral-500 focus:outline-none focus:border-[rgb(var(--brand-400))] transition-colors"
               />
             </div>
             <Button
@@ -340,7 +340,7 @@ export default function AdminUsersPage() {
                     return (
                       <tr
                         key={user.id}
-                        className="border-b hover:bg-neutral-800/50 transition-colors"
+                        className="border-b hover:bg-neutral-800/50/50 transition-colors"
                         style={{ borderBottomWidth: '1px', borderBottomColor: 'rgb(38, 38, 38)' }}
                       >
                         <td className="py-4 px-4 text-white font-mono text-sm">
@@ -379,7 +379,7 @@ export default function AdminUsersPage() {
                 <select
                   value={pagination.limit}
                   onChange={handleLimitChange}
-                  className="px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-[rgb(var(--brand-400))]"
+                  className="px-3 py-2 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-[rgb(var(--brand-400))]"
                 >
                   <option value="10">10 per page</option>
                   <option value="20">20 per page</option>

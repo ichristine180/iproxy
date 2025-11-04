@@ -626,7 +626,7 @@ function DashboardPageContent() {
                   onChange={(e) =>
                     setSelectedProxyIndex(parseInt(e.target.value))
                   }
-                  className="w-full px-4 py-3 bg-neutral-800 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-[rgb(var(--brand-400))]"
+                  className="w-full px-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-[rgb(var(--brand-400))]"
                 >
                   {orderProxies.map((proxy, index) => (
                     <option key={proxy.id} value={index}>
@@ -646,7 +646,7 @@ function DashboardPageContent() {
                   <h4 className="text-white tb-body-s font-medium mb-2">
                     HTTP/HTTPS Proxy
                   </h4>
-                  <div className="bg-neutral-800 border border-neutral-700 rounded-lg p-4">
+                  <div className="bg-neutral-800/50 border border-neutral-700 rounded-lg p-4">
                     <div className="space-y-2 text-sm text-neutral-300 font-mono">
                       <div className="pb-2 mb-2 border-b border-neutral-700">
                         <p className="text-xs text-neutral-500 mb-1">
@@ -711,7 +711,7 @@ function DashboardPageContent() {
                   <h4 className="text-white text-sm font-medium mb-2">
                     SOCKS5 Proxy
                   </h4>
-                  <div className="bg-neutral-800 border border-neutral-700 rounded-lg p-4">
+                  <div className="bg-neutral-800/50 border border-neutral-700 rounded-lg p-4">
                     <div className="space-y-2 text-sm text-neutral-300 font-mono">
                       <div className="pb-2 mb-2 border-b border-neutral-700">
                         <p className="text-xs text-neutral-500 mb-1">
@@ -793,7 +793,7 @@ function DashboardPageContent() {
                   type="text"
                   value={orderProxies[selectedProxyIndex]?.iproxy_change_url}
                   readOnly
-                  className="flex-1 px-4 py-3 bg-neutral-800 border border-neutral-700 rounded-lg text-neutral-400 text-sm focus:outline-none"
+                  className="flex-1 px-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-neutral-400 text-sm focus:outline-none"
                 />
                 <Button
                   onClick={handleRotateIP}
@@ -1047,7 +1047,7 @@ function DashboardPageContent() {
               background: "rgb(23, 23, 23)",
             }}
           >
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8 bg-neutral-800/50 border border-neutral-700 rounded-xl p-3 sm:p-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8 bg-neutral-800/50/50 border border-neutral-700 rounded-xl p-3 sm:p-6">
               {/* Left Side - Plans List */}
               <div className="space-y-3">
                 {plans.map((plan) => {
@@ -1060,7 +1060,7 @@ function DashboardPageContent() {
                       className={`w-full flex items-center justify-between px-5 py-3 rounded-full transition-all cursor-pointer ${
                         isSelected
                           ? "bg-[rgb(var(--brand-500))] text-white"
-                          : "bg-neutral-800/50 text-neutral-400 hover:bg-neutral-800 hover:text-white"
+                          : "bg-neutral-800/50/50 text-neutral-400 hover:bg-neutral-800/50 hover:text-white"
                       }`}
                     >
                       <div className="flex items-center gap-3">
@@ -1204,7 +1204,7 @@ function DashboardPageContent() {
                       placeholder="Search"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full h-12 pl-3 pr-10 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder:text-neutral-500 focus:outline-none focus:border-[rgb(var(--brand-400))] focus:ring-1 focus:ring-[rgb(var(--brand-400))] transition-colors"
+                      className="w-full h-12 pl-3 pr-10 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder:text-neutral-500 focus:outline-none focus:border-[rgb(var(--brand-400))] focus:ring-1 focus:ring-[rgb(var(--brand-400))] transition-colors"
                     />
                   </div>
                 </div>
@@ -1259,7 +1259,7 @@ function DashboardPageContent() {
                           return (
                             <tr
                               key={order.id}
-                              className=" hover:bg-neutral-800/30 transition-colors"
+                              className=" hover:bg-neutral-800/50/30 transition-colors"
                             >
                               <td className="py-4 px-2 sm:px-4 text-white text-sm font-medium">
                                 #{order.id.slice(0, 6)}
@@ -1352,7 +1352,7 @@ function DashboardPageContent() {
 
                   {/* Pagination */}
                   <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-3 sm:px-6 py-4 sm:py-5 border-t border-neutral-800">
-                    <select className="w-full sm:w-auto px-4 sm:px-5 py-2 bg-neutral-800/80 border border-neutral-700 rounded-xl text-white text-sm font-medium focus:outline-none focus:border-[rgb(var(--brand-400))] cursor-pointer">
+                    <select className="w-full sm:w-auto px-4 sm:px-5 py-2 bg-neutral-800/50/80 border border-neutral-700 rounded-xl text-white text-sm font-medium focus:outline-none focus:border-[rgb(var(--brand-400))] cursor-pointer">
                       <option>5 per page</option>
                       <option>10 per page</option>
                       <option>20 per page</option>

@@ -335,7 +335,7 @@ export default function AdminUserDetailPage() {
                   {user.proxies.map((proxy) => (
                     <tr
                       key={proxy.id}
-                      className="border-b border-neutral-800 hover:bg-neutral-800/50 transition-colors"
+                      className="border-b border-neutral-800 hover:bg-neutral-800/50/50 transition-colors"
                     >
                       <td className="py-4 px-4 text-white">{proxy.label}</td>
                       <td className="py-4 px-4">
@@ -416,7 +416,7 @@ export default function AdminUserDetailPage() {
                   {user.orders.map((order) => (
                     <tr
                       key={order.id}
-                      className="border-b border-neutral-800 hover:bg-neutral-800/50 transition-colors"
+                      className="border-b border-neutral-800 hover:bg-neutral-800/50/50 transition-colors"
                     >
                       <td className="py-4 px-4 text-white font-mono text-sm">
                         #{order.id.slice(0, 8)}

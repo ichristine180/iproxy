@@ -226,7 +226,7 @@ export default function DepositPage() {
 
       {/* Content Card */}
       <div className="bg-neutral-900 rounded-xl p-4">
-        <div className="bg-neutral-800/50 border border-neutral-700 rounded-xl p-6">
+        <div className="bg-neutral-800/50/50 border border-neutral-700 rounded-xl p-6">
             {activeTab === "deposit" ? (
               <>
                 {/* Header */}
@@ -249,7 +249,7 @@ export default function DepositPage() {
                         </span>
                       </div>
                     ))}
-                    <div className="w-10 h-10 bg-neutral-800 rounded-full flex items-center justify-center">
+                    <div className="w-10 h-10 bg-neutral-800/50 rounded-full flex items-center justify-center">
                       <span className="text-white text-sm">+{SUPPORTED_CURRENCIES.length - 3}</span>
                     </div>
                   </div>
@@ -266,7 +266,7 @@ export default function DepositPage() {
                       type="number"
                       value={amount}
                       onChange={(e) => setAmount(e.target.value)}
-                      className="w-full px-8 py-3 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder:text-neutral-500 focus:outline-none focus:border-[rgb(var(--brand-400))] focus:ring-1 focus:ring-[rgb(var(--brand-400))] transition-colors"
+                      className="w-full px-8 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder:text-neutral-500 focus:outline-none focus:border-[rgb(var(--brand-400))] focus:ring-1 focus:ring-[rgb(var(--brand-400))] transition-colors"
                       placeholder="10"
                       min="0.01"
                       step="0.01"
@@ -286,7 +286,7 @@ export default function DepositPage() {
                           setCurrencySearchQuery("");
                         }
                       }}
-                      className="w-full px-4 py-3 bg-neutral-800 border border-neutral-700 rounded-lg text-white flex items-center justify-between transition-colors hover:bg-neutral-700 focus:outline-none focus:border-[rgb(var(--brand-400))] focus:ring-1 focus:ring-[rgb(var(--brand-400))]"
+                      className="w-full px-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white flex items-center justify-between transition-colors hover:bg-neutral-700 focus:outline-none focus:border-[rgb(var(--brand-400))] focus:ring-1 focus:ring-[rgb(var(--brand-400))]"
                     >
                       <div className="flex items-center gap-3 px-4">
                         <span className={`w-8 h-8 ${selectedCurrency.color} rounded-full flex items-center justify-center text-white font-bold`}>
@@ -299,7 +299,7 @@ export default function DepositPage() {
 
                     {/* Dropdown Menu */}
                     {showCurrencyDropdown && (
-                      <div className="absolute z-10 w-full mt-2 bg-neutral-800 border border-neutral-700 rounded-lg shadow-xl">
+                      <div className="absolute z-10 w-full mt-2 bg-neutral-800/50 border border-neutral-700 rounded-lg shadow-xl">
                         {/* Search Input */}
                         <div className="p-3 border-b border-neutral-700">
                           <div className="relative">
@@ -425,7 +425,7 @@ export default function DepositPage() {
                     {transactions.map((transaction) => (
                       <div
                         key={transaction.id}
-                        className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg hover:bg-neutral-700/50 transition-colors"
+                        className="p-4 bg-neutral-800/50 border border-neutral-700 rounded-lg hover:bg-neutral-700/50 transition-colors"
                       >
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                           {/* Left Side - Icon and Details */}

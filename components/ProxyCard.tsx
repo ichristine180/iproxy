@@ -191,7 +191,7 @@ function ProxyRow({
           <div className="space-y-1">
             <label className="text-xs text-neutral-500">Host</label>
             <div className="flex items-center gap-1.5">
-              <code className="flex-1 rounded bg-neutral-800 px-2 py-1.5 text-xs font-mono text-white truncate border border-neutral-700">
+              <code className="flex-1 rounded bg-neutral-800/50 px-2 py-1.5 text-xs font-mono text-white truncate border border-neutral-700">
                 {proxy.host}
               </code>
               <Button
@@ -219,7 +219,7 @@ function ProxyRow({
           <div className="space-y-1">
             <label className="text-xs text-neutral-500">Port</label>
             <div className="flex items-center gap-1.5">
-              <code className="flex-1 rounded bg-neutral-800 px-2 py-1.5 text-xs font-mono text-white border border-neutral-700">
+              <code className="flex-1 rounded bg-neutral-800/50 px-2 py-1.5 text-xs font-mono text-white border border-neutral-700">
                 {port}
               </code>
               <Button
@@ -247,7 +247,7 @@ function ProxyRow({
           <div className="space-y-1">
             <label className="text-xs text-neutral-500">Username</label>
             <div className="flex items-center gap-1.5">
-              <code className="flex-1 rounded bg-neutral-800 px-2 py-1.5 text-xs font-mono text-white truncate border border-neutral-700">
+              <code className="flex-1 rounded bg-neutral-800/50 px-2 py-1.5 text-xs font-mono text-white truncate border border-neutral-700">
                 {proxy.username}
               </code>
               <Button
@@ -275,7 +275,7 @@ function ProxyRow({
           <div className="space-y-1">
             <label className="text-xs text-neutral-500">Password</label>
             <div className="flex items-center gap-1.5">
-              <code className="flex-1 rounded bg-neutral-800 px-2 py-1.5 text-xs font-mono text-white truncate border border-neutral-700">
+              <code className="flex-1 rounded bg-neutral-800/50 px-2 py-1.5 text-xs font-mono text-white truncate border border-neutral-700">
                 {showPassword ? proxy.password : "••••••••••"}
               </code>
               <div className="flex items-center gap-1 flex-shrink-0">
@@ -317,7 +317,7 @@ function ProxyRow({
           <div className="space-y-1 sm:col-span-2">
             <label className="text-xs text-neutral-500">Proxy URL</label>
             <div className="flex items-center gap-1.5">
-              <code className="flex-1 rounded bg-neutral-800 px-2 py-1.5 text-xs font-mono text-white truncate border border-neutral-700">
+              <code className="flex-1 rounded bg-neutral-800/50 px-2 py-1.5 text-xs font-mono text-white truncate border border-neutral-700">
                 {isHttp ? "http" : "socks5"}://{proxy.username}:
                 {showPassword ? proxy.password : "••••••••"}@{proxy.host}:{port}
               </code>

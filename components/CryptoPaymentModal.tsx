@@ -188,16 +188,16 @@ export function CryptoPaymentModal({
                 placeholder="Search cryptocurrencies..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-12 pl-12 pr-4 bg-neutral-800 border-neutral-700 text-white placeholder:text-neutral-500 focus:border-[rgb(var(--brand-400))] focus:ring-1 focus:ring-[rgb(var(--brand-400))]"
+                className="h-12 pl-12 pr-4 bg-neutral-800/50 border-neutral-700 text-white placeholder:text-neutral-500 focus:border-[rgb(var(--brand-400))] focus:ring-1 focus:ring-[rgb(var(--brand-400))]"
               />
             </div>
 
             {/* Currency Selection */}
             <Select value={selectedCurrency} onValueChange={setSelectedCurrency}>
-              <SelectTrigger className="h-12 bg-neutral-800 border-neutral-700 text-white focus:border-[rgb(var(--brand-400))] focus:ring-1 focus:ring-[rgb(var(--brand-400))]">
+              <SelectTrigger className="h-12 bg-neutral-800/50 border-neutral-700 text-white focus:border-[rgb(var(--brand-400))] focus:ring-1 focus:ring-[rgb(var(--brand-400))]">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="max-h-64 bg-neutral-800 border-neutral-700">
+              <SelectContent className="max-h-64 bg-neutral-800/50 border-neutral-700">
                 {displayCurrencies.map((currency) => (
                   <SelectItem 
                     key={currency} 
@@ -227,7 +227,7 @@ export function CryptoPaymentModal({
                   variant="outline"
                   size="sm"
                   onClick={() => setSearchQuery('')}
-                  className="text-xs h-7 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white"
+                  className="text-xs h-7 border-neutral-700 text-neutral-300 hover:bg-neutral-800/50 hover:text-white"
                 >
                   Clear
                 </Button>
@@ -239,14 +239,14 @@ export function CryptoPaymentModal({
                 variant="outline"
                 size="sm"
                 onClick={() => setCurrencies(allCurrencies)}
-                className="w-full text-sm h-9 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white"
+                className="w-full text-sm h-9 border-neutral-700 text-neutral-300 hover:bg-neutral-800/50 hover:text-white"
               >
                 Show All {allCurrencies.length} Currencies
               </Button>
             )}
           </div>
 
-          <div className="bg-neutral-800 border border-neutral-700 p-6 rounded-lg">
+          <div className="bg-neutral-800/50 border border-neutral-700 p-6 rounded-lg">
             <p className="text-sm text-neutral-400 mb-2">You will pay</p>
             <p className="text-3xl font-bold text-white">${amount} USD</p>
             <p className="text-sm text-neutral-400 mt-2">

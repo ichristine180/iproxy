@@ -425,7 +425,7 @@ export default function AdminOrderDetailPage() {
                   {order.proxies.map((proxy) => (
                     <tr
                       key={proxy.id}
-                      className="border-b border-neutral-800 hover:bg-neutral-800/50 transition-colors"
+                      className="border-b border-neutral-800 hover:bg-neutral-800/50/50 transition-colors"
                     >
                       <td className="py-4 px-4 text-white">{proxy.label}</td>
                       <td className="py-4 px-4">

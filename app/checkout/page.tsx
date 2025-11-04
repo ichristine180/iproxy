@@ -493,7 +493,7 @@ function CheckoutPageContent() {
               onClick={handleBackToDetails}
               className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 border rounded-lg transition-colors ${
                 currentStep === 1
-                  ? "bg-neutral-800 border border-neutral-700 rounded-lg p-4"
+                  ? "bg-neutral-800/50 border border-neutral-700 rounded-lg p-4"
                   : "border-neutral-800 text-neutral-500 hover:text-white"
               }`}
             >
@@ -520,7 +520,7 @@ function CheckoutPageContent() {
             {/* Step 1: Order Details */}
             <div
               id="order-details-section"
-              className={`bg-neutral-800 border rounded-xl p-3 md:p-5 transition-all ${
+              className={`bg-neutral-800/50 border rounded-xl p-3 md:p-5 transition-all ${
                 currentStep === 1
                   ? "border-neutral-700"
                   : "border-neutral-700/50"
@@ -552,7 +552,7 @@ function CheckoutPageContent() {
                       className={`px-4 py-3 rounded-lg border-2 transition-all ${
                         duration === option.value
                           ? "border-[rgb(var(--brand-400))] bg-[rgb(var(--brand-400))]/10 text-white"
-                          : "border-neutral-700 bg-neutral-800 text-neutral-400 hover:border-neutral-600 hover:text-white"
+                          : "border-neutral-700 bg-neutral-800/50 text-neutral-400 hover:border-neutral-600 hover:text-white"
                       } ${currentStep === 2 ? "opacity-50 cursor-not-allowed" : ""}`}
                     >
                       <div className="flex flex-col items-center gap-0.5 sm:gap-1">
@@ -591,7 +591,7 @@ function CheckoutPageContent() {
                   <button
                     onClick={handleDecrementDuration}
                     disabled={currentStep === 2}
-                    className={`w-10 h-10 sm:w-10 sm:h-10 flex items-center justify-center bg-neutral-800 border-2 border-[rgb(var(--brand-800))] rounded-lg hover:bg-neutral-700 transition-colors ${
+                    className={`w-10 h-10 sm:w-10 sm:h-10 flex items-center justify-center bg-neutral-800/50 border-2 border-[rgb(var(--brand-800))] rounded-lg hover:bg-neutral-700 transition-colors ${
                       currentStep === 2 ? "opacity-50 cursor-not-allowed" : ""
                     }`}
                   >
@@ -600,7 +600,7 @@ function CheckoutPageContent() {
                   <button
                     onClick={handleIncrementDuration}
                     disabled={currentStep === 2}
-                    className={`w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center bg-neutral-800 border-2 border-[rgb(var(--brand-400))] rounded-lg hover:bg-neutral-700 transition-colors ${
+                    className={`w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center bg-neutral-800/50 border-2 border-[rgb(var(--brand-400))] rounded-lg hover:bg-neutral-700 transition-colors ${
                       currentStep === 2 ? "opacity-50 cursor-not-allowed" : ""
                     }`}
                   >
@@ -626,7 +626,7 @@ function CheckoutPageContent() {
         ${
           rotationMinutes === option.value
             ? "border-[rgb(var(--brand-400))] bg-[rgb(var(--brand-400))]/10 text-white shadow-[0_0_10px_rgb(var(--brand-400))]"
-            : "border-neutral-700 bg-neutral-800 text-neutral-400 hover:border-neutral-600 hover:bg-neutral-700/50"
+            : "border-neutral-700 bg-neutral-800/50 text-neutral-400 hover:border-neutral-600 hover:bg-neutral-700/50"
         }
         ${currentStep === 2 ? "opacity-50 cursor-not-allowed" : ""}
       `}
@@ -701,10 +701,10 @@ function CheckoutPageContent() {
                     disabled={hasInsufficientBalance}
                     className={`w-full p-10 sm:p-4 rounded-lg border-2 transition-all text-left ${
                       hasInsufficientBalance
-                        ? "border-neutral-700 bg-neutral-800/30 opacity-60 cursor-not-allowed"
+                        ? "border-neutral-700 bg-neutral-800/50/30 opacity-60 cursor-not-allowed"
                         : paymentMethod === "wallet"
-                        ? "border-[rgb(var(--brand-400))] bg-neutral-800"
-                        : "border-neutral-700 bg-neutral-800/50 hover:border-neutral-600"
+                        ? "border-[rgb(var(--brand-400))] bg-neutral-800/50"
+                        : "border-neutral-700 bg-neutral-800/50/50 hover:border-neutral-600"
                     }`}
                   >
                     <div className="flex items-center gap-4 sm:gap-3 mb-2">
@@ -755,8 +755,8 @@ function CheckoutPageContent() {
                   <div
                     className={`w-full p-3 sm:p-4 rounded-lg border-2 transition-all ${
                       paymentMethod === "crypto"
-                        ? "border-[rgb(var(--brand-400))] bg-neutral-800"
-                        : "border-neutral-700 bg-neutral-800/50 hover:border-neutral-600"
+                        ? "border-[rgb(var(--brand-400))] bg-neutral-800/50"
+                        : "border-neutral-700 bg-neutral-800/50/50 hover:border-neutral-600"
                     }`}
                   >
                     <button
@@ -793,7 +793,7 @@ function CheckoutPageContent() {
                             placeholder="Search cryptocurrencies..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-9 sm:pl-10 pr-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-sm sm:text-base text-white placeholder:text-neutral-500 focus:outline-none focus:border-[rgb(var(--brand-400))] transition-colors"
+                            className="w-full pl-9 sm:pl-10 pr-3 py-2 bg-neutral-800/50 border border-neutral-700 rounded-lg text-sm sm:text-base text-white placeholder:text-neutral-500 focus:outline-none focus:border-[rgb(var(--brand-400))] transition-colors"
                           />
                         </div>
 
@@ -801,7 +801,7 @@ function CheckoutPageContent() {
                           value={selectedCrypto}
                           onValueChange={setSelectedCrypto}
                         >
-                          <SelectTrigger className="bg-neutral-800 border-neutral-700 text-white text-base">
+                          <SelectTrigger className="bg-neutral-800/50 border-neutral-700 text-white text-base">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent className="max-h-64">
@@ -884,7 +884,7 @@ function CheckoutPageContent() {
 
           {/* Right Section - Order Summary (Sticky) */}
           <div className="lg:sticky lg:top-6 h-fit order-first lg:order-last">
-            <div className="bg-neutral-800 border border-neutral-700 rounded-lg p-6 sm:p-6">
+            <div className="bg-neutral-800/50 border border-neutral-700 rounded-lg p-6 sm:p-6">
               <h3 className="tp-body-bold">
                 Order summary
               </h3>
@@ -969,7 +969,7 @@ function CheckoutPageContent() {
                 {/* Coupon Code */}
                 <button
                   onClick={() => setShowCouponInput(!showCouponInput)}
-                  className="w-full flex items-center justify-between px-3 py-2 bg-neutral-800 hover:bg-neutral-700 rounded-lg transition-colors"
+                  className="w-full flex items-center justify-between px-3 py-2 bg-neutral-800/50 hover:bg-neutral-700 rounded-lg transition-colors"
                 >
                   <span className="text-sm sm:text-base font-medium text-white">
                     Have a coupon code?
@@ -988,7 +988,7 @@ function CheckoutPageContent() {
                       value={couponCode}
                       onChange={(e) => setCouponCode(e.target.value)}
                       placeholder="Enter code"
-                      className="flex-1 px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-sm sm:text-base text-white focus:outline-none focus:border-[rgb(var(--brand-400))]"
+                      className="flex-1 px-3 py-2 bg-neutral-800/50 border border-neutral-700 rounded-lg text-sm sm:text-base text-white focus:outline-none focus:border-[rgb(var(--brand-400))]"
                     />
                     <button className="px-3 py-2 bg-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-500))] text-white text-sm sm:text-base font-medium rounded-lg transition-colors">
                       Apply

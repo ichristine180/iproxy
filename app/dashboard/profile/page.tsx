@@ -344,7 +344,7 @@ export default function ProfilePage() {
                     />
                   </div>
 
-                  <Separator className="bg-neutral-800" />
+                  <Separator className="bg-neutral-800/50" />
 
                   <div className="flex items-center justify-between">
                     <div className="tp-body-s text-neutral-400">
@@ -460,7 +460,7 @@ export default function ProfilePage() {
                     </div>
                   )}
 
-                  <Separator className="bg-neutral-800" />
+                  <Separator className="bg-neutral-800/50" />
 
                   <div className="flex items-center justify-end gap-2">
                     {passwordSuccess && (
@@ -528,7 +528,7 @@ export default function ProfilePage() {
                       />
                     </div>
 
-                    <Separator className="bg-neutral-800" />
+                    <Separator className="bg-neutral-800/50" />
 
                     {/* Notification Channels */}
                     <div>
@@ -600,7 +600,7 @@ export default function ProfilePage() {
                       </div>
                     </div>
 
-                    <Separator className="bg-neutral-800" />
+                    <Separator className="bg-neutral-800/50" />
 
                     {/* Notification Types */}
                     <div>
