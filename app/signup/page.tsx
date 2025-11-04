@@ -154,7 +154,7 @@ function SignupForm() {
                     onChange={(e) =>
                       setFormData({ ...formData, email: e.target.value })
                     }
-                    className="border-0 form-control h-auto px-8 py-4 rounded-lg w-full"
+                   className="form-control h-auto rounded-lg border-0 py-6 px-8 w-full"
                     required
                   />
                 </div>
@@ -172,7 +172,7 @@ function SignupForm() {
                       onChange={(e) =>
                         setFormData({ ...formData, password: e.target.value })
                       }
-                      className="border-0 form-control h-auto px-8 py-4 rounded-lg w-full"
+                       className="form-control h-auto rounded-lg border-0 py-6 px-8 w-full"
                       required
                     />
                     <button

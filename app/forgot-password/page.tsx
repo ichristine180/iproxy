@@ -55,7 +55,11 @@ export default function ForgotPasswordPage() {
         {/* Left Side - Forgot Password Form */}
         <div
           className="w-full lg:flex-1 flex items-center justify-center p-6 md:p-8 relative"
-          style={{ background: "radial-gradient(ellipse at top, rgba(30, 45, 70, 1) 0%, rgba(18, 22, 28, 1) 60%, rgba(13, 15, 16, 1) 100%)", minWidth: "20%" }}
+          style={{
+            background:
+              "radial-gradient(ellipse at top, rgba(30, 45, 70, 1) 0%, rgba(18, 22, 28, 1) 60%, rgba(13, 15, 16, 1) 100%)",
+            minWidth: "20%",
+          }}
         >
           <div className="w-full">
             {/* Form Container */}
@@ -63,12 +67,18 @@ export default function ForgotPasswordPage() {
               <div className="flex justify-center mt-xl-0 mt-5">
                 <div className="mb-5 w-full max-w-lg">
                   <div className="text-center">
-                    
-                    <h2 className="tp-headline-l text-neutral-0" style={{ marginBottom: 'var(--space-5)' }}>
+                    <h2
+                      className="tp-headline-l text-neutral-0"
+                      style={{ marginBottom: "var(--space-5)" }}
+                    >
                       Forgot Password?
                     </h2>
-                    <p className="tp-body text-neutral-300" style={{ marginTop: 'var(--space-3)' }}>
-                      No worries! Enter your email and we'll send you a link to reset your password.
+                    <p
+                      className="tp-body text-neutral-300"
+                      style={{ marginTop: "var(--space-3)" }}
+                    >
+                      No worries! Enter your email and we'll send you a link to
+                      reset your password.
                     </p>
                   </div>
                 </div>
@@ -96,11 +106,9 @@ export default function ForgotPasswordPage() {
                   <input
                     id="email"
                     type="email"
-                
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    style={{ paddingLeft: 'var(--space-8)', paddingRight: 'var(--space-8)', paddingTop: 'var(--space-4)', paddingBottom: 'var(--space-4)' }}
-                    className="border-0 form-control h-auto rounded-lg w-full"
+                    className="form-control h-auto rounded-lg border-0 py-6 px-8 w-full"
                     required
                   />
                 </div>
@@ -117,7 +125,10 @@ export default function ForgotPasswordPage() {
                 </div>
 
                 <div className="mt-4 text-center">
-                  <Link href="/login" className="text-brand-400 font-weight-bold tp-body">
+                  <Link
+                    href="/login"
+                    className="text-brand-400 font-weight-bold tp-body"
+                  >
                     Back to Login
                   </Link>
                 </div>
@@ -152,7 +163,13 @@ export default function ForgotPasswordPage() {
             <h2 className="tp-headline-s text-white">
               Consistent performance. Reliable uptime.
             </h2>
-            <p className="tp-body text-white" style={{ marginTop: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
+            <p
+              className="tp-body text-white"
+              style={{
+                marginTop: "var(--space-4)",
+                marginBottom: "var(--space-4)",
+              }}
+            >
               Experience privacy and speed with real 5G mobile proxies. Using
               real carrier networks and real smartphones ensures that your
               traffic looks like genuine mobile user activity, reducing the

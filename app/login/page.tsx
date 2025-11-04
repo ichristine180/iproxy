@@ -160,8 +160,7 @@ function LoginForm() {
                     onChange={(e) =>
                       setFormData({ ...formData, email: e.target.value })
                     }
-                    style={{ paddingLeft: 'var(--space-8)', paddingRight: 'var(--space-8)', paddingTop: 'var(--space-4)', paddingBottom: 'var(--space-4)' }}
-                    className="border-0 form-control h-auto rounded-lg w-full"
+                    className="form-control h-auto rounded-lg border-0 py-6 px-8 w-full"
                     required
                   />
                 </div>
@@ -180,14 +179,13 @@ function LoginForm() {
                       onChange={(e) =>
                         setFormData({ ...formData, password: e.target.value })
                       }
-                      style={{ paddingLeft: 'var(--space-8)', paddingRight: 'var(--space-8)', paddingTop: 'var(--space-4)', paddingBottom: 'var(--space-4)' }}
-                    className="border-0 form-control h-auto rounded-lg w-full"
+                      className="form-control h-auto rounded-lg border-0 py-6 px-8 w-full"
                       required
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-4 -translate-y-1/2 text-white/50 hover:text-white/80 transition-colors"
+                      className="absolute right-4 top-6 -translate-y-1/3 text-white/50 hover:text-white/80 transition-colors"
                     >
                       {showPassword ? (
                         <EyeOff className="w-5 h-5" />
