@@ -50,7 +50,7 @@ const Features = () => {
   const duplicatedFeatures = [...features, ...features];
 
   return (
-    <section className="flex flex-col inner-spacing-md content-sizer text-center section-spacing">
+    <section className="flex flex-col inner-spacing-md content-sizer text-center section-spacing-sm">
       <div className="mx-auto max-w-[938px]">
         <h2 className="tp-headline-m lg:tp-headline-l text-neutral-0 mb-32 sm:mb-40 lg:mb-56">
           Why choose our proxies?
