@@ -1,6 +1,5 @@
 "use client";
 
-import { Check } from "lucide-react";
 import Image from "next/image";
 
 const Hero = () => {
@@ -148,7 +147,7 @@ const Hero = () => {
           </div>
           <div className="flex flex-col items-center">
             <h1
-              className="headline tp-headline-m lg:tp-headline-xl mb-16 text-neutral-0 lg:w-[750px]"
+              className="headline tp-headline-m lg:tp-headline-xl mb-16 text-neutral-0"
               data-astro-cid-hmzfjpzv
             >
               5G USA Mobile Proxies. Consistent performance. Reliable uptime.
