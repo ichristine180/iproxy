@@ -155,7 +155,7 @@ function LoginForm() {
                   <input
                     id="email"
                     type="email"
-                    placeholder="name@example.com"
+               
                     value={formData.email}
                     onChange={(e) =>
                       setFormData({ ...formData, email: e.target.value })
@@ -175,7 +175,7 @@ function LoginForm() {
                     <input
                       id="password"
                       type={showPassword ? "text" : "password"}
-                      placeholder="••••••••"
+                   
                       value={formData.password}
                       onChange={(e) =>
                         setFormData({ ...formData, password: e.target.value })

@@ -63,11 +63,7 @@ export default function ForgotPasswordPage() {
               <div className="flex justify-center mt-xl-0 mt-5">
                 <div className="mb-5 w-full max-w-lg">
                   <div className="text-center">
-                    <div className="flex justify-center mb-4">
-                      <div className="w-16 h-16 bg-brand-600/20 rounded-full flex items-center justify-center">
-                        <Mail className="w-8 h-8 text-brand-400" />
-                      </div>
-                    </div>
+                    
                     <h2 className="tp-headline-l text-neutral-0" style={{ marginBottom: 'var(--space-5)' }}>
                       Forgot Password?
                     </h2>
@@ -100,7 +96,7 @@ export default function ForgotPasswordPage() {
                   <input
                     id="email"
                     type="email"
-                    placeholder="name@example.com"
+                
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     style={{ paddingLeft: 'var(--space-8)', paddingRight: 'var(--space-8)', paddingTop: 'var(--space-4)', paddingBottom: 'var(--space-4)' }}

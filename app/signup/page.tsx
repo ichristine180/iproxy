@@ -104,7 +104,11 @@ function SignupForm() {
         {/* Left Side - Signup Form */}
         <div
           className="w-full lg:flex-1 flex items-center justify-center p-6 md:p-8 relative"
-          style={{ background: "radial-gradient(ellipse at top, rgba(30, 45, 70, 1) 0%, rgba(18, 22, 28, 1) 60%, rgba(13, 15, 16, 1) 100%)", minWidth: "20%" }}
+          style={{
+            background:
+              "radial-gradient(ellipse at top, rgba(30, 45, 70, 1) 0%, rgba(18, 22, 28, 1) 60%, rgba(13, 15, 16, 1) 100%)",
+            minWidth: "20%",
+          }}
         >
           <div className="w-full">
             {/* Signup Form */}
@@ -115,17 +119,17 @@ function SignupForm() {
                     <h2 className="tp-headline-l mb-5 text-neutral-0">
                       Register
                     </h2>
-                   <div className="mt-5 text-center">
-                     <p className="tp-body text-neutral-0 mr-2">
-                      Already have an account?{" "}
-                      <Link
-                        href={`/login`}
-                        className="tp-body text-brand-400 font-weight-bold"
-                      >
-                        Log In
-                      </Link>
-                    </p>
-                   </div>
+                    <div className="mt-5 text-center">
+                      <p className="tp-body text-neutral-0 mr-2">
+                        Already have an account?{" "}
+                        <Link
+                          href={`/login`}
+                          className="tp-body text-brand-400 font-weight-bold"
+                        >
+                          Log In
+                        </Link>
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -146,7 +150,6 @@ function SignupForm() {
                   <input
                     id="email"
                     type="email"
-                    placeholder="name@example.com"
                     value={formData.email}
                     onChange={(e) =>
                       setFormData({ ...formData, email: e.target.value })
@@ -165,7 +168,6 @@ function SignupForm() {
                     <input
                       id="password"
                       type={showPassword ? "text" : "password"}
-                      placeholder="••••••••"
                       value={formData.password}
                       onChange={(e) =>
                         setFormData({ ...formData, password: e.target.value })
@@ -222,46 +224,49 @@ function SignupForm() {
         </div>
 
         {/* Right Side - Promotional Content */}
-        <div className="hidden lg:flex flex-1 relative overflow-hidden p-6 xl:p-12">
-          <Image
-            src="/blue-bg.png"
-            alt="Background"
-            fill
-            className="object-cover opacity-80"
-            priority
-          />
-
-          {/* Decorative circles */}
-          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-white/10 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-white/10 rounded-full blur-3xl"></div>
-
-          <div className="relative z-10  space-y-6 lg:space-y-8 m-auto">
-            <h2 className="tp-headline-s text-white">
-              Consistent performance. Reliable uptime.
-            </h2>
-            <p className="tp-body text-white mt-16 mb-16">
-              Experience privacy and speed with real 5G mobile proxies. Using
-              real carrier networks and real smartphones ensures that your
-              traffic looks like genuine mobile user activity, reducing the
-              likelihood of flags in data centers, captchas, or sudden blocks.
-            </p>
-
-            <ul className="space-y-2 lg:space-y-3">
-              {[
-                "Dedicated Access – private use during your rental period",
-                "Unlimited Bandwidth – no throttling, no hidden caps",
-                "IP Rotation - Sticky • Automated • URL-triggered",
-                "Speed – up to 50 Mbps on 5G",
-                "Protocols - HTTP / SOCKS5",
-              ].map((feature) => (
-                <li key={feature} className="flex items-center gap-2 lg:gap-3 mt-1">
-                  <Check className="w-4 h-4 lg:w-5 lg:h-5 text-green-800 flex-shrink-0" />
-                  <span className="tp-body-s text-white">{feature}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
+        <div className="hidden lg:flex flex-1 relative overflow-hidden container-padding">
+                <Image
+                  src="/blue-bg.png"
+                  alt="Background"
+                  fill
+                  className="object-cover opacity-80"
+                  priority
+                />
+      
+                {/* Decorative circles */}
+                <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-white/10 rounded-full blur-3xl"></div>
+                <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-white/10 rounded-full blur-3xl"></div>
+      
+                <div className="relative z-10  stack-md m-auto">
+                  <h2 className="tp-headline-s text-white">
+                    Consistent performance. Reliable uptime.
+                  </h2>
+                  <p className="tp-body text-white" style={{ marginTop: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
+                    Experience privacy and speed with real 5G mobile proxies. Using
+                    real carrier networks and real smartphones ensures that your
+                    traffic looks like genuine mobile user activity, reducing the
+                    likelihood of flags in data centers, captchas, or sudden blocks.
+                  </p>
+      
+                  <ul className="stack-xs">
+                    {[
+                      "Dedicated Access – private use during your rental period",
+                      "Unlimited Bandwidth – no throttling, no hidden caps",
+                      "IP Rotation - Sticky • Automated • URL-triggered",
+                      "Speed – up to 50 Mbps on 5G",
+                      "Protocols - HTTP / SOCKS5",
+                    ].map((feature) => (
+                      <li
+                        key={feature}
+                        className="flex items-center inner-spacing-xs mt-1"
+                      >
+                        <Check className="w-4 h-4 lg:w-5 lg:h-5 text-green-800 flex-shrink-0" />
+                        <span className="tp-body-s text-white">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
       </div>
     </div>
   );
