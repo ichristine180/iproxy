@@ -4,26 +4,12 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { nowPayments } from "@/lib/nowpayments";
-import { createClient } from "@/lib/supabase/client";
-import {
-  Bitcoin,
   History,
   DollarSign,
   Clock,
   CheckCircle,
-  XCircle,
+  ChevronDown,
   Search,
-  Loader2,
 } from "lucide-react";
 
 interface Transaction {
@@ -37,28 +23,37 @@ interface Transaction {
   created_at: string;
 }
 
+const SUPPORTED_CURRENCIES = [
+  { code: "btc", name: "Bitcoin", icon: "₿", color: "bg-orange-500" },
+  { code: "eth", name: "Ethereum", icon: "Ξ", color: "bg-purple-500" },
+  { code: "usdt", name: "Tether", icon: "₮", color: "bg-emerald-500" },
+  { code: "usdttrc20", name: "USDT (TRC20)", icon: "₮", color: "bg-green-500" },
+  { code: "trx", name: "Tron", icon: "T", color: "bg-red-500" },
+  { code: "ltc", name: "Litecoin", icon: "Ł", color: "bg-gray-400" },
+  { code: "bnb", name: "BNB", icon: "B", color: "bg-yellow-500" },
+];
+
 export default function DepositPage() {
   const { toast } = useToast();
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<"deposit" | "history">("deposit");
   const [amount, setAmount] = useState("10");
-  const [currentBalance, setCurrentBalance] = useState(0);
+  const [selectedCurrency, setSelectedCurrency] = useState(SUPPORTED_CURRENCIES[0]);
+  const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
+  const [currencySearchQuery, setCurrencySearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
 
-  // Crypto payment state
-  const [selectedCurrency, setSelectedCurrency] = useState('btc');
-  const [paymentLoading, setPaymentLoading] = useState(false);
-  const [currencies, setCurrencies] = useState<string[]>(['btc', 'eth', 'usdt', 'usdc']);
-  const [allCurrencies, setAllCurrencies] = useState<string[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [userId, setUserId] = useState<string | null>(null);
+  const filteredCurrencies = SUPPORTED_CURRENCIES.filter(
+    (currency) =>
+      currency.name.toLowerCase().includes(currencySearchQuery.toLowerCase()) ||
+      currency.code.toLowerCase().includes(currencySearchQuery.toLowerCase())
+  );
 
   useEffect(() => {
     loadUserBalance();
-    loadCurrencies();
-    getCurrentUser();
 
     // Check for payment status from URL params
     const paymentStatus = searchParams.get("payment");
@@ -98,63 +93,12 @@ export default function DepositPage() {
     }
   }, [activeTab]);
 
-  const getCurrentUser = async () => {
-    try {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      setUserId(user?.id || null);
-    } catch (error) {
-      console.error('Error getting current user:', error);
-    }
-  };
-
-  const loadCurrencies = async () => {
-    try {
-      const availableCurrencies = await nowPayments.getAvailableCurrencies();
-      setAllCurrencies(availableCurrencies);
-
-      // Show popular currencies by default
-      const popularCurrencies = ['btc', 'eth', 'usdt', 'usdc', 'bnb', 'xrp', 'doge', 'ltc', 'ada', 'matic'];
-      const filtered = availableCurrencies.filter(c => popularCurrencies.includes(c));
-      if (filtered.length > 0) {
-        setCurrencies(filtered);
-      } else {
-        // Fallback to first 10 currencies if popular ones not found
-        setCurrencies(availableCurrencies.slice(0, 10));
-      }
-    } catch (error) {
-      console.error('Error loading currencies:', error);
-      // Set fallback currencies if API fails
-      const fallbackCurrencies = ['btc', 'eth', 'usdt', 'usdc', 'bnb', 'xrp', 'doge', 'ltc'];
-      setAllCurrencies(fallbackCurrencies);
-      setCurrencies(fallbackCurrencies);
-    }
-  };
-
-  const getCurrencyName = (code: string) => {
-    const names: Record<string, string> = {
-      btc: 'Bitcoin',
-      eth: 'Ethereum',
-      usdt: 'Tether (USDT)',
-      usdc: 'USD Coin',
-      bnb: 'Binance Coin',
-      xrp: 'Ripple',
-      doge: 'Dogecoin',
-      ltc: 'Litecoin',
-      ada: 'Cardano',
-      matic: 'Polygon',
-    };
-    return names[code] || code.toUpperCase();
-  };
-
   const loadUserBalance = async () => {
     try {
       const response = await fetch("/api/wallet");
       const data = await response.json();
 
-      if (data.success && data.wallet) {
-        setCurrentBalance(data.wallet.balance);
-      } else {
+      if (!data.success) {
         console.error("Error loading balance:", data.error);
       }
     } catch (error) {
@@ -197,38 +141,42 @@ export default function DepositPage() {
       return;
     }
 
-    setPaymentLoading(true);
-    try {
-      const orderId = `topup-${Date.now()}-${userId}`;
+    setIsProcessing(true);
 
-      const payment = await nowPayments.createInvoice({
-        price_amount: depositAmount,
-        price_currency: 'usd',
-        pay_currency: selectedCurrency,
-        order_id: orderId,
-        order_description: `Balance top-up: $${depositAmount}`,
+    try {
+      const response = await fetch("/api/nowpayments/create-payment", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          price_amount: depositAmount,
+          price_currency: "usd",
+          pay_currency: selectedCurrency.code,
+        }),
       });
 
-      console.log('📋 Invoice creation response:', payment);
+      const data = await response.json();
 
-      // Redirect to payment page
-      if (payment.invoice_url) {
-        window.location.href = payment.invoice_url;
+      if (data.success && data.paymentUrl) {
+        // Redirect to payment page
+        window.location.href = data.paymentUrl;
       } else {
         toast({
-          title: 'Error',
-          description: 'Payment URL not available',
-          variant: 'destructive',
+          title: "Payment Error",
+          description: data.error || "Failed to create payment",
+          variant: "destructive",
         });
       }
-    } catch (error: any) {
+    } catch (error) {
+      console.error("Error creating payment:", error);
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to create payment',
-        variant: 'destructive',
+        title: "Payment Error",
+        description: "Failed to initiate payment. Please try again.",
+        variant: "destructive",
       });
     } finally {
-      setPaymentLoading(false);
+      setIsProcessing(false);
     }
   };
 
@@ -244,214 +192,203 @@ export default function DepositPage() {
 
   return (
     <div className="p-6">
-      <div className="space-y-8">
-        {/* Page Title */}
-        <div>
-          <h1 className="tp-sub-headline text-neutral-0 pb-3">
-            Deposit
-          </h1>
-          <p className="tp-body-s text-neutral-400">
-            Add funds to your wallet using cryptocurrency
-          </p>
-        </div>
+      {/* Page Title */}
+      <h1 className="tp-sub-headline text-neutral-0 pb-3">Deposit</h1>
 
-        {/* Tabs */}
-        <div className="grid w-full grid-cols-2 bg-neutral-900 border border-neutral-700 rounded-xl p-1.5 mb-6">
-          <button
-            onClick={() => setActiveTab("deposit")}
-            className={`tp-body-s flex items-center justify-center gap-2 rounded-lg py-3 transition-all ${
-              activeTab === "deposit"
-                ? "!bg-[rgb(var(--brand-300))] !text-neutral-900 font-semibold shadow-lg"
-                : "!bg-transparent text-neutral-500 hover:text-neutral-300"
-            }`}
-          >
-            <DollarSign className="h-4 w-4" />
-            Deposit
-          </button>
-          <button
-            onClick={() => setActiveTab("history")}
-            className={`tp-body-s flex items-center justify-center gap-2 rounded-lg py-3 transition-all ${
-              activeTab === "history"
-                ? "!bg-[rgb(var(--brand-300))] !text-neutral-900 font-semibold shadow-lg"
-                : "!bg-transparent text-neutral-500 hover:text-neutral-300"
-            }`}
-          >
-            <History className="h-4 w-4" />
-            <span className="hidden sm:inline">Deposit History</span>
-            <span className="sm:hidden">History</span>
-          </button>
-        </div>
-
-        {/* Content */}
-        <div
-          className="rounded-xl overflow-hidden"
-          style={{
-            border: "1px solid rgb(64, 64, 64)",
-            background: "rgb(23, 23, 23)",
-          }}
+      {/* Tabs */}
+      <div
+        className="flex mb-4"
+        style={{ borderBottom: "1px solid rgb(64, 64, 64)" }}
+      >
+        <button
+          onClick={() => setActiveTab("deposit")}
+          className={`flex items-center justify-center gap-2 px-6 py-4 tp-body font-semibold transition-colors ${
+            activeTab === "deposit"
+              ? "text-[rgb(var(--brand-400))] border-b-2 border-[rgb(var(--brand-400))]"
+              : "text-neutral-400 hover:text-white"
+          }`}
         >
-          <div className="p-6">
+          <DollarSign className="h-5 w-5" />
+          <span>Deposit</span>
+        </button>
+        <button
+          onClick={() => setActiveTab("history")}
+          className={`flex items-center justify-center gap-2 px-6 py-4 tp-body font-semibold transition-colors ${
+            activeTab === "history"
+              ? "text-[rgb(var(--brand-400))] border-b-2 border-[rgb(var(--brand-400))]"
+              : "text-neutral-400 hover:text-white"
+          }`}
+        >
+          <History className="h-5 w-5" />
+          <span>Deposit History</span>
+        </button>
+      </div>
+
+      {/* Content Card */}
+      <div className="bg-neutral-900 rounded-xl p-4">
+        <div className="bg-neutral-800/50 border border-neutral-700 rounded-xl p-6">
             {activeTab === "deposit" ? (
-              <div className="max-w-2xl mx-auto">
-                {/* Amount Input Section */}
-                <div className="mb-8">
-                  <label className="tp-body font-semibold text-neutral-0 block mb-4">
-                    How much would you like to deposit?
-                  </label>
-                  <div className="relative">
-                    <div className="absolute left-6 top-1/2 -translate-y-1/2 tp-headline-s text-neutral-400">
-                      $
+              <>
+                {/* Header */}
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center">
+                      <div className="w-6 h-6 border-4 border-white rounded-full" />
                     </div>
+                    <h2 className="tp-body font-bold text-white">Crypto Deposit</h2>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    {SUPPORTED_CURRENCIES.slice(0, 3).map((currency) => (
+                      <div
+                        key={currency.code}
+                        className={`w-10 h-10 ${currency.color} rounded-full flex items-center justify-center`}
+                      >
+                        <span className="text-white font-bold text-lg">
+                          {currency.icon}
+                        </span>
+                      </div>
+                    ))}
+                    <div className="w-10 h-10 bg-neutral-800 rounded-full flex items-center justify-center">
+                      <span className="text-white text-sm">+{SUPPORTED_CURRENCIES.length - 3}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Input Fields */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  {/* Deposit Amount */}
+                  <div>
+                    <label className="tp-body-s text-neutral-400 mb-2 block">
+                      Deposit amount (USD)
+                    </label>
                     <input
                       type="number"
                       value={amount}
                       onChange={(e) => setAmount(e.target.value)}
-                      className="border-0 form-control h-auto pl-12 pr-20 py-6 rounded-xl w-full text-3xl font-semibold text-neutral-0"
-                      placeholder="0.00"
+                      className="w-full px-8 py-3 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder:text-neutral-500 focus:outline-none focus:border-[rgb(var(--brand-400))] focus:ring-1 focus:ring-[rgb(var(--brand-400))] transition-colors"
+                      placeholder="10"
                       min="0.01"
                       step="0.01"
                     />
-                    <div className="absolute right-6 top-1/2 -translate-y-1/2 tp-body text-neutral-400">
-                      USD
-                    </div>
-                  </div>
-                  <p className="tp-body-xs text-neutral-500 mt-3">
-                    Minimum deposit: $1.00
-                  </p>
-                </div>
-
-                {/* Quick Amount Buttons */}
-                <div className="mb-8">
-                  <div className="grid grid-cols-4 gap-3">
-                    {[10, 25, 50, 100].map((quickAmount) => (
-                      <button
-                        key={quickAmount}
-                        onClick={() => setAmount(quickAmount.toString())}
-                        className="py-3 px-4 rounded-lg bg-neutral-800 border border-neutral-700 hover:border-[rgb(var(--brand-400))] hover:bg-neutral-800/70 transition-all tp-body-s text-neutral-0"
-                      >
-                        ${quickAmount}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Cryptocurrency Selection */}
-                <div className="mb-8">
-                  <label className="tp-body font-semibold text-neutral-0 block mb-4">
-                    Select payment cryptocurrency
-                  </label>
-
-                  {/* Search Input */}
-                  <div className="relative mb-3">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-500 pointer-events-none" />
-                    <Input
-                      id="search-crypto"
-                      placeholder="Search cryptocurrencies..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="border-0 form-control h-auto pl-12 pr-8 py-4 rounded-lg w-full"
-                    />
                   </div>
 
-                  {/* Currency Select */}
-                  <Select value={selectedCurrency} onValueChange={setSelectedCurrency}>
-                    <SelectTrigger className="border-0 form-control h-auto px-8 py-4 rounded-lg w-full text-neutral-0">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="max-h-64 bg-neutral-800 border-neutral-700">
-                      {(searchQuery
-                        ? allCurrencies.filter(currency =>
-                            currency.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                            getCurrencyName(currency).toLowerCase().includes(searchQuery.toLowerCase())
-                          )
-                        : currencies
-                      ).map((currency) => (
-                        <SelectItem
-                          key={currency}
-                          value={currency}
-                          className="text-white hover:bg-neutral-700 focus:bg-neutral-700"
-                        >
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium">{currency.toUpperCase()}</span>
-                            <span className="text-neutral-400">{getCurrencyName(currency)}</span>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-
-                  {!searchQuery && allCurrencies.length > currencies.length && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrencies(allCurrencies)}
-                      className="w-full mt-3 text-sm h-9 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white"
+                  {/* Crypto Currency Selection */}
+                  <div className="relative">
+                    <label className="tp-body-s text-neutral-400 mb-2 block">
+                      Pay with
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowCurrencyDropdown(!showCurrencyDropdown);
+                        if (!showCurrencyDropdown) {
+                          setCurrencySearchQuery("");
+                        }
+                      }}
+                      className="w-full px-4 py-3 bg-neutral-800 border border-neutral-700 rounded-lg text-white flex items-center justify-between transition-colors hover:bg-neutral-700 focus:outline-none focus:border-[rgb(var(--brand-400))] focus:ring-1 focus:ring-[rgb(var(--brand-400))]"
                     >
-                      Show All {allCurrencies.length} Currencies
-                    </Button>
-                  )}
+                      <div className="flex items-center gap-3 px-4">
+                        <span className={`w-8 h-8 ${selectedCurrency.color} rounded-full flex items-center justify-center text-white font-bold`}>
+                          {selectedCurrency.icon}
+                        </span>
+                        <span>{selectedCurrency.name}</span>
+                      </div>
+                      <ChevronDown className={`w-5 h-5 transition-transform ${showCurrencyDropdown ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    {/* Dropdown Menu */}
+                    {showCurrencyDropdown && (
+                      <div className="absolute z-10 w-full mt-2 bg-neutral-800 border border-neutral-700 rounded-lg shadow-xl">
+                        {/* Search Input */}
+                        <div className="p-3 border-b border-neutral-700">
+                          <div className="relative">
+                            <Search className="absolute left-3 top-1/3 transform -translate-y-1/2 w-4 h-4 text-neutral-400" />
+                            <input
+                              type="text"
+                              value={currencySearchQuery}
+                              onChange={(e) => setCurrencySearchQuery(e.target.value)}
+                              placeholder="Search currency..."
+                              className="w-full pl-10 pr-4 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white tp-body-s placeholder:text-neutral-500 focus:outline-none focus:border-[rgb(var(--brand-400))] focus:ring-1 focus:ring-[rgb(var(--brand-400))]"
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Currency List */}
+                        <div className="max-h-64 overflow-y-auto">
+                          {filteredCurrencies.length > 0 ? (
+                            filteredCurrencies.map((currency) => (
+                              <button
+                                key={currency.code}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedCurrency(currency);
+                                  setShowCurrencyDropdown(false);
+                                  setCurrencySearchQuery("");
+                                }}
+                                className={`w-full px-10 py-2 flex items-center gap-3 transition-colors hover:bg-neutral-700 text-left ${
+                                  selectedCurrency.code === currency.code
+                                    ? 'bg-neutral-700'
+                                    : ''
+                                }`}
+                              >
+                                <span className={`w-8 h-8 ${currency.color} rounded-full flex items-center justify-center text-white font-bold flex-shrink-0`}>
+                                  {currency.icon}
+                                </span>
+                                <div className="flex-1">
+                                  <div className="text-white tp-body font-medium">
+                                    {currency.name}
+                                  </div>
+                                  <div className="text-neutral-400 tp-body-s">
+                                    {currency.code.toUpperCase()}
+                                  </div>
+                                </div>
+                                {selectedCurrency.code === currency.code && (
+                                  <CheckCircle className="w-4 h-4 text-green-400" />
+                                )}
+                              </button>
+                            ))
+                          ) : (
+                            <div className="px-6 py-8 text-center">
+                              <p className="tp-body text-neutral-400">No currencies found</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                {/* Payment Summary Card */}
-                <div className="mb-8 p-6 rounded-xl bg-neutral-800/50 border border-neutral-700">
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="tp-body-s text-neutral-400">You will pay</span>
-                    <span className="tp-body-s text-neutral-400">Cryptocurrency</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="tp-headline font-bold text-neutral-0">
-                        ${parseFloat(amount || '0').toFixed(2)}
-                      </div>
-                      <div className="tp-body-xs text-neutral-500 mt-1">USD</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="tp-body font-semibold text-[rgb(var(--brand-400))]">
-                        {selectedCurrency.toUpperCase()}
-                      </div>
-                      <div className="tp-body-xs text-neutral-500 mt-1">
-                        {getCurrencyName(selectedCurrency)}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Info Banner */}
-                <div className="mb-8 p-4 rounded-lg bg-blue-500/10 border border-blue-500/30">
-                  <p className="tp-body-s text-blue-400 text-center">
-                    No refund will be available for cryptocurrency payments
-                  </p>
+                {/* Safe & Secure Badge */}
+                <div className="flex items-center justify-center gap-2 mb-6">
+                  <CheckCircle className="w-4 h-4 text-green-400" />
+                  <span className="tp-body-s text-neutral-400">
+                    Safe & secure checkout
+                  </span>
                 </div>
 
                 {/* Pay Button */}
                 <button
                   onClick={handlePay}
-                  disabled={paymentLoading || isLoading}
-                  className="btn button-primary w-full py-5 text-lg hover:bg-brand-300 hover:text-brand-600 flex items-center justify-center gap-2"
+                  disabled={isLoading || isProcessing}
+                  className="btn button-primary w-full hover:bg-brand-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  {paymentLoading ? (
+                  {isProcessing ? (
                     <>
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                      Creating Payment...
+                      <div className="h-6 w-6 animate-spin rounded-full border-4 border-solid border-white border-r-transparent"></div>
+                      Processing...
                     </>
                   ) : (
-                    'Continue to Payment'
+                    `Pay with ${selectedCurrency.name}`
                   )}
                 </button>
-
-                {/* Safe & Secure Badge */}
-                <div className="flex items-center justify-center gap-2 mt-6">
-                  <CheckCircle className="h-4 w-4 text-green-500" />
-                  <span className="tp-body-xs text-neutral-500">
-                    Safe & secure checkout powered by NOWPayments
-                  </span>
-                </div>
-              </div>
+              </>
             ) : (
               <>
                 {/* Deposit History */}
                 <div className="mb-6">
-                  <h2 className="tp-body font-semibold text-neutral-0 mb-2">
+                  <h2 className="tp-body font-bold text-white mb-2">
                     Deposit History
                   </h2>
                   <p className="tp-body-s text-neutral-400">
@@ -460,25 +397,26 @@ export default function DepositPage() {
                 </div>
 
                 {isLoadingHistory ? (
-                  <div className="text-center py-12 px-4">
+                  <div className="text-center py-12">
                     <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[rgb(var(--brand-400))] border-r-transparent"></div>
-                    <p className="tp-body-s text-neutral-400 mt-4">
+                    <p className="tp-body text-neutral-400 mt-4">
                       Loading transactions...
                     </p>
                   </div>
                 ) : transactions.length === 0 ? (
-                  <div className="text-center py-12 px-4">
+                  <div className="text-center py-12">
                     <History className="h-16 w-16 text-neutral-600 mx-auto mb-4" />
-                    <h3 className="tp-body font-semibold text-neutral-0 mb-2">
+                    <h3 className="tp-body font-semibold text-white mb-2">
                       No Deposits Yet
                     </h3>
-                    <p className="tp-body-s text-neutral-400 mb-6">
+                    <p className="tp-body-s text-neutral-400 py-5">
                       You haven't made any deposits yet.
                     </p>
                     <button
                       onClick={() => setActiveTab("deposit")}
-                      className="btn button-primary px-6 py-3 hover:bg-brand-300 hover:text-brand-600"
+                      className="btn button-primary px-6 py-3"
                     >
+                       
                       Make Your First Deposit
                     </button>
                   </div>
@@ -487,20 +425,20 @@ export default function DepositPage() {
                     {transactions.map((transaction) => (
                       <div
                         key={transaction.id}
-                        className="p-6 bg-neutral-800/50 rounded-lg hover:bg-neutral-800/70 transition-colors border border-neutral-700"
+                        className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg hover:bg-neutral-700/50 transition-colors"
                       >
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                           {/* Left Side - Icon and Details */}
-                          <div className="flex items-start sm:items-center gap-4 flex-1 min-w-0">
-                            <div className="w-12 h-12 bg-green-500/10 rounded-full flex items-center justify-center flex-shrink-0">
-                              <CheckCircle className="h-6 w-6 text-green-400" />
+                          <div className="flex items-start sm:items-center gap-3 sm:gap-4 flex-1 min-w-0">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-500/10 rounded-full flex items-center justify-center flex-shrink-0">
+                              <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-green-400" />
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex flex-wrap items-center gap-2">
-                                <h3 className="tp-body font-semibold text-neutral-0">
+                                <h3 className="text-white font-semibold tp-body">
                                   Deposit
                                 </h3>
-                                <span className="px-3 py-1 bg-green-500/10 text-green-400 tp-body-xs font-medium rounded-full border border-green-500/20">
+                                <span className="px-2 py-0.5 bg-green-500/10 text-green-400 tp-body-xs font-medium rounded-full border border-green-500/20">
                                   Completed
                                 </span>
                               </div>
@@ -519,10 +457,10 @@ export default function DepositPage() {
 
                           {/* Right Side - Amount */}
                           <div className="text-left sm:text-right pl-[52px] sm:pl-0 flex-shrink-0">
-                            <div className="tp-headline-s font-bold text-green-400">
+                            <div className="text-2xl font-bold text-green-400">
                               +${transaction.amount.toFixed(2)}
                             </div>
-                            <div className="tp-body-xs text-neutral-500 mt-1">
+                            <div className="tp-body-s text-neutral-500 mt-1">
                               Balance: ${transaction.balance_after.toFixed(2)}
                             </div>
                           </div>
@@ -533,7 +471,6 @@ export default function DepositPage() {
                 )}
               </>
             )}
-          </div>
         </div>
       </div>
     </div>

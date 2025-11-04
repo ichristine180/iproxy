@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import { Button } from "@/components/ui/button";
+
 import {
   LayoutDashboard,
   Server,
@@ -69,27 +69,37 @@ export const AdminLayout = ({
       {/* Sidebar */}
       <aside
         className={`
-        w-64 ${sidebarCollapsed ? "lg:w-20" : "lg:w-64"} rounded-xl flex flex-col h-full
-        fixed lg:relative z-50 lg:z-auto
+        w-64 ${
+          sidebarCollapsed ? "lg:w-20" : "lg:w-64"
+        } rounded-xl flex flex-col
+        ${mobileMenuOpen ? "fixed" : "hidden lg:flex"} lg:relative z-50 lg:z-auto
         transition-all duration-300 ease-in-out
-        ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
-        left-0 lg:left-auto top-0 lg:top-auto
-        m-2 lg:m-0
+        ${
+          mobileMenuOpen
+            ? "translate-x-0"
+            : "-translate-x-full lg:translate-x-0"
+        }
+        inset-y-2 left-2 lg:inset-y-0 lg:left-0 lg:h-full p-6
       `}
         style={{ border: '1px solid rgb(64, 64, 64)', background: 'rgb(23, 23, 23)' }}
       >
         {/* Logo Section */}
-        <div className="h-16 flex items-center justify-between px-4 rounded-t-xl flex-shrink-0" style={{ borderBottom: '1px solid rgb(64, 64, 64)' }}>
+        <div
+          className="flex items-center justify-between px-4 rounded-t-xl flex-shrink-0 p-3"
+          style={{ borderBottom: '1px solid rgb(64, 64, 64)' }}
+        >
           <div className="flex items-center gap-2 overflow-hidden">
             <Shield className="h-6 w-6 text-[rgb(var(--brand-400))] flex-shrink-0" />
-            <h2
-              className={`font-bold text-white text-lg whitespace-nowrap ${sidebarCollapsed ? "lg:hidden" : ""}`}
+            <span
+              className={`text-brand-400 font-bold tp-sub-headline whitespace-nowrap ${
+                sidebarCollapsed ? "lg:hidden" : ""
+              }`}
             >
               Admin Panel
-            </h2>
+            </span>
           </div>
           {/* Toggle button for desktop, Close button for mobile */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-shrink-0">
             <button
               onClick={() => setMobileMenuOpen(false)}
               className="lg:hidden text-neutral-400 hover:text-white transition-colors"
@@ -103,7 +113,9 @@ export const AdminLayout = ({
               title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             >
               <ChevronLeft
-                className={`h-5 w-5 transition-transform ${sidebarCollapsed ? "rotate-180" : ""}`}
+                className={`h-5 w-5 transition-transform ${
+                  sidebarCollapsed ? "rotate-180" : ""
+                }`}
               />
             </button>
           </div>
@@ -114,6 +126,7 @@ export const AdminLayout = ({
           {/* Dashboard */}
           <Link
             href="/admin"
+            onClick={() => setMobileMenuOpen(false)}
             className={`flex items-center gap-3 ${sidebarCollapsed ? "lg:justify-center" : ""} px-4 py-2.5 mx-2 rounded-lg transition-colors ${
               pathname === "/admin"
                 ? "bg-neutral-800 text-white"
@@ -123,7 +136,7 @@ export const AdminLayout = ({
           >
             <LayoutDashboard className="h-5 w-5 flex-shrink-0" />
             <span
-              className={`text-sm font-medium lg:${sidebarCollapsed ? "hidden" : "block"}`}
+              className={`tp-body-s ${sidebarCollapsed ? "lg:hidden" : ""}`}
             >
               Dashboard
             </span>
@@ -151,6 +164,7 @@ export const AdminLayout = ({
               <div className="mt-1">
                 <Link
                   href="/admin/users"
+                  onClick={() => setMobileMenuOpen(false)}
                   className={`flex items-center gap-3 ${sidebarCollapsed ? "lg:justify-center" : ""} px-4 py-2.5 mx-2 rounded-lg transition-colors ${
                     pathname.includes("/admin/users")
                       ? "bg-neutral-800 text-white"
@@ -160,7 +174,7 @@ export const AdminLayout = ({
                 >
                   <Users className="h-4 w-4 flex-shrink-0" />
                   <span
-                    className={`text-sm lg:${sidebarCollapsed ? "hidden" : "block"}`}
+                    className={`tp-body-s ${sidebarCollapsed ? "lg:hidden" : ""}`}
                   >
                     Users
                   </span>
@@ -168,6 +182,7 @@ export const AdminLayout = ({
 
                 <Link
                   href="/admin/orders"
+                  onClick={() => setMobileMenuOpen(false)}
                   className={`flex items-center gap-3 ${sidebarCollapsed ? "lg:justify-center" : ""} px-4 py-2.5 mx-2 rounded-lg transition-colors ${
                     pathname.includes("/admin/orders")
                       ? "bg-neutral-800 text-white"
@@ -177,7 +192,7 @@ export const AdminLayout = ({
                 >
                   <Package className="h-4 w-4 flex-shrink-0" />
                   <span
-                    className={`text-sm lg:${sidebarCollapsed ? "hidden" : "block"}`}
+                    className={`tp-body-s ${sidebarCollapsed ? "lg:hidden" : ""}`}
                   >
                     Orders
                   </span>
@@ -185,6 +200,7 @@ export const AdminLayout = ({
 
                 <Link
                   href="/admin/plans"
+                  onClick={() => setMobileMenuOpen(false)}
                   className={`flex items-center gap-3 ${sidebarCollapsed ? "lg:justify-center" : ""} px-4 py-2.5 mx-2 rounded-lg transition-colors ${
                     pathname.includes("/admin/plans")
                       ? "bg-neutral-800 text-white"
@@ -194,7 +210,7 @@ export const AdminLayout = ({
                 >
                   <Tags className="h-4 w-4 flex-shrink-0" />
                   <span
-                    className={`text-sm lg:${sidebarCollapsed ? "hidden" : "block"}`}
+                    className={`tp-body-s ${sidebarCollapsed ? "lg:hidden" : ""}`}
                   >
                     Plans
                   </span>
@@ -202,6 +218,7 @@ export const AdminLayout = ({
 
                 <Link
                   href="/admin/processing-orders"
+                  onClick={() => setMobileMenuOpen(false)}
                   className={`flex items-center gap-3 ${sidebarCollapsed ? "lg:justify-center" : ""} px-4 py-2.5 mx-2 rounded-lg transition-colors ${
                     pathname.includes("/admin/processing-orders")
                       ? "bg-neutral-800 text-white"
@@ -211,7 +228,7 @@ export const AdminLayout = ({
                 >
                   <Clock className="h-4 w-4 flex-shrink-0" />
                   <span
-                    className={`text-sm lg:${sidebarCollapsed ? "hidden" : "block"}`}
+                    className={`tp-body-s ${sidebarCollapsed ? "lg:hidden" : ""}`}
                   >
                     Processing Orders
                   </span>
@@ -219,6 +236,7 @@ export const AdminLayout = ({
 
                 <Link
                   href="/admin/quota"
+                  onClick={() => setMobileMenuOpen(false)}
                   className={`flex items-center gap-3 ${sidebarCollapsed ? "lg:justify-center" : ""} px-4 py-2.5 mx-2 rounded-lg transition-colors ${
                     pathname.includes("/admin/quota")
                       ? "bg-neutral-800 text-white"
@@ -228,7 +246,7 @@ export const AdminLayout = ({
                 >
                   <Database className="h-4 w-4 flex-shrink-0" />
                   <span
-                    className={`text-sm lg:${sidebarCollapsed ? "hidden" : "block"}`}
+                    className={`tp-body-s ${sidebarCollapsed ? "lg:hidden" : ""}`}
                   >
                     Quota
                   </span>
@@ -236,6 +254,7 @@ export const AdminLayout = ({
 
                 <Link
                   href="/admin/stoplist"
+                  onClick={() => setMobileMenuOpen(false)}
                   className={`flex items-center gap-3 ${sidebarCollapsed ? "lg:justify-center" : ""} px-4 py-2.5 mx-2 rounded-lg transition-colors ${
                     pathname.includes("/admin/stoplist")
                       ? "bg-neutral-800 text-white"
@@ -245,7 +264,7 @@ export const AdminLayout = ({
                 >
                   <Ban className="h-4 w-4 flex-shrink-0" />
                   <span
-                    className={`text-sm lg:${sidebarCollapsed ? "hidden" : "block"}`}
+                    className={`tp-body-s ${sidebarCollapsed ? "lg:hidden" : ""}`}
                   >
                     Stoplist
                   </span>
@@ -259,12 +278,13 @@ export const AdminLayout = ({
         <div className="p-2" style={{ borderTop: '1px solid rgb(64, 64, 64)' }}>
           <Link
             href="/dashboard"
+            onClick={() => setMobileMenuOpen(false)}
             className={`flex items-center gap-3 ${sidebarCollapsed ? "lg:justify-center" : ""} px-4 py-2.5 rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-800/50 transition-colors`}
             title="Back to Dashboard"
           >
             <LayoutDashboard className="h-5 w-5 flex-shrink-0" />
             <span
-              className={`text-sm font-medium lg:${sidebarCollapsed ? "hidden" : "block"}`}
+              className={`tp-body-s ${sidebarCollapsed ? "lg:hidden" : ""}`}
             >
               Back to Dashboard
             </span>
@@ -275,53 +295,47 @@ export const AdminLayout = ({
       {/* Main Content */}
       <div className="flex-1 flex flex-col gap-2 md:gap-4 h-full overflow-hidden">
         {/* Header */}
-        <header className="h-16 backdrop-blur rounded-xl flex-shrink-0" style={{ border: '1px solid rgb(64, 64, 64)', background: 'rgba(23, 23, 23, 0.8)' }}>
-          <div className="h-full flex items-center justify-between px-3 md:px-6">
+        <header className="backdrop-blur rounded-xl p-2 py-3" style={{ border: '1px solid rgb(64, 64, 64)', background: 'rgba(23, 23, 23, 0.8)' }}>
+          <div className="h-full flex items-center justify-between px-2 lg:px-6 gap-2 lg:gap-3">
             {/* Left Section */}
-            <div className="flex items-center gap-2 md:gap-3">
+            <div className="flex items-center gap-2 lg:gap-3 min-w-0">
               {/* Mobile Menu Toggle */}
               <button
                 onClick={() => setMobileMenuOpen(true)}
-                className="lg:hidden p-2 text-neutral-400 hover:text-white transition-colors"
+                className="lg:hidden p-2 text-neutral-400 hover:text-white transition-colors flex-shrink-0"
               >
                 <Menu className="h-5 w-5" />
               </button>
 
               <a
                 href="/dashboard"
-                style={{
-                  border: "1px solid #73a3f1ff",
-                }}
-                className="flex items-center gap-2 px-3 md:px-4 py-2 text-[rgb(var(--brand-400))] rounded-lg hover:bg-[rgb(var(--brand-400))]/20 transition-colors"
+                className="hidden lg:flex whitespace-nowrap h-40 gap-10 tp-body-s px-24 py-16 rounded-8 focus-within:outline-brand-100 border-brand-400 text-brand-400 hover:text-neutral-0 hover:bg-brand-300 active:bg-brand-700 active:text-neutral-0 border-2 border-solid hover:border-transparent active:border-transparent cursor-pointer select-none items-center justify-center gap-[10px] font-bold outline-offset-2 transition-all md:rounded-8 whitespace-nowrap flex-row"
               >
                 <User className="h-4 w-4" />
-                <span className="text-xs md:text-sm font-medium hidden sm:inline">
+                <span className="text-xs md:text-sm font-medium">
                   User Dashboard
                 </span>
               </a>
             </div>
 
             {/* Right Section */}
-            <div className="flex items-center gap-2 md:gap-4">
-              {/* Admin Badge */}
-              <div className="hidden sm:flex items-center gap-2 bg-red-500/10 text-red-400 px-3 py-1.5 rounded-lg border border-red-500/20">
-                <Shield className="h-4 w-4" />
-                <span className="text-xs font-semibold">ADMIN</span>
-              </div>
+            <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
+             
 
               {/* User Menu */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-2 text-white hover:text-neutral-300 transition-colors">
-                    <span className="text-xs md:text-sm hidden md:block">
-                      {user?.email?.split("@")[0]}
+                 <button className="flex items-center gap-2 text-white hover:text-neutral-300 transition-colors">
+                      <span className="tp-body-bold mr-3">
+                      Hi, {user?.email?.split("@")[0]}
                     </span>
                     <Avatar className="h-7 w-7 md:h-8 md:w-8">
-                      <AvatarFallback className="bg-red-500 text-white text-md font-semibold">
+                      <AvatarFallback className="bg-[rgb(var(--brand-600))] text-white text-md font-semibold">
                         {getUserInitials()}
                       </AvatarFallback>
                     </Avatar>
                   </button>
+                 
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuItem onClick={handleLogout}>

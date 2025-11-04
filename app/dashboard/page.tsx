@@ -581,7 +581,7 @@ function DashboardPageContent() {
   // Order Details View
   if (currentView === "details" && selectedOrder) {
     return (
-      <div className="p-6">
+      <div className="p-3 sm:p-6">
         {/* Back Button */}
         <button
           onClick={() => setCurrentView("list")}
@@ -607,7 +607,13 @@ function DashboardPageContent() {
         )}
         {/* Product Information Card - Only show for active orders */}
         {orderProxies.length > 0 && selectedOrder.status === "active" && (
-          <div className="bg-neutral-800/50 border border-neutral-700 rounded-xl p-6 mt-6">
+          <div
+            className="rounded-xl p-4 sm:p-6 mt-6"
+            style={{
+              border: "1px solid rgb(64, 64, 64)",
+              background: "rgb(23, 23, 23)",
+            }}
+          >
             <h3 className="tp-body-bold  text-white mb-4">
               Product information
             </h3>
@@ -782,7 +788,7 @@ function DashboardPageContent() {
               <h4 className=" tp-body mb-4">
                 Rotation link
               </h4>
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <input
                   type="text"
                   value={orderProxies[selectedProxyIndex]?.iproxy_change_url}
@@ -792,7 +798,7 @@ function DashboardPageContent() {
                 <Button
                   onClick={handleRotateIP}
                   disabled={isRotatingIP}
-                  className="bg-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-400))] text-white px-6 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-400))] text-white px-6 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                 >
                   {isRotatingIP ? (
                     <>
@@ -811,15 +817,21 @@ function DashboardPageContent() {
           </div>
         )}
         {/* Order Information Card */}
-        <div className="bg-neutral-800/50 border border-neutral-700 rounded-xl p-6 mt-15">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-semibold text-white">
+        <div
+          className="rounded-xl p-4 sm:p-6 mt-15"
+          style={{
+            border: "1px solid rgb(64, 64, 64)",
+            background: "rgb(23, 23, 23)",
+          }}
+        >
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
+            <h2 className="text-xl sm:text-2xl font-semibold text-white">
               Order #{selectedOrder.id.slice(0, 6)} information
             </h2>
             {selectedOrder.status === "active" && (
               <Button
                 onClick={() => handleExtendOrder(selectedOrder)}
-                className="bg-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-200))] text-white"
+                className="bg-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-200))] text-white w-full sm:w-auto"
               >
                 Extend
               </Button>
@@ -827,14 +839,14 @@ function DashboardPageContent() {
           </div>
 
           <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-neutral-400">Product</span>
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-1 sm:gap-0">
+              <span className="text-neutral-400 text-sm">Product</span>
               <span className="text-white font-medium">
                 {selectedOrder.plan.name}
               </span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-neutral-400">Status</span>
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-1 sm:gap-0">
+              <span className="text-neutral-400 text-sm">Status</span>
               <span className="inline-flex px-3 py-1 rounded-full text-sm border capitalize">
                 {(() => {
                   const status = selectedOrder.status;
@@ -861,9 +873,9 @@ function DashboardPageContent() {
                 })()}
               </span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-neutral-400">Expire date</span>
-              <span className="text-white font-medium">
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-1 sm:gap-0">
+              <span className="text-neutral-400 text-sm">Expire date</span>
+              <span className="text-white font-medium text-sm">
                 {new Date(selectedOrder.expires_at).toLocaleString("en-US", {
                   year: "numeric",
                   month: "2-digit",
@@ -875,8 +887,8 @@ function DashboardPageContent() {
                 })}
               </span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-neutral-400">Plan</span>
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-1 sm:gap-0">
+              <span className="text-neutral-400 text-sm">Plan</span>
               <span className="text-white font-medium">
                 {(() => {
                   const startDate = new Date(selectedOrder.start_at);
@@ -894,20 +906,20 @@ function DashboardPageContent() {
                 })()}
               </span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-neutral-400">Location</span>
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-1 sm:gap-0">
+              <span className="text-neutral-400 text-sm">Location</span>
               <span className="text-white font-medium">
                 {orderProxies[selectedProxyIndex]?.location || "United States"}
               </span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-neutral-400">Quantity</span>
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-1 sm:gap-0">
+              <span className="text-neutral-400 text-sm">Quantity</span>
               <span className="text-white font-medium">1</span>
             </div>
 
             {/* Auto-renew toggle */}
-            <div className="flex justify-between items-center p-2 rounded">
-              <span className="text-neutral-400">Auto-renew</span>
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 p-2 rounded">
+              <span className="text-neutral-400 text-sm">Auto-renew</span>
               <div className="flex items-center gap-2">
                 <Switch
                   checked={autoRenew}
@@ -924,9 +936,9 @@ function DashboardPageContent() {
             </div>
 
             <div className="border-t border-neutral-800 pt-4">
-              <div className="flex justify-between items-center">
-                <span className="text-neutral-400">Final price</span>
-                <span className="text-white text-2xl font-bold">
+              <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+                <span className="text-neutral-400 text-sm">Final price</span>
+                <span className="text-white text-xl sm:text-2xl font-bold">
                   ${selectedOrder.total_amount.toFixed(2)}
                 </span>
               </div>
@@ -939,7 +951,7 @@ function DashboardPageContent() {
 
   // Orders List View
   return (
-    <div className="p-6">
+    <div className="p-3 sm:p-6">
       {/* Page Title */}
 
       <h1 className="tp-sub-headline text-neutral-0 pb-3">
@@ -1014,7 +1026,13 @@ function DashboardPageContent() {
 
       {/* Show plans if no active proxies */}
       {plans.length === 0 ? (
-        <div className="bg-neutral-900 rounded-xl p-12 border border-neutral-800 text-center">
+        <div
+          className="rounded-xl p-12 text-center"
+          style={{
+            border: "1px solid rgb(64, 64, 64)",
+            background: "rgb(23, 23, 23)",
+          }}
+        >
           <p className="tp-body text-neutral-400">
             No plans available. Please contact support.
           </p>
@@ -1022,8 +1040,14 @@ function DashboardPageContent() {
       ) : (
         <div className="space-y-8">
           {/* Proxy Selection Card */}
-          <div className="bg-neutral-900 rounded-xl p-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 bg-neutral-800/50 border border-neutral-700 rounded-xl p-6">
+          <div
+            className="rounded-xl p-2 sm:p-4"
+            style={{
+              border: "1px solid rgb(64, 64, 64)",
+              background: "rgb(23, 23, 23)",
+            }}
+          >
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8 bg-neutral-800/50 border border-neutral-700 rounded-xl p-3 sm:p-6">
               {/* Left Side - Plans List */}
               <div className="space-y-3">
                 {plans.map((plan) => {
@@ -1056,7 +1080,7 @@ function DashboardPageContent() {
                             handleBuyNow(plan.id);
                           }}
                           disabled={isCheckingQuota}
-                          className="whitespace-nowrap h-40 gap-10 tp-body-s px-24 py-16 rounded-8 focus-within:outline-brand-100 border-brand-400 text-brand-400 hover:text-neutral-0 hover:bg-brand-300 active:bg-brand-700 active:text-neutral-0 border-2 border-solid hover:border-transparent active:border-transparent flex cursor-pointer select-none items-center justify-center gap-[10px] font-bold outline-offset-2 transition-all md:rounded-8 whitespace-nowrap flex-row"
+                          className="whitespace-nowrap h-40 gap-10 tp-body-s px-12 sm:px-24 py-16 rounded-8 focus-within:outline-brand-100 border-brand-400 text-brand-400 hover:text-neutral-0 hover:bg-brand-300 active:bg-brand-700 active:text-neutral-0 border-2 border-solid hover:border-transparent active:border-transparent flex cursor-pointer select-none items-center justify-center gap-[10px] font-bold outline-offset-2 transition-all md:rounded-8 whitespace-nowrap flex-row"
                         >
                           {isCheckingQuota ? "..." : "Buy now"}
                         </button>
@@ -1067,7 +1091,7 @@ function DashboardPageContent() {
               </div>
 
               {/* Right Side - Selected Plan Details */}
-              <div className="p-6 border-l border-neutral-700">
+              <div className="p-4 sm:p-6 border-t lg:border-t-0 lg:border-l border-neutral-700">
                 {selectedPlan ? (
                   <>
                     <h3 className="tp-body mb-2 text-neutral-0">
@@ -1161,7 +1185,7 @@ function DashboardPageContent() {
                 background: "rgb(23, 23, 23)",
               }}
             >
-              <div className="p-6">
+              <div className="p-3 sm:p-6">
                 <h3 className="tp-body font-semibold text-neutral-0 mb-4">
                   Most Recent
                 </h3>
@@ -1173,14 +1197,14 @@ function DashboardPageContent() {
                     Search by order ID or IP
                   </label>
                   <div className="relative">
-                    <Search className="absolute right-1 top-1/3 -translate-y-1/2 h-5 w-5 text-neutral-500 pointer-events-none" />
+                    <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-500 pointer-events-none" />
                     <input
                       id="search-input"
                       type="text"
                       placeholder="Search"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full h-12 pl-12 pr-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder:text-neutral-500 focus:outline-none focus:border-[rgb(var(--brand-400))] focus:ring-1 focus:ring-[rgb(var(--brand-400))] transition-colors"
+                      className="w-full h-12 pl-3 pr-10 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder:text-neutral-500 focus:outline-none focus:border-[rgb(var(--brand-400))] focus:ring-1 focus:ring-[rgb(var(--brand-400))] transition-colors"
                     />
                   </div>
                 </div>
@@ -1193,20 +1217,20 @@ function DashboardPageContent() {
               ) : (
                 <>
                   {/* Orders Table */}
-                  <div className="overflow-x-auto p-6">
-                    <table className="w-full">
+                  <div className="overflow-x-auto p-3 sm:p-6">
+                    <table className="w-full min-w-[600px]">
                       <thead>
                         <tr className="border-b border-neutral-800">
-                          <th className="text-left py-3 px-4 text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+                          <th className="text-left py-3 px-2 sm:px-4 text-xs font-semibold text-neutral-500 uppercase tracking-wider">
                             ID ↓
                           </th>
-                          <th className="text-left py-3 px-4 text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+                          <th className="text-left py-3 px-2 sm:px-4 text-xs font-semibold text-neutral-500 uppercase tracking-wider">
                             Product
                           </th>
-                          <th className="text-left py-3 px-4 text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+                          <th className="text-left py-3 px-2 sm:px-4 text-xs font-semibold text-neutral-500 uppercase tracking-wider">
                             Order date
                           </th>
-                          <th className="text-left py-3 px-4 text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+                          <th className="text-left py-3 px-2 sm:px-4 text-xs font-semibold text-neutral-500 uppercase tracking-wider">
                             Actions
                           </th>
                         </tr>
@@ -1237,13 +1261,13 @@ function DashboardPageContent() {
                               key={order.id}
                               className=" hover:bg-neutral-800/30 transition-colors"
                             >
-                              <td className="py-4 px-4 text-white text-sm font-medium">
+                              <td className="py-4 px-2 sm:px-4 text-white text-sm font-medium">
                                 #{order.id.slice(0, 6)}
                               </td>
-                              <td className="py-4 px-4 text-white text-sm">
+                              <td className="py-4 px-2 sm:px-4 text-white text-sm">
                                 {order.plan.name}
                               </td>
-                              <td className="py-4 px-4 text-white text-sm">
+                              <td className="py-4 px-2 sm:px-4 text-white text-sm">
                                 <div className="font-medium">
                                   {formattedDate}
                                 </div>
@@ -1251,7 +1275,7 @@ function DashboardPageContent() {
                                   {formattedTime}
                                 </div>
                               </td>
-                              <td className="py-4 px-4">
+                              <td className="py-4 px-2 sm:px-4">
                                 <div className="flex items-center gap-2">
                                   <button
                                     onClick={() =>
@@ -1327,8 +1351,8 @@ function DashboardPageContent() {
                   </div>
 
                   {/* Pagination */}
-                  <div className="flex items-center justify-between px-6 py-5 border-t border-neutral-800">
-                    <select className="px-15 py-15 bg-neutral-800/80 border border-neutral-700 rounded-xl text-white text-sm font-medium focus:outline-none focus:border-[rgb(var(--brand-400))] cursor-pointer">
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-3 sm:px-6 py-4 sm:py-5 border-t border-neutral-800">
+                    <select className="w-full sm:w-auto px-4 sm:px-5 py-2 bg-neutral-800/80 border border-neutral-700 rounded-xl text-white text-sm font-medium focus:outline-none focus:border-[rgb(var(--brand-400))] cursor-pointer">
                       <option>5 per page</option>
                       <option>10 per page</option>
                       <option>20 per page</option>

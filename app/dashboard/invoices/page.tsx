@@ -143,10 +143,10 @@ export default function InvoicesPage() {
       },
        processing: {
         icon: Clock,
-        color: "text-green-700",
-        bgColor: "bg-yellow-800/10",
-        borderColor: "border-yellow-500/20",
-        label: "Proccessing",
+        color: "text-blue-400",
+        bgColor: "bg-blue-500/10",
+        borderColor: "border-blue-500/20",
+        label: "Processing",
       },
       expired: {
         icon: XCircle,
@@ -185,42 +185,28 @@ export default function InvoicesPage() {
       : orders.filter((order) => order.status === statusFilter);
 
   return (
-    <div className="bg-neutral-950 flex items-center justify-center p-2 sm:p-4 md:p-6">
-      <div className="w-full max-w-6xl mx-auto">
+    <div className="p-3 sm:p-6">
+      <div className="w-full">
         {/* Header */}
         <div className="mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-[rgb(var(--brand-400))] rounded-full flex items-center justify-center">
-                <FileText className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-white">
-                  Invoices
-                </h1>
-                <p className="text-sm text-neutral-400">
-                  View and download your order invoices
-                </p>
-              </div>
-            </div>
-          </div>
+          <h1 className="tp-sub-headline text-neutral-0 pb-3">Invoices</h1>
+          <p className="tp-body-s text-neutral-400 mb-4">
+            View and download your order invoices
+          </p>
 
           {/* Filter Tabs */}
-          <div
-            className="flex gap-2 overflow-x-auto pb-2"
-            style={{ scrollbarWidth: "thin" }}
-          >
+          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-transparent">
             {[
               { label: "All", value: "all" },
               { label: "Active", value: "active" },
               { label: "Pending", value: "pending" },
               { label: "Expired", value: "expired" },
-               { label: "Proccessing", value: "proccessing" },
+              { label: "Processing", value: "processing" },
             ].map((filter) => (
               <button
                 key={filter.value}
                 onClick={() => setStatusFilter(filter.value)}
-                className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${
+                className={`px-5 py-2 rounded-lg font-medium tp-body-s transition-colors whitespace-nowrap ${
                   statusFilter === filter.value
                     ? "bg-[rgb(var(--brand-400))] text-white"
                     : "bg-neutral-800 text-neutral-400 hover:text-white"
@@ -234,50 +220,52 @@ export default function InvoicesPage() {
 
         {/* Content */}
         <div
-          className="bg-neutral-900 rounded-2xl"
-          style={{ border: "1px solid rgb(64, 64, 64)" }}
+          className="rounded-xl"
+          style={{
+            border: "1px solid rgb(64, 64, 64)",
+            background: "rgb(23, 23, 23)",
+          }}
         >
-          <div className="p-4 sm:p-6 md:p-8">
+          <div className="p-5 sm:p-6">
             {isLoading ? (
               <div className="text-center py-12 px-4">
                 <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[rgb(var(--brand-400))] border-r-transparent"></div>
-                <p className="text-neutral-400 mt-4 text-sm sm:text-base">
+                <p className="text-neutral-400 mt-4 tp-body-s">
                   Loading invoices...
                 </p>
               </div>
             ) : filteredOrders.length === 0 ? (
               <div className="text-center py-12 px-4">
                 <FileText className="h-12 w-12 sm:h-16 sm:w-16 text-neutral-600 mx-auto mb-4" />
-                <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">
+                <h3 className="tp-body font-semibold text-white mb-2">
                   No Invoices Found
                 </h3>
-                <p className="text-sm sm:text-base text-neutral-400">
+                <p className="tp-body-s text-neutral-400">
                   {statusFilter === "all"
                     ? "You don't have any orders yet."
                     : `No ${statusFilter} orders found.`}
                 </p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {filteredOrders.map((order) => (
                   <div
                     key={order.id}
-                    className="p-4 sm:p-6 bg-neutral-800 rounded-xl hover:bg-neutral-800/70 transition-colors"
-                    style={{ border: "1px solid rgb(64, 64, 64)" }}
+                    className="p-3 sm:p-5 bg-neutral-800/50 rounded-xl hover:bg-neutral-800/70 transition-colors border border-neutral-700"
                   >
-                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 sm:gap-4">
                       {/* Left Side - Order Details */}
-                      <div className="flex-1 space-y-3">
+                      <div className="flex-1 space-y-2 sm:space-y-3">
                         {/* Header Row */}
-                        <div className="flex flex-wrap items-center gap-3">
-                          <h3 className="text-white font-semibold text-lg">
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                          <h3 className="text-white font-semibold tp-body">
                             {order.plan?.name || "Proxy Service"}
                           </h3>
                           {getStatusBadge(order.status)}
                         </div>
 
                         {/* Details Grid */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 tp-body-s">
                           <div className="flex items-center gap-2 text-neutral-400">
                             <Package className="h-4 w-4 flex-shrink-0" />
                             <span>
@@ -318,7 +306,7 @@ export default function InvoicesPage() {
                         </div>
 
                         {/* Invoice ID */}
-                        <div className="text-xs text-neutral-500">
+                        <div className="tp-body-s text-neutral-500">
                           Invoice #{order.id.slice(0, 8).toUpperCase()}
                         </div>
                       </div>
@@ -327,7 +315,7 @@ export default function InvoicesPage() {
                       <div className="flex flex-row sm:flex-col gap-2">
                         <button
                           onClick={() => handleDownloadInvoice(order.id)}
-                          className="flex-1 sm:flex-initial px-4 py-2 bg-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-500))] text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
+                          className="flex-1 sm:flex-initial px-4 py-2.5 bg-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-500))] text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2 tp-body-s"
                         >
                           <Download className="h-4 w-4" />
                           <span>Download</span>

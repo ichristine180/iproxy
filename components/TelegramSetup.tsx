@@ -135,9 +135,6 @@ You will receive notifications for:
             </svg>
             Telegram Notifications
           </h3>
-          <p className="text-sm text-neutral-400">
-            Get instant notifications on Telegram
-          </p>
         </div>
 
         {/* Status Badge */}
@@ -160,7 +157,7 @@ You will receive notifications for:
       {status === "connected" ? (
         <div className="space-y-4">
           {/* Connected Info */}
-          <div className="bg-neutral-900 rounded-lg p-4">
+          <div className="bg-neutral-900 rounded-lg p-8">
             <p className="text-sm text-neutral-300 mb-2">
               Your Telegram account is connected
             </p>
@@ -223,19 +220,6 @@ You will receive notifications for:
             </svg>
             Open Telegram Bot
           </a>
-
-          {/* Additional Info */}
-          <p className="text-xs text-neutral-500 text-center">
-            Don't have Telegram?{" "}
-            <a
-              href="https://telegram.org/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[rgb(var(--brand-400))] hover:underline"
-            >
-              Download it here
-            </a>
-          </p>
         </div>
       )}
     </div>

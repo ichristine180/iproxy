@@ -5,13 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { User, Lock, Bell, Loader2, CheckCircle2, ToggleLeft, ToggleRight } from "lucide-react";
@@ -84,8 +78,7 @@ export default function ProfilePage() {
         setName(data.profile.name || "");
         setPhone(data.profile.phone || "");
 
-        // Set notification preferences from profile
-        console.log(data.profile);
+   
 
         setNotifications({
           user_id: data.profile.id,
@@ -257,21 +250,21 @@ export default function ProfilePage() {
           <TabsList className="grid w-full grid-cols-3 !bg-neutral-900 border border-neutral-700 rounded-xl p-1.5 mb-6">
             <TabsTrigger
               value="profile"
-              className="tp-body-s !bg-transparent data-[state=active]:!bg-[rgb(var(--brand-300))] data-[state=active]:!text-neutral-900  data-[state=active]:font-semibold text-neutral-500 hover:text-neutral-300 rounded-lg py-3 transition-all"
+              className="tp-body-s !bg-transparent data-[state=active]:!bg-[rgb(var(--brand-400))] data-[state=active]:!text-neutral-900  data-[state=active]:font-semibold text-neutral-500 hover:text-neutral-300 rounded-lg  transition-all"
             >
-              <User className="h-4 w-4 mr-2" />
+              <User className="h-4 w-4" />
               Profile
             </TabsTrigger>
             <TabsTrigger
               value="password"
-              className="tp-body-s !bg-transparent data-[state=active]:!bg-[rgb(var(--brand-300))] data-[state=active]:!text-neutral-900 data-[state=active]:!shadow-lg data-[state=active]:!shadow-[rgb(var(--brand-300))]/40 data-[state=active]:font-semibold text-neutral-500 hover:text-neutral-300 rounded-lg py-3 transition-all"
+              className="tp-body-s !bg-transparent data-[state=active]:!bg-[rgb(var(--brand-400))] data-[state=active]:!text-neutral-900 data-[state=active]:!shadow-lg data-[state=active]:!shadow-[rgb(var(--brand-300))]/40 data-[state=active]:font-semibold text-neutral-500 hover:text-neutral-300 rounded-lg py-3 transition-all"
             >
               <Lock className="h-4 w-4 mr-2" />
               Password
             </TabsTrigger>
             <TabsTrigger
               value="notifications"
-              className="tp-body-s !bg-transparent data-[state=active]:!bg-[rgb(var(--brand-300))] data-[state=active]:!text-neutral-900 data-[state=active]:!shadow-lg data-[state=active]:!shadow-[rgb(var(--brand-300))]/40 data-[state=active]:font-semibold text-neutral-500 hover:text-neutral-300 rounded-lg py-3 transition-all"
+              className="tp-body-s !bg-transparent data-[state=active]:!bg-[rgb(var(--brand-400))] data-[state=active]:!text-neutral-900 data-[state=active]:!shadow-lg data-[state=active]:!shadow-[rgb(var(--brand-300))]/40 data-[state=active]:font-semibold text-neutral-500 hover:text-neutral-300 rounded-lg py-3 transition-all"
             >
               <Bell className="h-4 w-4 mr-2" />
               Notifications

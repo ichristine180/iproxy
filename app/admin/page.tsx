@@ -3,13 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
   Loader2,
   Server,
   Package,
@@ -105,33 +98,33 @@ export default function AdminDashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="flex items-center justify-center h-full py-20">
+        <Loader2 className="w-8 h-8 animate-spin text-[rgb(var(--brand-400))]" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-4 md:space-y-6">
+    <div className="space-y-6">
       {/* Welcome Section */}
       <div>
-        <h1 className="text-2xl md:text-3xl font-bold">
-          Welcome to Admin Panel
+        <h1 className="tp-sub-headline text-neutral-0 pb-3">
+          Admin Dashboard
         </h1>
-        <p className="text-sm text-muted-foreground mt-1">
+        <p className="tp-body-s text-neutral-400">
           Monitor and manage your proxy service
         </p>
       </div>
 
       {/* Low Quota Warning */}
       {stats.availableQuota < 3 && (
-        <div className="p-4 bg-yellow-500/10 rounded-xl flex items-center gap-3" style={{ border: '1px solid rgba(234, 179, 8, 0.2)' }}>
+        <div className="p-4 bg-yellow-500/10 rounded-xl flex items-center gap-3 border border-yellow-500/20">
           <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0" />
           <div>
-            <p className="text-sm font-medium text-yellow-600">
+            <p className="tp-body-s font-medium text-yellow-600">
               Low Quota Warning
             </p>
-            <p className="text-xs text-yellow-600/80 mt-1">
+            <p className="tp-body-s text-yellow-600/80 mt-1">
               Available quota is below 3. Please add more connections to the
               quota pool.
             </p>
@@ -140,12 +133,18 @@ export default function AdminDashboardPage() {
       )}
 
       {/* Stats Grid */}
-      <div className="grid gap-3 md:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-        <Card className="shadow-sm bg-card/50 backdrop-blur">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+      <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+        <div
+          className="rounded-xl p-4 sm:p-5"
+          style={{
+            border: "1px solid rgb(64, 64, 64)",
+            background: "rgb(23, 23, 23)",
+          }}
+        >
+          <div className="flex flex-row items-center justify-between space-y-0 mb-3">
+            <h3 className="tp-body-s font-medium text-neutral-400">
               Available Quota
-            </CardTitle>
+            </h3>
             <div
               className={`h-8 w-8 rounded-lg flex items-center justify-center ${
                 stats.availableQuota < 3
@@ -161,248 +160,245 @@ export default function AdminDashboardPage() {
                 }`}
               />
             </div>
-          </CardHeader>
-          <CardContent>
-            <div
-              className={`text-2xl md:text-3xl font-bold ${
-                stats.availableQuota < 3 ? "text-yellow-600" : ""
-              }`}
-            >
-              {stats.availableQuota}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {stats.availableQuota < 3
-                ? "Low quota - add more"
-                : "Connections available"}
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="shadow-sm bg-card/50 backdrop-blur">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+          </div>
+          <div
+            className={`text-2xl sm:text-3xl font-bold ${
+              stats.availableQuota < 3 ? "text-yellow-600" : "text-white"
+            }`}
+          >
+            {stats.availableQuota}
+          </div>
+          <p className="tp-body-s text-neutral-500 mt-1">
+            {stats.availableQuota < 3
+              ? "Low quota - add more"
+              : "Connections available"}
+          </p>
+        </div>
+        <div
+          className="rounded-xl p-4 sm:p-5"
+          style={{
+            border: "1px solid rgb(64, 64, 64)",
+            background: "rgb(23, 23, 23)",
+          }}
+        >
+          <div className="flex flex-row items-center justify-between space-y-0 mb-3">
+            <h3 className="tp-body-s font-medium text-neutral-400">Total Users</h3>
             <div className="h-8 w-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
               <Users className="h-4 w-4 text-blue-600" />
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl md:text-3xl font-bold">
-              {stats.totalUsers}
+          </div>
+          <div className="text-2xl sm:text-3xl font-bold text-white">
+            {stats.totalUsers}
+          </div>
+          <p className="tp-body-s text-neutral-500 mt-1">
+            Registered users
+          </p>
+        </div>
+        <div
+          className="rounded-xl p-4 sm:p-5"
+          style={{
+            border: "1px solid rgb(64, 64, 64)",
+            background: "rgb(23, 23, 23)",
+          }}
+        >
+          <div className="flex flex-row items-center justify-between space-y-0 mb-3">
+            <h3 className="tp-body-s font-medium text-neutral-400">Total Proxies</h3>
+            <div className="h-8 w-8 rounded-lg bg-[rgb(var(--brand-400))]/10 flex items-center justify-center">
+              <Server className="h-4 w-4 text-[rgb(var(--brand-400))]" />
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Registered users
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="shadow-sm bg-card/50 backdrop-blur">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Proxies</CardTitle>
-            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Server className="h-4 w-4 text-primary" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl md:text-3xl font-bold">
-              {stats.totalProxies}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {stats.activeProxies} active
-            </p>
-          </CardContent>
-        </Card>
-        <Card
-          className="shadow-sm bg-card/50 backdrop-blur cursor-pointer hover:shadow-md transition-shadow"
+          </div>
+          <div className="text-2xl sm:text-3xl font-bold text-white">
+            {stats.totalProxies}
+          </div>
+          <p className="tp-body-s text-neutral-500 mt-1">
+            {stats.activeProxies} active
+          </p>
+        </div>
+        <div
+          className="rounded-xl p-4 sm:p-5 cursor-pointer hover:bg-neutral-800/50 transition-all"
+          style={{
+            border: "1px solid rgb(64, 64, 64)",
+            background: "rgb(23, 23, 23)",
+          }}
           onClick={() => router.push('/admin/plans')}
         >
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Plans</CardTitle>
+          <div className="flex flex-row items-center justify-between space-y-0 mb-3">
+            <h3 className="tp-body-s font-medium text-neutral-400">Plans</h3>
             <div className="h-8 w-8 rounded-lg bg-orange-500/10 flex items-center justify-center">
               <Tags className="h-4 w-4 text-orange-600" />
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl md:text-3xl font-bold">
-              {stats.totalPlans}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {stats.activePlans} active
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="shadow-sm bg-card/50 backdrop-blur">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Stoplist</CardTitle>
+          </div>
+          <div className="text-2xl sm:text-3xl font-bold text-white">
+            {stats.totalPlans}
+          </div>
+          <p className="tp-body-s text-neutral-500 mt-1">
+            {stats.activePlans} active
+          </p>
+        </div>
+        <div
+          className="rounded-xl p-4 sm:p-5"
+          style={{
+            border: "1px solid rgb(64, 64, 64)",
+            background: "rgb(23, 23, 23)",
+          }}
+        >
+          <div className="flex flex-row items-center justify-between space-y-0 mb-3">
+            <h3 className="tp-body-s font-medium text-neutral-400">Stoplist</h3>
             <div className="h-8 w-8 rounded-lg bg-red-500/10 flex items-center justify-center">
               <Ban className="h-4 w-4 text-red-600" />
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl md:text-3xl font-bold">
-              {stats.stoplistCount}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Blocked connections
-            </p>
-          </CardContent>
-        </Card>
+          </div>
+          <div className="text-2xl sm:text-3xl font-bold text-white">
+            {stats.stoplistCount}
+          </div>
+          <p className="tp-body-s text-neutral-500 mt-1">
+            Blocked connections
+          </p>
+        </div>
 
         {stats.processingOrders > 0 && (
-          <Card
-            className="shadow-sm bg-card/50 backdrop-blur cursor-pointer hover:shadow-md transition-shadow"
-            style={{ border: '1px solid rgba(59, 130, 246, 0.2)' }}
+          <div
+            className="rounded-xl p-4 sm:p-5 cursor-pointer hover:bg-neutral-800/50 transition-all border border-blue-500/20 bg-blue-500/5"
             onClick={() => router.push("/admin/processing-orders")}
           >
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Processing Orders</CardTitle>
+            <div className="flex flex-row items-center justify-between space-y-0 mb-3">
+              <h3 className="tp-body-s font-medium text-neutral-400">Processing Orders</h3>
               <div className="h-8 w-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
                 <Clock className="h-4 w-4 text-blue-600" />
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl md:text-3xl font-bold text-blue-600">
-                {stats.processingOrders}
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Awaiting activation
-              </p>
-            </CardContent>
-          </Card>
+            </div>
+            <div className="text-2xl sm:text-3xl font-bold text-blue-600">
+              {stats.processingOrders}
+            </div>
+            <p className="tp-body-s text-neutral-500 mt-1">
+              Awaiting activation
+            </p>
+          </div>
         )}
       </div>
 
       {/* Quick Actions */}
-      <div className="grid gap-4 md:grid-cols-2">
-        {/* <Card
-          className="cursor-pointer hover:shadow-md transition-shadow"
-          onClick={() => router.push('/admin/connections')}
-        >
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Server className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <CardTitle>Manage Connections</CardTitle>
-                <CardDescription>
-                  Add, view, and remove proxy connections
-                </CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-        </Card> */}
-
+      <div className="grid gap-3 sm:gap-4 grid-cols-1 md:grid-cols-2">
         {stats.processingOrders > 0 && (
-          <Card
-            className="cursor-pointer hover:shadow-md transition-shadow bg-blue-500/5"
-            style={{ border: '1px solid rgba(59, 130, 246, 0.2)' }}
+          <div
+            className="rounded-xl p-4 sm:p-5 cursor-pointer hover:bg-blue-500/10 transition-all border border-blue-500/20 bg-blue-500/5"
             onClick={() => router.push("/admin/processing-orders")}
           >
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                  <Clock className="h-5 w-5 text-blue-600" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <CardTitle>Processing Orders</CardTitle>
-                    <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-600 text-white">
-                      {stats.processingOrders}
-                    </span>
-                  </div>
-                  <CardDescription>
-                    Activate orders awaiting provisioning
-                  </CardDescription>
-                </div>
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+                <Clock className="h-5 w-5 text-blue-600" />
               </div>
-            </CardHeader>
-          </Card>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="tp-body font-semibold text-white">Processing Orders</h3>
+                  <span className="px-2 py-0.5 rounded-full tp-body-s font-semibold bg-blue-600 text-white">
+                    {stats.processingOrders}
+                  </span>
+                </div>
+                <p className="tp-body-s text-neutral-400 mt-1">
+                  Activate orders awaiting provisioning
+                </p>
+              </div>
+            </div>
+          </div>
         )}
 
-        <Card
-          className="cursor-pointer hover:shadow-md transition-shadow"
+        <div
+          className="rounded-xl p-4 sm:p-5 cursor-pointer hover:bg-neutral-800/50 transition-all"
+          style={{
+            border: "1px solid rgb(64, 64, 64)",
+            background: "rgb(23, 23, 23)",
+          }}
           onClick={() => router.push("/admin/users")}
         >
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                <Users className="h-5 w-5 text-blue-600" />
-              </div>
-              <div>
-                <CardTitle>User Management</CardTitle>
-                <CardDescription>View and manage all users</CardDescription>
-              </div>
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+              <Users className="h-5 w-5 text-blue-600" />
             </div>
-          </CardHeader>
-        </Card>
+            <div className="flex-1 min-w-0">
+              <h3 className="tp-body font-semibold text-white">User Management</h3>
+              <p className="tp-body-s text-neutral-400 mt-1">View and manage all users</p>
+            </div>
+          </div>
+        </div>
 
-        <Card
-          className="cursor-pointer hover:shadow-md transition-shadow"
+        <div
+          className="rounded-xl p-4 sm:p-5 cursor-pointer hover:bg-neutral-800/50 transition-all"
+          style={{
+            border: "1px solid rgb(64, 64, 64)",
+            background: "rgb(23, 23, 23)",
+          }}
           onClick={() => router.push("/admin/stoplist")}
         >
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-red-500/10 flex items-center justify-center">
-                <Ban className="h-5 w-5 text-red-600" />
-              </div>
-              <div>
-                <CardTitle>Connection Stoplist</CardTitle>
-                <CardDescription>Manage blocked connections</CardDescription>
-              </div>
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-lg bg-red-500/10 flex items-center justify-center flex-shrink-0">
+              <Ban className="h-5 w-5 text-red-600" />
             </div>
-          </CardHeader>
-        </Card>
+            <div className="flex-1 min-w-0">
+              <h3 className="tp-body font-semibold text-white">Connection Stoplist</h3>
+              <p className="tp-body-s text-neutral-400 mt-1">Manage blocked connections</p>
+            </div>
+          </div>
+        </div>
 
-        <Card
-          className="cursor-pointer hover:shadow-md transition-shadow"
+        <div
+          className="rounded-xl p-4 sm:p-5 cursor-pointer hover:bg-neutral-800/50 transition-all"
+          style={{
+            border: "1px solid rgb(64, 64, 64)",
+            background: "rgb(23, 23, 23)",
+          }}
           onClick={() => router.push("/admin/quota")}
         >
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
-                <Database className="h-5 w-5 text-purple-600" />
-              </div>
-              <div>
-                <CardTitle>Quota Management</CardTitle>
-                <CardDescription>
-                  Manage available connection quota
-                </CardDescription>
-              </div>
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-lg bg-purple-500/10 flex items-center justify-center flex-shrink-0">
+              <Database className="h-5 w-5 text-purple-600" />
             </div>
-          </CardHeader>
-        </Card>
+            <div className="flex-1 min-w-0">
+              <h3 className="tp-body font-semibold text-white">Quota Management</h3>
+              <p className="tp-body-s text-neutral-400 mt-1">
+                Manage available connection quota
+              </p>
+            </div>
+          </div>
+        </div>
 
-        <Card
-          className="cursor-pointer hover:shadow-md transition-shadow"
+        <div
+          className="rounded-xl p-4 sm:p-5 cursor-pointer hover:bg-neutral-800/50 transition-all"
+          style={{
+            border: "1px solid rgb(64, 64, 64)",
+            background: "rgb(23, 23, 23)",
+          }}
           onClick={() => router.push("/admin/orders")}
         >
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-green-500/10 flex items-center justify-center">
-                <Package className="h-5 w-5 text-green-600" />
-              </div>
-              <div>
-                <CardTitle>Order Management</CardTitle>
-                <CardDescription>View and track all orders</CardDescription>
-              </div>
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-lg bg-green-500/10 flex items-center justify-center flex-shrink-0">
+              <Package className="h-5 w-5 text-green-600" />
             </div>
-          </CardHeader>
-        </Card>
+            <div className="flex-1 min-w-0">
+              <h3 className="tp-body font-semibold text-white">Order Management</h3>
+              <p className="tp-body-s text-neutral-400 mt-1">View and track all orders</p>
+            </div>
+          </div>
+        </div>
 
-        <Card
-          className="cursor-pointer hover:shadow-md transition-shadow"
+        <div
+          className="rounded-xl p-4 sm:p-5 cursor-pointer hover:bg-neutral-800/50 transition-all"
+          style={{
+            border: "1px solid rgb(64, 64, 64)",
+            background: "rgb(23, 23, 23)",
+          }}
           onClick={() => router.push("/admin/plans")}
         >
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-orange-500/10 flex items-center justify-center">
-                <Tags className="h-5 w-5 text-orange-600" />
-              </div>
-              <div>
-                <CardTitle>Plan Management</CardTitle>
-                <CardDescription>Create and manage subscription plans</CardDescription>
-              </div>
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-lg bg-orange-500/10 flex items-center justify-center flex-shrink-0">
+              <Tags className="h-5 w-5 text-orange-600" />
             </div>
-          </CardHeader>
-        </Card>
+            <div className="flex-1 min-w-0">
+              <h3 className="tp-body font-semibold text-white">Plan Management</h3>
+              <p className="tp-body-s text-neutral-400 mt-1">Create and manage subscription plans</p>
+            </div>
+          </div>
+        </div>
 
         {/* <Card
           className="cursor-pointer hover:shadow-md transition-shadow"

@@ -109,6 +109,7 @@ export const DashboardLayout = ({
   const [walletBalance, setWalletBalance] = useState<number>(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+console.log(mobileMenuOpen);
 
   useEffect(() => {
     fetchPlans();
@@ -163,7 +164,10 @@ export const DashboardLayout = ({
       {mobileMenuOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={() => setMobileMenuOpen(false)}
+          onClick={() => {
+            console.log("Overlay clicked");
+            setMobileMenuOpen(false);
+          }}
         />
       )}
 
@@ -173,7 +177,7 @@ export const DashboardLayout = ({
         w-64 ${
           sidebarCollapsed ? "lg:w-20" : "lg:w-64"
         } rounded-xl flex flex-col
-        fixed lg:relative z-50 lg:z-auto
+        ${mobileMenuOpen ? "fixed" : "hidden lg:flex"} lg:relative z-50 lg:z-auto
         transition-all duration-300 ease-in-out
         ${
           mobileMenuOpen
@@ -193,23 +197,7 @@ export const DashboardLayout = ({
           style={{ borderBottom: "1px solid rgb(64, 64, 64)" }}
         >
           <a href="/" className="flex items-center gap-2 overflow-hidden">
-            <div className="relative flex-shrink-0">
-              <div className="w-7 h-7 bg-[rgb(var(--brand-400))] rounded-lg flex items-center justify-center">
-                <svg
-                  className="w-4 h-4 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 10V3L4 14h7v7l9-11h-7z"
-                  />
-                </svg>
-              </div>
-            </div>
+           
             <span
               className={`text-brand-400 font-bold tp-sub-headline whitespace-nowrap ${
                 sidebarCollapsed ? "lg:hidden" : ""
@@ -221,7 +209,10 @@ export const DashboardLayout = ({
           {/* Toggle button for desktop, Close button for mobile */}
           <div className="flex items-center gap-2 flex-shrink-0">
             <button
-              onClick={() => setMobileMenuOpen(false)}
+              onClick={() => {
+                console.log("Close button clicked");
+                setMobileMenuOpen(false);
+              }}
               className="lg:hidden text-neutral-400 hover:text-white transition-colors"
               title="Close menu"
             >
@@ -246,6 +237,10 @@ export const DashboardLayout = ({
           {/* Dashboard */}
           <Link
             href="/dashboard"
+            onClick={() => {
+              console.log("Dashboard link clicked");
+              setMobileMenuOpen(false);
+            }}
             className={`flex items-center gap-3 ${
               sidebarCollapsed ? "lg:justify-center" : ""
             } px-4 py-2.5 mx-2 rounded-lg transition-colors ${
@@ -266,6 +261,7 @@ export const DashboardLayout = ({
           {/* Invoices */}
           <Link
             href="/dashboard/invoices"
+            onClick={() => setMobileMenuOpen(false)}
             className={`flex items-center gap-3 ${
               sidebarCollapsed ? "lg:justify-center" : ""
             } px-4 py-2.5 mx-2 rounded-lg transition-colors ${
@@ -288,6 +284,7 @@ export const DashboardLayout = ({
           {/* Deposit history */}
           <Link
             href="/dashboard/deposit"
+            onClick={() => setMobileMenuOpen(false)}
             className={`flex items-center gap-3 ${
               sidebarCollapsed ? "lg:justify-center" : ""
             } px-4 py-2.5 mx-2 rounded-lg transition-colors ${
@@ -340,6 +337,7 @@ export const DashboardLayout = ({
                     <Link
                       key={channelInfo.id}
                       href={`/checkout?plan=${channelInfo.id}`}
+                      onClick={() => setMobileMenuOpen(false)}
                       className={`flex items-center gap-3 ${
                         sidebarCollapsed ? "lg:justify-center" : ""
                       } px-4 py-2.5 mx-2 rounded-lg transition-colors ${
@@ -376,19 +374,22 @@ export const DashboardLayout = ({
             background: "rgba(23, 23, 23, 0.8)",
           }}
         >
-          <div className="h-full flex items-center justify-between px-3 md:px-6 gap-3">
+          <div className="h-full flex items-center justify-between px-2 lg:px-6 gap-2 lg:gap-3">
             {/* Left Section */}
-            <div className="flex items-center gap-3 md:gap-3 min-w-0">
+            <div className="flex items-center gap-3 lg:gap-3 min-w-0">
               {/* Mobile Menu Toggle */}
               <button
-                onClick={() => setMobileMenuOpen(true)}
+                onClick={() => {
+                  console.log("Menu button clicked, opening sidebar");
+                  setMobileMenuOpen(true);
+                }}
                 className="lg:hidden p-2 text-neutral-400 hover:text-white transition-colors flex-shrink-0"
               >
                 <Menu className="h-5 w-5" />
               </button>
               <a
                 href="/dashboard/profile"
-                className="whitespace-nowrap h-40 gap-10 tp-body-s px-24 py-16 rounded-8 focus-within:outline-brand-100 border-brand-400 text-brand-400 hover:text-neutral-0 hover:bg-brand-300 active:bg-brand-700 active:text-neutral-0 border-2 border-solid hover:border-transparent active:border-transparent flex cursor-pointer select-none items-center justify-center gap-[10px] font-bold outline-offset-2 transition-all md:rounded-8 whitespace-nowrap flex-row"
+                className="hidden lg:flex whitespace-nowrap h-40 gap-10 tp-body-s px-24 py-16 rounded-8 focus-within:outline-brand-100 border-brand-400 text-brand-400 hover:text-neutral-0 hover:bg-brand-300 active:bg-brand-700 active:text-neutral-0 border-2 border-solid hover:border-transparent active:border-transparent cursor-pointer select-none items-center justify-center gap-[10px] font-bold outline-offset-2 transition-all md:rounded-8 whitespace-nowrap flex-row"
               >
                 <User className="h-4 w-4" />
                 <span className="text-xs md:text-sm font-medium">
@@ -397,7 +398,7 @@ export const DashboardLayout = ({
               </a>
               <a
                 href="/dashboard/deposit"
-                className="whitespace-nowrap h-40 gap-10 tp-body-s px-24 py-16 rounded-8 focus-within:outline-brand-100 border-brand-400 text-brand-400 hover:text-neutral-0 hover:bg-brand-300 active:bg-brand-700 active:text-neutral-0 border-2 border-solid hover:border-transparent active:border-transparent flex cursor-pointer select-none items-center justify-center gap-[10px] font-bold outline-offset-2 transition-all md:rounded-8 whitespace-nowrap flex-row"
+                className="hidden lg:flex whitespace-nowrap h-40 gap-10 tp-body-s px-24 py-16 rounded-8 focus-within:outline-brand-100 border-brand-400 text-brand-400 hover:text-neutral-0 hover:bg-brand-300 active:bg-brand-700 active:text-neutral-0 border-2 border-solid hover:border-transparent active:border-transparent cursor-pointer select-none items-center justify-center gap-[10px] font-bold outline-offset-2 transition-all md:rounded-8 whitespace-nowrap flex-row"
               >
                 <DollarSign className="h-4 w-4" />
                 <span className="text-xs md:text-sm font-medium">Deposit</span>
@@ -407,8 +408,8 @@ export const DashboardLayout = ({
             {/* Right Section */}
             <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
               {/* Credits */}
-              <div className="balance-container mr-5 content-primary">
-                <span className="tp-body-s text-center text-neutral-0">
+              <div className="balance-container mr-2 lg:mr-5 content-primary">
+                <span className="tp-body-s text-center text-neutral-0 hidden lg:flex lg:inline">
                   Credits:{" "}
                 </span>
                 <span className="tp-headline-s text-neutral-0">
@@ -419,16 +420,17 @@ export const DashboardLayout = ({
               {/* User Menu */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-2 text-white hover:text-neutral-300 transition-colors flex-shrink-0">
-                    <span className="tp-body-bold d-none d-md-inline mr-3">
+                   <button className="flex items-center gap-2 text-white hover:text-neutral-300 transition-colors">
+                      <span className="tp-body-bold mr-3">
                       Hi, {user?.email?.split("@")[0]}
                     </span>
-                    <Avatar className="h-7 w-7 md:h-8 md:w-8 flex-shrink-0">
+                    <Avatar className="h-7 w-7 md:h-8 md:w-8">
                       <AvatarFallback className="bg-[rgb(var(--brand-600))] text-white text-md font-semibold">
                         {getUserInitials()}
                       </AvatarFallback>
                     </Avatar>
                   </button>
+                 
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuItem onClick={handleLogout}>
