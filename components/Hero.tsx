@@ -9,142 +9,86 @@ const Hero = () => {
       <div className="my-auto flex flex-col inner-spacing-responsive lg:mx-auto lg:max-w-[940px]">
         {/* Main Headline */}
         <div className="flex flex-col inner-spacing-md">
-          <div
-            className="relative flex flex-wrap justify-center items-center inner-spacing-xs self-center transition-opacity duration-700
-  max-sm:grid max-sm:grid-cols-2 max-sm:gap-6 max-sm:w-full"
-          >
-            {/* Global Coverage */}
-            <div className="flex flex-col items-center group cursor-default">
-              <div className="w-14 h-14 sm:w-16 sm:h-16  bg-brand-600 rounded-2xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-[rgb(var(--brand-500))]/30">
-                <svg
-                  className="w-7 h-7 sm:w-8 sm:h-8 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  strokeWidth={2}
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  {/* Flag outline */}
-                  <rect x="2" y="4" width="20" height="16" rx="1" />
+       <div
+  className="relative flex flex-wrap justify-center items-center gap-10 sm:gap-14 transition-opacity duration-700 w-full"
+>
+  {/* Global Coverage */}
+  <div className="flex flex-col items-center text-center group cursor-default">
+    <div className="w-14 h-14 sm:w-16 sm:h-16 bg-brand-600 rounded-2xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-[rgb(var(--brand-500))]/30">
+      <svg
+        className="w-7 h-7 sm:w-8 sm:h-8 text-white"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+        strokeWidth={2}
+      >
+        <rect x="2" y="4" width="20" height="16" rx="1" />
+        <line x1="2" y1="7.2" x2="22" y2="7.2" />
+        <line x1="2" y1="10.4" x2="22" y2="10.4" />
+        <line x1="2" y1="13.6" x2="22" y2="13.6" />
+        <line x1="2" y1="16.8" x2="22" y2="16.8" />
+        <rect x="2" y="4" width="8" height="7.2" fill="currentColor" stroke="none" />
+        <g fill="white" stroke="none">
+          <circle cx="3.5" cy="5.5" r="0.7" />
+          <circle cx="5.5" cy="5.5" r="0.7" />
+          <circle cx="7.5" cy="5.5" r="0.7" />
+          <circle cx="4.5" cy="7" r="0.7" />
+          <circle cx="6.5" cy="7" r="0.7" />
+          <circle cx="8.5" cy="7" r="0.7" />
+          <circle cx="3.5" cy="8.5" r="0.7" />
+          <circle cx="5.5" cy="8.5" r="0.7" />
+          <circle cx="7.5" cy="8.5" r="0.7" />
+        </g>
+      </svg>
+    </div>
+    <p className="text-white text-xl sm:text-2xl md:text-3xl font-bold mb-1">USA</p>
+    <p className="tp-body-s font-medium leading-[20px] text-neutral-0">IPs located in the US</p>
+  </div>
 
-                  {/* Stripes */}
-                  <line x1="2" y1="7.2" x2="22" y2="7.2" />
-                  <line x1="2" y1="10.4" x2="22" y2="10.4" />
-                  <line x1="2" y1="13.6" x2="22" y2="13.6" />
-                  <line x1="2" y1="16.8" x2="22" y2="16.8" />
+  {/* IP Pool */}
+  <div className="flex flex-col items-center text-center group cursor-default">
+    <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-2xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-emerald-500/30">
+      <svg className="w-7 h-7 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"
+        />
+      </svg>
+    </div>
+    <p className="text-white text-xl sm:text-2xl md:text-3xl font-bold mb-1">3M+</p>
+    <p className="tp-body-s font-medium leading-[20px] text-neutral-0">IP Addresses</p>
+  </div>
 
-                  {/* Canton (stars area) */}
-                  <rect
-                    x="2"
-                    y="4"
-                    width="8"
-                    height="7.2"
-                    fill="currentColor"
-                    stroke="none"
-                  />
+  {/* Uptime */}
+  <div className="flex flex-col items-center text-center group cursor-default">
+    <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-purple-500 to-purple-700 rounded-2xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-purple-500/30">
+      <svg className="w-7 h-7 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+      </svg>
+    </div>
+    <p className="text-white text-xl sm:text-2xl md:text-3xl font-bold mb-1">99.9%</p>
+    <p className="tp-body-s font-medium leading-[20px] text-neutral-0">Uptime SLA</p>
+  </div>
 
-                  {/* Stars (now clearly visible) */}
-                  <g fill="white" stroke="none">
-                    {/* Row 1 */}
-                    <circle cx="3.5" cy="5.5" r="0.7" />
-                    <circle cx="5.5" cy="5.5" r="0.7" />
-                    <circle cx="7.5" cy="5.5" r="0.7" />
+  {/* Anonymous */}
+  <div className="flex flex-col items-center text-center group cursor-default">
+    <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-orange-500 to-orange-700 rounded-2xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-orange-500/30">
+      <svg className="w-7 h-7 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+        />
+      </svg>
+    </div>
+    <p className="text-white text-xl sm:text-2xl md:text-3xl font-bold mb-1">100%</p>
+    <p className="tp-body-s font-medium leading-[20px] text-neutral-0">Anonymous</p>
+  </div>
+</div>
 
-                    {/* Row 2 */}
-                    <circle cx="4.5" cy="7" r="0.7" />
-                    <circle cx="6.5" cy="7" r="0.7" />
-                    <circle cx="8.5" cy="7" r="0.7" />
-
-                    {/* Row 3 */}
-                    <circle cx="3.5" cy="8.5" r="0.7" />
-                    <circle cx="5.5" cy="8.5" r="0.7" />
-                    <circle cx="7.5" cy="8.5" r="0.7" />
-                  </g>
-                </svg>
-              </div>
-              <p className="text-white text-xl sm:text-2xl md:text-3xl font-bold mb-1">
-                USA
-              </p>
-              <p className="tp-body-s text-left font-medium leading-[20px] text-neutral-0">
-                IPs located in the US
-              </p>
-            </div>
-
-            {/* IP Pool */}
-            <div className="flex flex-col items-center group cursor-default">
-              <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-2xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-emerald-500/30">
-                <svg
-                  className="w-7 h-7 sm:w-8 sm:h-8 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"
-                  />
-                </svg>
-              </div>
-              <p className="text-white text-xl sm:text-2xl md:text-3xl font-bold mb-1">
-                3M+
-              </p>
-              <p className="tp-body-s text-left font-medium leading-[20px] text-neutral-0">
-                IP Addresses
-              </p>
-            </div>
-
-            {/* Uptime */}
-            <div className="flex flex-col items-center group cursor-default">
-              <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-purple-500 to-purple-700 rounded-2xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-purple-500/30">
-                <svg
-                  className="w-7 h-7 sm:w-8 sm:h-8 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 10V3L4 14h7v7l9-11h-7z"
-                  />
-                </svg>
-              </div>
-              <p className="text-white text-xl sm:text-2xl md:text-3xl font-bold mb-1">
-                99.9%
-              </p>
-              <p className="tp-body-s text-left font-medium leading-[20px] text-neutral-0">
-                Uptime SLA
-              </p>
-            </div>
-
-            {/* Anonymous */}
-            <div className="flex flex-col items-center group cursor-default">
-              <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-orange-500 to-orange-700 rounded-2xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-orange-500/30">
-                <svg
-                  className="w-7 h-7 sm:w-8 sm:h-8 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                  />
-                </svg>
-              </div>
-              <p className="text-white text-xl sm:text-2xl md:text-3xl font-bold mb-1">
-                100%
-              </p>
-              <p className="tp-body-s text-left font-medium leading-[20px] text-neutral-0">
-                Anonymous
-              </p>
-            </div>
-          </div>
           <div className="flex flex-col items-center">
             <h1
               className="headline tp-headline-m lg:tp-headline-xl mb-16 text-neutral-0"
