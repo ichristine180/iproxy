@@ -50,7 +50,7 @@ const Features = () => {
   const duplicatedFeatures = [...features, ...features];
 
   return (
-    <section className="flex flex-col inner-spacing-md content-sizer text-center section-spacing-sm">
+    <section className="flex flex-col inner-spacing-md content-sizer text-center">
       <div className="mx-auto max-w-[938px]">
         <h2 className="tp-headline-m lg:tp-headline-l text-neutral-0 mb-32 sm:mb-40 lg:mb-56">
           Why choose our proxies?
@@ -87,7 +87,7 @@ const Features = () => {
             {duplicatedFeatures.map((feature, index) => (
               <div
                 key={index}
-                className="w-[380px] bg-neutral-800 border border-neutral-700 rounded-xl p-8 hover:border-[rgb(var(--brand-400))]/30 transition-all duration-300 flex-shrink-0"
+                className="w-[380px] bg-neutral-800 border border-neutral-700 rounded-xl p-10 hover:border-[rgb(var(--brand-400))]/30 transition-all duration-300 flex-shrink-0"
               >
                 {/* Icon + Title inline */}
                 <div className="flex items-center gap-3 mb-3">
@@ -120,7 +120,7 @@ const Features = () => {
         }
 
         .animate-scroll {
-          animation: scroll 30s linear infinite;
+          animation: scroll 60s linear infinite;
         }
 
         .animate-scroll:hover {
