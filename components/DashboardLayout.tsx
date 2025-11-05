@@ -375,22 +375,24 @@ export const DashboardLayout = ({
               >
                 <Menu className="h-5 w-5" />
               </button>
-              <a
+              <Link
                 href="/dashboard/profile"
+                passHref
                 className="hidden lg:flex whitespace-nowrap h-40  tp-body-s px-24 py-16 hover:text-brand-600 rounded-8 focus-within:outline-brand-100 border-brand-400 text-brand-400 hover:bg-brand-300 active:bg-brand-700 active:text-neutral-0 border-2 border-solid hover:border-transparent active:border-transparent cursor-pointer select-none items-center justify-center  font-bold outline-offset-2 transition-all md:rounded-8 whitespace-nowrap flex-row"
               >
                 <User className="h-4 w-4" />
                 <span className="text-xs md:text-sm font-16-bold">
                   My Profile
                 </span>
-              </a>
-              <a
+              </Link>
+              <Link
+              passHref
                 href="/dashboard/deposit"
                 className="hidden lg:flex whitespace-nowrap h-40 tp-body-s px-24 py-16 rounded-8 focus-within:outline-brand-100 border-brand-400 text-brand-400 hover:text-brand-600 hover:bg-brand-300 active:bg-brand-700 active:text-neutral-0 border-2 border-solid hover:border-transparent active:border-transparent cursor-pointer select-none items-center justify-center  font-bold outline-offset-2 transition-all md:rounded-8 whitespace-nowrap flex-row"
               >
                 <DollarSign className="h-4 w-4" />
                 <span className="text-xs md:text-sm font-16-bold">Deposit</span>
-              </a>
+              </Link>
             </div>
 
             {/* Right Section */}
@@ -444,30 +446,33 @@ export const DashboardLayout = ({
                   {/* Menu Items */}
                   <div className="space-y-1 p-4">
                     {/* My Profile */}
-                    <DropdownMenuItem className="flex items-start gap-3 p-3 cursor-pointer hover:bg-transparent focus:bg-transparent">
-                      <User className="h-5 w-5 text-brand-600 mt-1 flex-shrink-0" />
-                      <div>
-                        <div className="font-semibold text-white text-base">
-                          My Profile
+                    <Link href="/dashboard/profile" passHref>
+                      <DropdownMenuItem className="flex items-start gap-3 p-3 cursor-pointer hover:bg-transparent focus:bg-transparent">
+                        <User className="h-5 w-5 text-brand-600 mt-1 flex-shrink-0" />
+                        <div>
+                          <div className="font-semibold text-white text-base">
+                            My Profile
+                          </div>
+                          <div className="text-sm text-neutral-400">
+                            Account settings and more
+                          </div>
                         </div>
-                        <div className="text-sm text-neutral-400">
-                          Account settings and more
-                        </div>
-                      </div>
-                    </DropdownMenuItem>
-
+                      </DropdownMenuItem>
+                    </Link>
                     {/* Deposit */}
-                    <DropdownMenuItem className="flex items-start gap-3 p-3 cursor-pointer hover:bg-transparent focus:bg-transparent">
-                      <Banknote className="h-5 w-5 text-brand-600 mt-1 flex-shrink-0" />
-                      <div>
-                        <div className="font-semibold text-white text-base">
-                          Deposit
+                    <Link href="/dashboard/deposit" passHref>
+                      <DropdownMenuItem className="flex items-start gap-3 p-3 cursor-pointer hover:bg-transparent focus:bg-transparent">
+                        <Banknote className="h-5 w-5 text-brand-600 mt-1 flex-shrink-0" />
+                        <div>
+                          <div className="font-semibold text-white text-base">
+                            Deposit
+                          </div>
+                          <div className="text-sm text-neutral-400">
+                            Add credits
+                          </div>
                         </div>
-                        <div className="text-sm text-neutral-400">
-                          Add credits
-                        </div>
-                      </div>
-                    </DropdownMenuItem>
+                      </DropdownMenuItem>
+                    </Link>
                   </div>
 
                   {/* Logout Button */}

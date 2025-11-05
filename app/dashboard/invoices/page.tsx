@@ -2,16 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
-import {
-  FileText,
-  Download,
-  Clock,
-  CheckCircle,
-  XCircle,
-  DollarSign,
-  Calendar,
-  Package,
-} from "lucide-react";
+import { FileText, Download, ListFilter } from "lucide-react";
 
 interface Payment {
   id: string;
@@ -47,19 +38,21 @@ export default function InvoicesPage() {
   const { toast } = useToast();
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [planFilter, setPlanFilter] = useState<string>("all");
+  const [dateRange, setDateRange] = useState({ from: "", to: "" });
+  const [filterBy, setFilterBy] = useState<string>("all");
+  const [quantityFilter, setQuantityFilter] = useState<string>("");
+  const [amountFilter, setAmountFilter] = useState<string>("");
+  const [paymentMethodFilter, setPaymentMethodFilter] = useState<string>("all");
 
   useEffect(() => {
     loadOrders();
-  }, [statusFilter]);
+  }, [planFilter]);
 
   const loadOrders = async () => {
     setIsLoading(true);
     try {
-      const url =
-        statusFilter === "all"
-          ? "/api/orders"
-          : `/api/orders?status=${statusFilter}`;
+      const url = "/api/orders";
       const response = await fetch(url);
       const data = await response.json();
 
@@ -125,108 +118,128 @@ export default function InvoicesPage() {
     });
   };
 
-  const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      active: {
-        icon: CheckCircle,
-        color: "text-green-400",
-        bgColor: "bg-green-500/10",
-        borderColor: "border-green-500/20",
-        label: "Active",
-      },
-      pending: {
-        icon: Clock,
-        color: "text-yellow-400",
-        bgColor: "bg-yellow-500/10",
-        borderColor: "border-yellow-500/20",
-        label: "Pending",
-      },
-       processing: {
-        icon: Clock,
-        color: "text-blue-400",
-        bgColor: "bg-blue-500/10",
-        borderColor: "border-blue-500/20",
-        label: "Processing",
-      },
-      expired: {
-        icon: XCircle,
-        color: "text-red-400",
-        bgColor: "bg-red-500/10",
-        borderColor: "border-red-500/20",
-        label: "Expired",
-      },
-      cancelled: {
-        icon: XCircle,
-        color: "text-gray-400",
-        bgColor: "bg-gray-500/10",
-        borderColor: "border-gray-500/20",
-        label: "Cancelled",
-      },
-
-    };
-
-    const config =
-      statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
-    const Icon = config.icon;
-
-    return (
-      <span
-        className={`px-2 py-0.5 ${config.bgColor} ${config.color} text-xs font-medium rounded-full border ${config.borderColor} flex items-center gap-1 w-fit`}
-      >
-        <Icon className="h-3 w-3" />
-        {config.label}
-      </span>
-    );
-  };
-
   const filteredOrders =
-    statusFilter === "all"
+    planFilter === "all"
       ? orders
-      : orders.filter((order) => order.status === statusFilter);
+      : orders.filter((order) => order.plan?.id === planFilter);
+
+  // Get unique plans from orders
+  const uniquePlans = Array.from(
+    new Map(
+      orders
+        .filter((order) => order.plan)
+        .map((order) => [order.plan!.id, order.plan!])
+    ).values()
+  );
 
   return (
     <div className="margin-12">
       <div className="w-full">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="tp-sub-headline text-neutral-0 pb-3">Invoices</h1>
-          <p className="tp-body-s text-neutral-400 mb-4">
-            View and download your order invoices
-          </p>
-
-          {/* Filter Tabs */}
-          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-transparent">
-            {[
-              { label: "All", value: "all" },
-              { label: "Active", value: "active" },
-              { label: "Pending", value: "pending" },
-              { label: "Expired", value: "expired" },
-              { label: "Processing", value: "processing" },
-            ].map((filter) => (
-              <button
-                key={filter.value}
-                onClick={() => setStatusFilter(filter.value)}
-                className={`px-5 py-2 rounded-lg font-medium tp-body-s transition-colors whitespace-nowrap ${
-                  statusFilter === filter.value
-                    ? "bg-[rgb(var(--brand-400))] text-white"
-                    : "bg-neutral-800/50 text-neutral-400 hover:text-white"
-                }`}
-              >
-                {filter.label}
-              </button>
-            ))}
-          </div>
+          <h1 className="tp-headline-s text-neutral-0 py-3">Invoices</h1>
         </div>
 
         {/* Content */}
-        <div
-          className="rounded-xl"
-          style={{
-            border: "1px solid rgb(64, 64, 64)",
-            background: "rgb(23, 23, 23)",
-          }}
-        >
+        <div className="card card-custom gutter-b">
           <div className="p-5 sm:p-6">
+            {/* Filter Section */}
+            <div className="mb-6 px-32">
+              {/* First Row: Date and Plan Filter */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-16">
+                {/* Select Date */}
+                <div className="space-y-2">
+                  <label className="tp-body font-medium text-white">
+                    Select date
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="2025/10/26 - 2025/10/26"
+                    className="w-full px-4 py-3 bg-neutral-800/50 border border-neutral-700 text-neutral-400 placeholder:text-neutral-500 rounded-sm tp-body-s focus:outline-none focus:border-[rgb(var(--brand-400))] transition-colors"
+                    onFocus={(e) => (e.target.type = "date")}
+                  />
+                </div>
+
+                {/* Filter by Plan */}
+                <div className="space-y-2">
+                  <label className="tp-body font-medium text-white">
+                    Filter by plan
+                  </label>
+                  <select
+                    value={planFilter}
+                    onChange={(e) => setPlanFilter(e.target.value)}
+                    className="w-full px-4 py-3 bg-neutral-800/50 border border-neutral-700 text-neutral-400 rounded-sm tp-body-s focus:outline-none focus:border-[rgb(var(--brand-400))] transition-colors appearance-none cursor-pointer"
+                    style={{
+                      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239CA3AF'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                      backgroundRepeat: "no-repeat",
+                      backgroundPosition: "right 0.75rem center",
+                      backgroundSize: "1.25rem",
+                    }}
+                  >
+                    <option value="all">Show all</option>
+                    {uniquePlans.map((plan) => (
+                      <option key={plan.id} value={plan.id}>
+                        {plan.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Second Row: Quantity, Amount, Payment Method */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-12 py-3">
+                {/* Quantity */}
+                <div className="space-y-2">
+                  <label className="tp-body font-medium text-white">
+                    Quantity
+                  </label>
+                  <input
+                    type="number"
+                    value={quantityFilter}
+                    onChange={(e) => setQuantityFilter(e.target.value)}
+                    placeholder="Enter quantity"
+                    className="w-full px-4 py-3 bg-neutral-800/50 border border-neutral-700 text-neutral-400 placeholder:text-neutral-500 rounded-sm tp-body-s focus:outline-none focus:border-[rgb(var(--brand-400))] transition-colors"
+                  />
+                </div>
+
+                {/* Amount */}
+                <div className="space-y-2">
+                  <label className="tp-body font-medium text-white">
+                    Amount
+                  </label>
+                  <input
+                    type="number"
+                    value={amountFilter}
+                    onChange={(e) => setAmountFilter(e.target.value)}
+                    placeholder="Enter amount"
+                    className="w-full px-4 py-3 bg-neutral-800/50 border border-neutral-700 text-neutral-400 placeholder:text-neutral-500 rounded-sm tp-body-s focus:outline-none focus:border-[rgb(var(--brand-400))] transition-colors"
+                  />
+                </div>
+
+                {/* Payment Method */}
+                <div className="space-y-2">
+                  <label className="tp-body font-medium text-white">
+                    Payment method
+                  </label>
+                  <select
+                    value={paymentMethodFilter}
+                    onChange={(e) => setPaymentMethodFilter(e.target.value)}
+                    className="w-full px-4 py-3 bg-neutral-800/50 border border-neutral-700 text-neutral-400 rounded-sm tp-body-s focus:outline-none focus:border-[rgb(var(--brand-400))] transition-colors appearance-none cursor-pointer"
+                    style={{
+                      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239CA3AF'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                      backgroundRepeat: "no-repeat",
+                      backgroundPosition: "right 0.75rem center",
+                      backgroundSize: "1.25rem",
+                    }}
+                  >
+                    <option value="all">Show all</option>
+                    <option value="wallet">Wallet</option>
+                    <option value="crypto">Cryptocurrency</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
             {isLoading ? (
               <div className="text-center py-12 px-4">
                 <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[rgb(var(--brand-400))] border-r-transparent"></div>
@@ -241,89 +254,116 @@ export default function InvoicesPage() {
                   No Invoices Found
                 </h3>
                 <p className="tp-body-s text-neutral-400">
-                  {statusFilter === "all"
+                  {planFilter === "all"
                     ? "You don't have any orders yet."
-                    : `No ${statusFilter} orders found.`}
+                    : "No orders found for the selected plan."}
                 </p>
               </div>
             ) : (
-              <div className="space-y-3 sm:space-y-4">
-                {filteredOrders.map((order) => (
-                  <div
-                    key={order.id}
-                    className="p-3 sm:p-5 bg-neutral-800/50 rounded-xl hover:bg-neutral-800/50/70 transition-colors border border-neutral-700"
-                  >
-                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 sm:gap-4">
-                      {/* Left Side - Order Details */}
-                      <div className="flex-1 space-y-2 sm:space-y-3">
-                        {/* Header Row */}
-                        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                          <h3 className="text-white font-semibold tp-body">
-                            {order.plan?.name || "Proxy Service"}
-                          </h3>
-                          {getStatusBadge(order.status)}
-                        </div>
+              <div className="overflow-x-auto px-32">
+                <table className="w-full">
+                  <thead>
+                    <tr>
+                      <th className="text-left py-3 px-3 tp-body-s rounded-l-lg font-semibold text-neutral-0 bg-neutral-600">
+                        Invoice ID
+                      </th>
+                      <th className="text-left py-3 px-4 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
+                        Product
+                      </th>
+                      <th className="text-left py-3 px-4 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
+                        Status
+                      </th>
+                      <th className="text-left py-3 px-4 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
+                        Order Date
+                      </th>
+                      <th className="text-left py-3 px-4 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
+                        Amount
+                      </th>
+                      <th className="text-left py-3 px-4 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
+                        Expires
+                      </th>
+                      <th className="text-left py-3 px-4 tp-body-s rounded-r-lg font-semibold text-neutral-0 bg-neutral-600">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredOrders.map((order) => {
+                      const orderDate = new Date(order.created_at);
+                      const formattedDate = orderDate.toLocaleDateString(
+                        "en-US",
+                        {
+                          month: "short",
+                          day: "2-digit",
+                          year: "numeric",
+                        }
+                      );
+                      const formattedTime = orderDate.toLocaleTimeString(
+                        "en-US",
+                        {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          second: "2-digit",
+                          hour12: false,
+                        }
+                      );
 
-                        {/* Details Grid */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 tp-body-s">
-                          <div className="flex items-center gap-2 text-neutral-400">
-                            <Package className="h-4 w-4 flex-shrink-0" />
-                            <span>
-                              Quantity:{" "}
-                              <span className="text-white">{order.quantity}</span>
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2 text-neutral-400">
-                            <DollarSign className="h-4 w-4 flex-shrink-0" />
-                            <span>
-                              Amount:{" "}
-                              <span className="text-white">
-                                ${order.total_amount.toFixed(2)}{" "}
-                                {order.currency.toUpperCase()}
-                              </span>
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2 text-neutral-400">
-                            <Calendar className="h-4 w-4 flex-shrink-0" />
-                            <span>
-                              Order Date:{" "}
-                              <span className="text-white">
-                                {formatDate(order.created_at)}
-                              </span>
-                            </span>
-                          </div>
-                          {order.expires_at && (
-                            <div className="flex items-center gap-2 text-neutral-400">
-                              <Clock className="h-4 w-4 flex-shrink-0" />
-                              <span>
-                                Expires:{" "}
-                                <span className="text-white">
-                                  {formatDate(order.expires_at)}
-                                </span>
-                              </span>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Invoice ID */}
-                        <div className="tp-body-s text-neutral-500">
-                          Invoice #{order.id.slice(0, 8).toUpperCase()}
-                        </div>
-                      </div>
-
-                      {/* Right Side - Actions */}
-                      <div className="flex flex-row sm:flex-col gap-2">
-                        <button
-                          onClick={() => handleDownloadInvoice(order.id)}
-                          className="flex-1 sm:flex-initial px-4 py-2.5 bg-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-500))] text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2 tp-body-s"
+                      return (
+                        <tr
+                          key={order.id}
+                          className="hover:bg-neutral-800/50 transition-colors"
                         >
-                          <Download className="h-4 w-4" />
-                          <span>Download</span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                          <td className="py-4 px-4 tp-body-s text-neutral-400">
+                            #{order.id.slice(0, 8).toUpperCase()}
+                          </td>
+                          <td className="py-4 px-4 tp-body-s text-white">
+                            {order.plan?.name || "Proxy Service"}
+                          </td>
+                          <td className="py-4 px-4">
+                            <span
+                              className={`inline-flex px-3 py-1 rounded-full tp-body-s border capitalize ${
+                                order.status === "active"
+                                  ? "bg-green-500/10 text-green-400 border-green-500/20"
+                                  : order.status === "pending"
+                                  ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/20"
+                                  : order.status === "processing"
+                                  ? "bg-blue-500/10 text-blue-400 border-blue-500/20"
+                                  : order.status === "expired"
+                                  ? "bg-red-500/10 text-red-400 border-red-500/20"
+                                  : "bg-neutral-500/10 text-neutral-400 border-neutral-500/20"
+                              }`}
+                            >
+                              {order.status}
+                            </span>
+                          </td>
+                          <td className="py-4 px-4 text-white">
+                            <div>{formattedDate}</div>
+                            <div className="text-sm text-neutral-500">
+                              {formattedTime}
+                            </div>
+                          </td>
+                          <td className="py-4 px-4 text-white font-semibold">
+                            ${order.total_amount.toFixed(2)}
+                          </td>
+                          <td className="py-4 px-4 text-white text-sm">
+                            {order.expires_at
+                              ? formatDate(order.expires_at)
+                              : "-"}
+                          </td>
+                          <td className="py-4 px-4">
+                            <button
+                              onClick={() => handleDownloadInvoice(order.id)}
+                              className="p-2 text-neutral-400 hover:text-white transition-colors"
+                              title="Download Invoice"
+                            >
+                              <Download className="w-5 h-5" />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>

@@ -249,9 +249,6 @@ export default function ProfilePage() {
           <h1 className="tp-headline-s text-neutral-0 py-3">
             Profile Settings
           </h1>
-          <p className="tp-body-s text-neutral-400">
-            Manage your account settings and preferences
-          </p>
         </div>
 
         {/* Tabs */}
@@ -376,7 +373,6 @@ export default function ProfilePage() {
                 <h2 className="tp-body font-semibold text-neutral-0 mb-2">
                   Change Password
                 </h2>
-              
               </div>
               <div className="p-6">
                 <form onSubmit={handlePasswordChange} className="space-y-6">
@@ -393,7 +389,7 @@ export default function ProfilePage() {
                       value={currentPassword}
                       onChange={(e) => setCurrentPassword(e.target.value)}
                       placeholder="Enter your current password"
-                         className="form-control h-auto rounded-lg border-0 py-6 px-8 w-full"
+                      className="form-control h-auto rounded-lg border-0 py-6 px-8 w-full"
                       required
                     />
                   </div>
@@ -411,7 +407,7 @@ export default function ProfilePage() {
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       placeholder="Enter your new password"
-                       className="form-control h-auto rounded-lg border-0 py-6 px-8 w-full"
+                      className="form-control h-auto rounded-lg border-0 py-6 px-8 w-full"
                     />
                     <p className="tp-body-xs text-neutral-500">
                       Password must be at least 6 characters long
@@ -488,7 +484,6 @@ export default function ProfilePage() {
                     <h2 className="tp-body font-semibold text-neutral-0 mb-2">
                       Notification Preferences
                     </h2>
-                    
                   </div>
                   {notificationsSuccess && (
                     <span className="tp-body-s text-green-500 flex items-center gap-1">
