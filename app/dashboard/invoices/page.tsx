@@ -47,6 +47,7 @@ export default function InvoicesPage() {
   const [paymentMethodFilter, setPaymentMethodFilter] = useState<string>("all");
   const [itemsPerPage, setItemsPerPage] = useState<number>(5);
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     loadOrders();
@@ -192,7 +193,61 @@ export default function InvoicesPage() {
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [planFilter, startDate, endDate, quantityFilter, amountFilter, paymentMethodFilter]);
+  }, [
+    planFilter,
+    startDate,
+    endDate,
+    quantityFilter,
+    amountFilter,
+    paymentMethodFilter,
+  ]);
+
+  // Handle select all checkbox
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      const allIds = new Set(paginatedOrders.map((order) => order.id));
+      setSelectedOrders(allIds);
+    } else {
+      setSelectedOrders(new Set());
+    }
+  };
+
+  // Handle individual checkbox
+  const handleSelectOrder = (orderId: string, checked: boolean) => {
+    const newSelected = new Set(selectedOrders);
+    if (checked) {
+      newSelected.add(orderId);
+    } else {
+      newSelected.delete(orderId);
+    }
+    setSelectedOrders(newSelected);
+  };
+
+  // Check if all current page orders are selected
+  const isAllSelected =
+    paginatedOrders.length > 0 &&
+    paginatedOrders.every((order) => selectedOrders.has(order.id));
+
+  // Download selected invoices
+  const handleDownloadSelected = async () => {
+    if (selectedOrders.size === 0) {
+      toast({
+        title: "No invoices selected",
+        description: "Please select at least one invoice to download",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    for (const orderId of selectedOrders) {
+      await handleDownloadInvoice(orderId);
+    }
+
+    toast({
+      title: "Success",
+      description: `Downloaded ${selectedOrders.size} invoice(s)`,
+    });
+  };
 
   return (
     <div className="margin-12">
@@ -336,8 +391,16 @@ export default function InvoicesPage() {
                 <table className="w-full">
                   <thead>
                     <tr>
-                      <th className="text-left py-3 px-3 tp-body-s rounded-l-lg font-semibold text-neutral-0 bg-neutral-600">
-                        Invoice ID
+                      <th className="text-left py-3 px-8 tp-body-s rounded-l-lg font-semibold text-neutral-0 bg-neutral-600">
+                        <label className="flex items-center gap-3 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={isAllSelected}
+                            onChange={(e) => handleSelectAll(e.target.checked)}
+                            className="w-4 h-4 rounded border-neutral-600 bg-neutral-700 text-[rgb(var(--brand-400))] focus:ring-[rgb(var(--brand-400))] focus:ring-offset-0 cursor-pointer"
+                          />
+                          <span className="tp-body-s text-neutral-0 font-semibold ">Select all</span>
+                        </label>
                       </th>
                       <th className="text-left py-3 px-4 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
                         Product
@@ -385,9 +448,18 @@ export default function InvoicesPage() {
                           key={order.id}
                           className="hover:bg-neutral-800/50 transition-colors"
                         >
-                          <td className="py-4 px-4 tp-body-s text-neutral-400">
-                            #{order.id.slice(0, 8).toUpperCase()}
+                          <td className="py-4 px-4">
+                            <input
+                              type="checkbox"
+                              checked={selectedOrders.has(order.id)}
+                              onChange={(e) =>
+                                handleSelectOrder(order.id, e.target.checked)
+                              }
+                              className="w-4 h-4 rounded border-neutral-600 bg-neutral-700 text-[rgb(var(--brand-400))] focus:ring-[rgb(var(--brand-400))] focus:ring-offset-0 cursor-pointer"
+                            />{" "}
+                            <span className="text-neutral-0">#{order.id.slice(0, 8).toUpperCase()}</span>
                           </td>
+
                           <td className="py-4 px-4 tp-body-s text-white">
                             {order.plan?.name || "Proxy Service"}
                           </td>
@@ -437,23 +509,36 @@ export default function InvoicesPage() {
                   </tbody>
                 </table>
 
-                {/* Pagination */}
-                <div className="flex items-center justify-end px-32 gap-8 py-4">
-                  <select
-                    value={itemsPerPage}
-                    onChange={(e) => {
-                      setItemsPerPage(Number(e.target.value));
-                      setCurrentPage(1);
-                    }}
-                    className="py-12 px-12 bg-neutral-800 border border-neutral-700 rounded-sm text-white text-sm focus:outline-none focus:border-[rgb(var(--brand-400))]"
+                {/* Download Selected Button & Pagination */}
+                <div className="flex items-center justify-between  gap-8 py-4">
+                  {/* Download Selected Button */}
+                  <button
+                    onClick={handleDownloadSelected}
+                    disabled={selectedOrders.size === 0}
+                     className="btn button-primary px-15 py-3 hover:bg-brand-300 hover:text-brand-600 mt-8"
                   >
-                    <option value={5}>5 per page</option>
-                    <option value={10}>10 per page</option>
-                    <option value={20}>20 per page</option>
-                    <option value={50}>50 per page</option>
-                  </select>
-                  <div className="text-sm text-neutral-400">
-                    {startIndex + 1}-{Math.min(endIndex, totalItems)} of {totalItems}
+                    Download selected
+                  </button>
+
+                  {/* Pagination */}
+                  <div className="flex items-center gap-8">
+                    <select
+                      value={itemsPerPage}
+                      onChange={(e) => {
+                        setItemsPerPage(Number(e.target.value));
+                        setCurrentPage(1);
+                      }}
+                      className="py-12 px-12 bg-neutral-800 border border-neutral-700 rounded-sm text-white text-sm focus:outline-none focus:border-[rgb(var(--brand-400))]"
+                    >
+                      <option value={5}>5 per page</option>
+                      <option value={10}>10 per page</option>
+                      <option value={20}>20 per page</option>
+                      <option value={50}>50 per page</option>
+                    </select>
+                    <div className="text-sm text-neutral-400">
+                      {startIndex + 1}-{Math.min(endIndex, totalItems)} of{" "}
+                      {totalItems}
+                    </div>
                   </div>
                 </div>
               </div>
