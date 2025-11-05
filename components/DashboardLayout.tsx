@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,6 +36,7 @@ export const DashboardLayout = ({
   const { user, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [proxiesOpen, setProxiesOpen] = useState(true);
   const [channels, setChannels] = useState<any[]>([]);
   const [walletBalance, setWalletBalance] = useState<number>(0);
@@ -59,6 +60,7 @@ export const DashboardLayout = ({
       console.error("Failed to fetch plans:", error);
     }
   };
+
 
   const fetchWalletBalance = async () => {
     try {
@@ -85,6 +87,7 @@ export const DashboardLayout = ({
     }
     return "U";
   };
+
 
   return (
     <div className="h-screen flex w-full  p-2 gap-2 md:gap-4 bg-neutral-1000">
@@ -226,9 +229,9 @@ export const DashboardLayout = ({
                   <SidebarLink
                     key={channel.id}
                     href={`/checkout?plan=${channel.id}`}
-                    label={channel.name}
+                    label={`${channel.name} ${channel.pricing?channel.pricing[0].duration:''}`}
                     icon={Smartphone}
-                    isActive={pathname === `/dashboard/proxies/${channel.id}`}
+                    isActive={pathname === "/checkout" && searchParams.get("plan") === channel.id}
                     onClick={() => setMobileMenuOpen(false)}
                     sidebarCollapsed={sidebarCollapsed}
                     asideLeftPad={25}

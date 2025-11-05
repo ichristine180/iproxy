@@ -537,10 +537,10 @@ function CheckoutPageContent() {
                 </button>
               )}
             </div>
-            <div className="flex items-center justify-center sm:justify-end gap-2 sm:gap-3 mb-4 sm:mb-6">
+            <div className="flex items-center justify-center sm:justify-end gap-2 sm:gap-3 mb-4 sm:mb-6 py-3">
               <button
                 onClick={handleBackToDetails}
-                className={`gap-1.5 sm:gap-2 gap-1.5 sm:gap-2 px-2 sm:px-4 py-1.6 sm:py-2 border rounded-md transition-colors text-sm whitespace-nowrap ${
+                className={`gap-1.5 sm:gap-2 gap-1.5 sm:gap-2 px-2 sm:px-4 py-1.6 sm:py-2 border  transition-colors text-sm whitespace-nowrap ${
                   currentStep === 1 &&
                   "border-blue-400 bg-neutral-900 text-blue-400"
                 }`}
@@ -550,7 +550,7 @@ function CheckoutPageContent() {
               <ArrowRight className="!h-4 !w-10 sm:h-4 sm:w-4 text-neutral-300" />
               <button
                 onClick={() => currentStep === 2 && setCurrentStep(2)}
-                className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-1.6 sm:py-2 border rounded-md transition-colors text-sm whitespace-nowrap ${
+                className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-1.6 sm:py-2 border  transition-colors text-sm whitespace-nowrap ${
                   currentStep === 2 &&
                   "border-blue-400 bg-neutral-900 text-blue-400"
                 }`}
