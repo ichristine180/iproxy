@@ -58,7 +58,8 @@ type Duration = "daily" | "weekly" | "monthly" | "yearly";
 function CheckoutPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState<1 | 2>(1);
+  const [editingIpLoataiton, setEditingIpLoataiton] = useState(false);
   const [rotationMinutes, setRotationMinutes] = useState(0);
   const [durationQuantity, setDurationQuantity] = useState(1); // How many days/weeks/months/years
   const [duration, setDuration] = useState<Duration>();
@@ -280,6 +281,7 @@ function CheckoutPageContent() {
 
   const handleBackToDetails = () => {
     setCurrentStep(1);
+    setEditingIpLoataiton(true);
     setTimeout(() => {
       document
         .getElementById("order-details-section")
@@ -428,8 +430,8 @@ function CheckoutPageContent() {
           const selectedPlan = data.plans.find((p: Plan) => p.id === planId);
           if (selectedPlan) {
             setPlan(selectedPlan);
-            
-            setDuration(selectedPlan.pricing[0].duration)
+
+            setDuration(selectedPlan.pricing[0].duration);
           } else {
             console.error("Plan not found:", planId);
           }
@@ -451,7 +453,7 @@ function CheckoutPageContent() {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-full">
-          <Loader2 className="h-8 w-8 animate-spin text-[rgb(var(--brand-400))]" />
+          <Loader2 className="h-12 w-12 animate-spin text-[rgb(var(--neutral-400))]" />
         </div>
       </DashboardLayout>
     );
@@ -486,62 +488,79 @@ function CheckoutPageContent() {
       <div className="margin-12">
         {/* Header */}
         <div className="">
-          <h1 className="tp-sub-headline text-neutral-0 pb-3">{plan.name}</h1>
+          <div className="subheader">
+            <h1 className="tp-sub-headline text-neutral-0 pb-3 !text-[22px]">
+              {plan.name}
+            </h1>
+          </div>
           {/* Progress Steps */}
-          <div className="flex items-center justify-center sm:justify-end gap-2 sm:gap-3 mb-4 sm:mb-6">
-            <button
-              onClick={handleBackToDetails}
-              className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 border rounded-lg transition-colors ${
-                currentStep === 1
-                  ? "bg-neutral-800/50 border border-neutral-700 rounded-lg p-4"
-                  : "border-neutral-800 text-neutral-500 hover:text-white"
-              }`}
-            >
-              <span className="tp-body-bold text-neutral-0">1. Order details</span>
-            </button>
-            <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 text-neutral-600" />
-            <button
-              onClick={() => currentStep === 2 && setCurrentStep(2)}
-              className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 border rounded-lg transition-colors ${
-                currentStep === 2
-                  ? "border-neutral-700 bg-neutral-900 text-blue-400"
-                  : "border-neutral-800 text-neutral-500"
-              }`}
-            >
-              <span className="tp-body-bold">2. Payment</span>
-            </button>
+          <div className="flex items-center justify-space-between">
+            <div className="w-full">
+              {currentStep === 2 && (
+                <button
+                  type="button"
+                  onClick={handleBackToDetails}
+                  className="w-full flex text-brand-300"
+                >
+                  <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4 mt-1" />
+                  Back
+                </button>
+              )}
+            </div>
+            <div className="flex items-center justify-center sm:justify-end gap-2 sm:gap-3 mb-4 sm:mb-6">
+              <button
+                onClick={handleBackToDetails}
+                className={`gap-1.5 sm:gap-2 gap-1.5 sm:gap-2 px-2 sm:px-4 py-1.6 sm:py-2 border rounded-md transition-colors text-sm whitespace-nowrap ${
+                  currentStep === 1 &&
+                  "border-blue-400 bg-neutral-900 text-blue-400"
+                }`}
+              >
+                <span>1. Order details</span>
+              </button>
+              <ArrowRight className="!h-4 !w-10 sm:h-4 sm:w-4 text-neutral-300" />
+              <button
+                onClick={() => currentStep === 2 && setCurrentStep(2)}
+                className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-1.6 sm:py-2 border rounded-md transition-colors text-sm whitespace-nowrap ${
+                  currentStep === 2 &&
+                  "border-blue-400 bg-neutral-900 text-blue-400"
+                }`}
+              >
+                <span>2. Payment</span>
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Main Content */}
         <div className="flex flex-col lg:flex-row gap-2 sm:gap-6 bg-neutral-800/50 rounded-xl p-10 transition-all justify-between">
           {/* Left Section - Steps */}
-          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+          <div className="w-full lg:flex-1 space-y-4 sm:space-y-6 p-3">
             {/* Step 1: Order Details */}
-            <div
-              id="order-details-section"
-              className={`${
-                currentStep === 1
-                  ? "border-neutral-700"
-                  : "border-neutral-700/50"
-              }`}
-            >
-              <div className="flex items-center justify-between mb-3 sm:mb-4">
-                <h2 className="tp-body-bold text-neutral-0">
-                  Step 1: Order Details
-                </h2>
-                {currentStep === 2 && (
+            {currentStep === 1 && (
+              <div
+                id="order-details-section"
+                className={`${
+                  currentStep === 1
+                    ? "border-neutral-700"
+                    : "border-neutral-700/50"
+                }`}
+              >
+                <div className="flex items-center justify-between mb-3 sm:mb-4">
+                  <h4 className="tp-body-bold text-neutral-0 !text-[21.4px] !mb-10">
+                    Step 1: Order Details
+                  </h4>
+                  {/* {currentStep === 1 && (
                   <button
                     onClick={handleBackToDetails}
                     className="text-sm sm:text-base text-[rgb(var(--brand-400))] hover:text-[rgb(var(--brand-500))] transition-colors"
                   >
                     Edit
                   </button>
-                )}
-              </div>
+                )} */}
+                </div>
 
-              {/* Duration Selection */}
-              {/* <div className="mb-4 sm:mb-5">
+                {/* Duration Selection */}
+                {/* <div className="mb-4 sm:mb-5">
                 <h3 className="text-base sm:text-lg text-white mb-2 sm:mb-3">Select billing period</h3>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {durationOptions.map((option) => (
@@ -566,120 +585,105 @@ function CheckoutPageContent() {
                 </div>
               </div> */}
 
-              {/* Duration Quantity Selection */}
-              <div className="mb-4 sm:mb-5">
-                <h3 className="tp-body-s mb-8 sm:mb-3">
-                  How many{" "}
-                  {durationOptions
-                    .find((d) => d.value === duration)
-                    ?.labelPlural.toLowerCase()}
-                  ?
-                </h3>
-                <div className="flex items-center gap-3 sm:gap-3">
-                  <div className="flex-1 border-0 form-control h-auto px-8 rounded-lg">
-                    <span className="tp=body-bold text-white">
-                      {durationQuantity}{" "}
-                      {durationQuantity === 1
-                        ? durationOptions
-                            .find((d) => d.value === duration)
-                            ?.label.toLowerCase()
-                        : durationOptions
-                            .find((d) => d.value === duration)
-                            ?.labelPlural.toLowerCase()}
-                    </span>
-                  </div>
-                  <button
-                    onClick={handleDecrementDuration}
-                    disabled={currentStep === 2}
-                    className={`w-10 h-10 sm:w-10 sm:h-10 flex items-center justify-center bg-neutral-800/50 border-2 border-[rgb(var(--brand-800))] rounded-lg hover:bg-neutral-700 transition-colors ${
-                      currentStep === 2 ? "opacity-50 cursor-not-allowed" : ""
-                    }`}
-                  >
-                    <Minus className="h-3 w-3 sm:h-4 sm:w-4 text-[rgb(var(--brand-400))]" />
-                  </button>
-                  <button
-                    onClick={handleIncrementDuration}
-                    disabled={currentStep === 2}
-                    className={`w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center bg-neutral-800/50 border-2 border-[rgb(var(--brand-400))] rounded-lg hover:bg-neutral-700 transition-colors ${
-                      currentStep === 2 ? "opacity-50 cursor-not-allowed" : ""
-                    }`}
-                  >
-                    <Plus className="h-3 w-3 sm:h-4 sm:w-4 text-[rgb(var(--brand-400))]" />
-                  </button>
-                </div>
-              </div>
-
-              {/* IP Rotation Selection */}
-              <div className="py-6">
-                <h3 className="tp-body-s mb-8 sm:mb-3">
-                  Select IP rotation time
-                </h3>
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 py-2">
-                  {rotationOptions.map((option) => (
-                    <button
-                      key={option.value}
-                      onClick={() => setRotationMinutes(option.value)}
-                      disabled={currentStep === 2}
-                      className={`
-        relative flex flex-col items-center justify-center px-3 sm:px-4  rounded-lg border-2 
-        text-center transition-all duration-200 ease-in-out
-        ${
-          rotationMinutes === option.value
-            ? "border-[rgb(var(--brand-400))] bg-[rgb(var(--brand-400))]/10 text-white shadow-[0_0_10px_rgb(var(--brand-400))]"
-            : "border-neutral-700 bg-neutral-800/50 text-neutral-400 hover:border-neutral-600 hover:bg-neutral-700/50"
-        }
-        ${currentStep === 2 ? "opacity-50 cursor-not-allowed" : ""}
-      `}
-                    >
-                      <span
-                        className={`tp-body ${
-                          rotationMinutes === option.value
-                            ? "text-[rgb(var(--brand-400))]"
-                            : "text-brand-400"
-                        }`}
-                      >
-                        {option.label}
+                {/* Duration Quantity Selection */}
+                <div className="!mb-10 sm:mb-5">
+                  <h3 className="tp-body-s mb-8 sm:mb-3 ">
+                    How many{" "}
+                    {durationOptions
+                      .find((d) => d.value === duration)
+                      ?.labelPlural.toLowerCase()}
+                    ?
+                  </h3>
+                  <div className="flex items-center gap-3 sm:gap-3">
+                    <div className="flex-1 border border-neutral-700  h-[57.81px] px-8 rounded-md transition-colors flex items-center">
+                      <span className="tp=body-bold text-white">
+                        {durationQuantity}{" "}
+                        {durationQuantity === 1
+                          ? durationOptions
+                              .find((d) => d.value === duration)
+                              ?.label.toLowerCase()
+                          : durationOptions
+                              .find((d) => d.value === duration)
+                              ?.labelPlural.toLowerCase()}
                       </span>
-
-                      {option.isFree ? (
-                        <span
-                          className={`tp-body-s mt-1 ${
-                            rotationMinutes === option.value
-                              ? "text-white"
-                              : "text-neutral-0"
-                          }`}
-                        >
-                          Free
-                        </span>
-                      ) : (
-                        <span
-                          className={`tp-body-bold mt-1 ${
-                            rotationMinutes === option.value
-                              ? "text-white"
-                              : "text-neutral-0"
-                          }`}
-                        >
-                          {option.price}
-                        </span>
-                      )}
+                    </div>
+                    <button
+                      onClick={handleDecrementDuration}
+                      className={`w-[57.81px] h-[57.81px] flex items-center justify-center bg-neutral-800/50 border border-neutral-700  rounded-md hover:bg-neutral-700 transition-colors ${
+                        currentStep === 1 ? "opacity-50 cursor-not-allowed" : ""
+                      }`}
+                    >
+                      <Minus className="h-3 w-3 sm:h-4 sm:w-4 text-[rgb(var(--brand-400))]" />
                     </button>
-                  ))}
+                    <button
+                      onClick={handleIncrementDuration}
+                      className={`w-[57.81px] h-[57.81px] flex items-center justify-center bg-neutral-800/50 border border-neutral-700  rounded-md hover:bg-neutral-700 transition-colors ${
+                        currentStep === 1 ? "opacity-50 cursor-not-allowed" : ""
+                      }`}
+                    >
+                      <Plus className="h-3 w-3 sm:h-4 sm:w-4 text-[rgb(var(--brand-400))]" />
+                    </button>
+                  </div>
                 </div>
-              </div>
-              
 
-              {/* Continue Button */}
-              {currentStep === 1 && (
-                <button
-                  type="button"
-                  onClick={handleContinueToPayment}
-                  className="flex btn button-primary px-15 py-3  hover:bg-brand-300 hover:text-brand-600 mt-8"
-                >
-                  Continue to payment
-                  <ArrowRight className="h-4 w-4 mt-1" />
-                </button>
-              )}
-            </div>
+                {/* IP Rotation Selection */}
+                <div className="py-6 mb-10 relative z-40">
+                  <h3 className="tp-body-s mb-8 sm:mb-3 ">
+                    Select IP rotation time
+                  </h3>
+
+                  <Select
+                    value={rotationMinutes.toString()}
+                    onValueChange={(value) => setRotationMinutes(Number(value))}
+                  >
+                    <SelectTrigger className="w-full h-[58px] bg-neutral-800 border border-neutral-700 rounded-lg text-white focus:ring-1 focus:ring-brand-400 focus:border-brand-400 transition">
+                      <SelectValue placeholder="Select rotation time" />
+                    </SelectTrigger>
+
+                    <SelectContent
+                      className="z-50 bg-neutral-900 border border-neutral-800 rounded-lg shadow-xl overflow-hidden"
+                      position="popper"
+                      sideOffset={6}
+                    >
+                      <div className="max-h-[260px] overflow-y-auto custom-scrollbar">
+                        {rotationOptions.map((option) => (
+                          <SelectItem
+                            key={option.value}
+                            value={option.value.toString()}
+                            className="flex justify-between items-center px-4 py-3 text-sm text-neutral-200 hover:bg-neutral-800 focus:bg-neutral-800 focus:text-white transition"
+                          >
+                            <span>{option.label}</span>
+                            <span>
+                              {option.isFree ? (
+                                <span className="text-green-500 px-2">
+                                  Free
+                                </span>
+                              ) : (
+                                <span className="text-yellow-500 px-2">
+                                  {option.price}
+                                </span>
+                              )}
+                            </span>
+                          </SelectItem>
+                        ))}
+                      </div>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Continue Button */}
+                {currentStep === 1 && (
+                  <button
+                    type="button"
+                    onClick={handleContinueToPayment}
+                    className="w-full flex justify-center items-center btn button-primary px-15 py-3  hover:bg-brand-300 hover:text-brand-600 mt-8"
+                  >
+                    Continue to payment
+                    <ArrowRight className="h-4 w-4 mt-1" />
+                  </button>
+                )}
+              </div>
+            )}
 
             {/* Step 2: Payment Method - Only show when currentStep === 2 */}
             {currentStep === 2 && (
@@ -688,19 +692,19 @@ function CheckoutPageContent() {
                 className="bg-neutral-900 border border-neutral-800 rounded-xl p-3 md:p-5 transition-all"
               >
                 <div className="flex items-center justify-between mb-3 sm:mb-4 gap-3">
-                   <h2 className="tp-body-bold text-neutral-0">
+                  <h2 className="tp-body-bold text-neutral-0 !text-[21.4px] !mb-10">
                     Step 2: Payment Method
                   </h2>
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-3 ">
                   {/* Wallet Payment */}
                   <button
                     onClick={() =>
                       !hasInsufficientBalance && setPaymentMethod("wallet")
                     }
                     disabled={hasInsufficientBalance}
-                    className={`w-full p-10 sm:p-4 rounded-lg border-2 transition-all text-left ${
+                    className={`w-full p-10 sm:p-4 rounded-lg border-2 transition-all text-left !mb-10 ${
                       hasInsufficientBalance
                         ? "border-neutral-700 bg-neutral-800/50/30 opacity-60 cursor-not-allowed"
                         : paymentMethod === "wallet"
@@ -710,7 +714,7 @@ function CheckoutPageContent() {
                   >
                     <div className="flex items-center gap-4 sm:gap-3 mb-2">
                       <div
-                        className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                        className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0  ${
                           paymentMethod === "wallet" && !hasInsufficientBalance
                             ? "border-[rgb(var(--brand-400))]"
                             : "border-neutral-600"
@@ -754,7 +758,7 @@ function CheckoutPageContent() {
 
                   {/* Crypto Payment */}
                   <div
-                    className={`w-full p-3 sm:p-4 rounded-lg border-2 transition-all ${
+                    className={`w-full p-3 sm:p-4 rounded-lg border-2 transition-all !mb-10 flex-shrink-0  ${
                       paymentMethod === "crypto"
                         ? "border-[rgb(var(--brand-400))] bg-neutral-800/50"
                         : "border-neutral-700 bg-neutral-800/50 hover:border-neutral-600"
@@ -776,7 +780,7 @@ function CheckoutPageContent() {
                         )}
                       </div>
                       <Bitcoin className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
-                           <span className="tp-body-s text-neutral-0">
+                      <span className="tp-body-s text-neutral-0">
                         Cryptocurrency
                       </span>
                     </button>
@@ -787,73 +791,74 @@ function CheckoutPageContent() {
                           Select cryptocurrency
                         </label>
 
-                        {/* Search Input */}
-                        <div className="relative">
-                          <Search className="absolute left-3 top-1/3 transform -translate-y-1/2 h-3 w-3 sm:h-4 sm:w-4 text-neutral-500" />
-                          <input
-                            placeholder="Search cryptocurrencies..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-9 sm:pl-10 pr-3 py-2 bg-neutral-800/50 border border-neutral-700 rounded-lg text-sm sm:text-base text-white placeholder:text-neutral-500 focus:outline-none focus:border-[rgb(var(--brand-400))] transition-colors"
-                          />
-                        </div>
-
                         <Select
                           value={selectedCrypto}
                           onValueChange={setSelectedCrypto}
                         >
-                          <SelectTrigger className="bg-neutral-800/50 border-neutral-700 text-white text-base">
-                            <SelectValue />
+                          <SelectTrigger className="w-full h-[56px] bg-neutral-800 border border-neutral-700 rounded-lg text-white text-base focus:ring-1 focus:ring-brand-400 focus:border-brand-400 transition">
+                            <SelectValue placeholder="Select cryptocurrency" />
                           </SelectTrigger>
-                          <SelectContent className="max-h-64">
-                            {filteredCurrencies.map((currency) => {
-                              const currencyName = getCurrencyName(currency);
-                              return (
-                                <SelectItem key={currency} value={currency}>
-                                  <div className="flex items-center gap-2">
-                                    <span className="font-medium text-base">
-                                      {currency.toUpperCase()}
-                                    </span>
-                                    {currencyName && (
-                                      <span className="text-muted-foreground text-sm">
-                                        {currencyName}
-                                      </span>
-                                    )}
-                                  </div>
-                                </SelectItem>
-                              );
-                            })}
-                            {filteredCurrencies.length === 0 && searchQuery && (
-                              <div className="px-2 py-1 tp=body-s">
-                                No cryptocurrencies found
+
+                          <SelectContent
+                            className="z-50 bg-neutral-900 border border-neutral-800 rounded-lg shadow-xl overflow-hidden"
+                            position="popper"
+                            sideOffset={6}
+                          >
+                            {/* Search box inside dropdown */}
+                            <div className="sticky top-0 bg-neutral-900 p-2 border-b border-neutral-800">
+                              <div className="relative">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-neutral-500" />
+                                <input
+                                  placeholder="Search cryptocurrencies..."
+                                  value={searchQuery}
+                                  onChange={(e) =>
+                                    setSearchQuery(e.target.value)
+                                  }
+                                  className="w-full pl-9 pr-3 py-2 bg-neutral-800/70 rounded-md text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:ring-1 focus:ring-brand-400"
+                                />
                               </div>
-                            )}
+                            </div>
+
+                            {/* Filtered currency list */}
+                            <div className="max-h-[250px] overflow-y-auto custom-scrollbar">
+                              {filteredCurrencies.map((currency) => {
+                                const currencyName = getCurrencyName(currency);
+                                return (
+                                  <SelectItem
+                                    key={currency}
+                                    value={currency}
+                                    className="flex items-center justify-between px-4 py-3 text-sm text-neutral-200 hover:bg-neutral-800 focus:bg-neutral-800 focus:text-white transition"
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      <span className="font-medium text-base">
+                                        {currency.toUpperCase()}
+                                      </span>
+                                      {currencyName && (
+                                        <span className="text-neutral-500 text-sm">
+                                          {currencyName}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </SelectItem>
+                                );
+                              })}
+
+                              {filteredCurrencies.length === 0 &&
+                                searchQuery && (
+                                  <div className="px-4 py-3 text-neutral-400 text-sm">
+                                    No cryptocurrencies found
+                                  </div>
+                                )}
+                            </div>
                           </SelectContent>
                         </Select>
-
-                        {searchQuery && (
-                          <p className="tp-body-s">
-                            Showing {filteredCurrencies.length} of{" "}
-                            {allCurrencies.length} currencies
-                          </p>
-                        )}
-
-                        
                       </div>
                     )}
                   </div>
                 </div>
 
                 {/* Complete Payment Button */}
-                <div className="mt-5 sm:mt-5 space-y-3">
-                  <button
-                    type="button"
-                    onClick={handleBackToDetails}
-                    className="flex text-brand-300"
-                  >
-                    <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4 mt-1" />
-                    Back to order details
-                  </button>
+                <div className="w-full mt-5 sm:mt-5 space-y-3">
                   <button
                     type="button"
                     onClick={handleCompletePayment}
@@ -861,7 +866,7 @@ function CheckoutPageContent() {
                       isProcessingPayment ||
                       (paymentMethod === "wallet" && hasInsufficientBalance)
                     }
-                    className="flex btn button-primary px-15 py-3  hover:bg-brand-300 hover:text-brand-600 mt-8"
+                    className="w-full flex btn justify-center items-center button-primary px-15 py-3  hover:bg-brand-300 hover:text-brand-600 mt-8"
                   >
                     {isProcessingPayment ? (
                       <>
@@ -881,15 +886,12 @@ function CheckoutPageContent() {
                 </div>
               </div>
             )}
-
           </div>
 
           {/* Right Section - Order Summary (Sticky) */}
-          <div className="lg:sticky lg:top-6 h-fit">
-            <div className="border border-neutral-700 rounded-lg p-6 sm:p-6">
-              <h3 className="tp-body-bold">
-                Order summary
-              </h3>
+          <div className="w-full lg:flex-1 lg:sticky lg:top-6 h-fit p-3">
+            <div className="border  border-neutral-700 rounded-md p-6 sm:p-6">
+              <h3 className="tp-body-bold">Order summary</h3>
 
               <div className="space-y-2 sm:space-y-3">
                 <div className="flex items-center justify-between text-sm sm:text-base">
@@ -971,7 +973,7 @@ function CheckoutPageContent() {
                 {/* Coupon Code */}
                 <button
                   onClick={() => setShowCouponInput(!showCouponInput)}
-                  className="w-full flex items-center justify-between px-3 py-2 bg-neutral-800/50 hover:bg-neutral-700 rounded-lg transition-colors"
+                  className="w-full flex items-center justify-between px-3 py-2 transition-colors"
                 >
                   <span className="text-sm sm:text-base font-medium text-white">
                     Have a coupon code?
@@ -984,15 +986,18 @@ function CheckoutPageContent() {
                 </button>
 
                 {showCouponInput && (
-                  <div className="flex gap-2">
+                  <div className="flex flex-col gap-2">
                     <input
                       type="text"
                       value={couponCode}
                       onChange={(e) => setCouponCode(e.target.value)}
-                      placeholder="Enter code"
-                      className="flex-1 px-3 py-2 bg-neutral-800/50 border border-neutral-700 rounded-lg text-sm sm:text-base text-white focus:outline-none focus:border-[rgb(var(--brand-400))]"
+                      placeholder=""
+                      className="w-full px-3 py-2 bg-neutral-800/50 border border-neutral-700 h-[57.81px] rounded-md text-sm sm:text-base text-white focus:outline-none focus:!border-white"
                     />
-                    <button className="px-3 py-2 bg-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-500))] text-white text-sm sm:text-base font-medium rounded-lg transition-colors">
+                    <button
+                      className="px-3 py-2 h-[57.81px] mt-3.5 border-2 hover:bg-[rgb(var(--brand-500))] hover:-[rgb(var(--brand-500))] text-white text-sm sm:text-base font-medium rounded-lg transition-colors"
+                      style={{ borderColor: "rgb(var(--brand-500))" }}
+                    >
                       Apply
                     </button>
                   </div>
@@ -1000,7 +1005,6 @@ function CheckoutPageContent() {
               </div>
             </div>
           </div>
-          
         </div>
 
         {/* Quota Unavailable Dialog */}

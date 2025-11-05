@@ -583,7 +583,7 @@ function DashboardPageContent() {
   if (isLoading || isLoadingPlans) {
     return (
       <div className="flex items-center justify-center h-full">
-        <Loader2 className="h-8 w-8 animate-spin text-[rgb(var(--brand-400))]" />
+        <Loader2 className="h-12 w-12 animate-spin text-[rgb(var(--neutral-400))]" />
       </div>
     );
   }
@@ -808,7 +808,7 @@ function DashboardPageContent() {
                 >
                   {isRotatingIP ? (
                     <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      <Loader2 className="h-12 w-12 animate-spin text-[rgb(var(--neutral-400))]" />
                       Rotating...
                     </>
                   ) : (
@@ -968,7 +968,7 @@ function DashboardPageContent() {
             </p>
           </div>
           {isPolling && (
-            <Loader2 className="w-5 h-5 text-green-600 animate-spin flex-shrink-0" />
+            <Loader2 className="w-12 h-12 text-green-600 animate-spin flex-shrink-0" />
           )}
         </div>
       )}
@@ -1161,7 +1161,7 @@ function DashboardPageContent() {
                     >
                       {isCheckingQuota ? (
                         <>
-                          <Loader2 className="inline-block h-4 w-4 mr-2 animate-spin" />
+                          <Loader2 className="inline-block h-12 w-12 mr-2 animate-spin" />
                         </>
                       ) : (
                         `Buy now`
@@ -1319,7 +1319,7 @@ function DashboardPageContent() {
                                     title="Download Invoice"
                                   >
                                     {downloadingInvoice === order.id ? (
-                                      <Loader2 className="w-5 h-5 animate-spin" />
+                                      <Loader2 className="w-12 h-12 animate-spin" />
                                     ) : (
                                       <svg
                                         className="w-5 h-5"
@@ -1420,7 +1420,7 @@ export default function DashboardPage() {
     <Suspense
       fallback={
         <div className="flex items-center justify-center h-full">
-          <Loader2 className="h-8 w-8 animate-spin text-[rgb(var(--brand-400))]" />
+          <Loader2 className="h-12 w-12 animate-spin text-[rgb(var(--brand-400))]" />
         </div>
       }
     >
