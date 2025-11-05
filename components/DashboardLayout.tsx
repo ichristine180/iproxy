@@ -25,10 +25,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import SidebarLink from "./SideBarLink";
 
-export const DashboardLayout = ({
+const DashboardLayoutContent = ({
   children,
 }: {
   children: React.ReactNode;
@@ -398,5 +398,17 @@ export const DashboardLayout = ({
         </main>
       </div>
     </div>
+  );
+};
+
+export const DashboardLayout = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
+  return (
+    <Suspense fallback={<div className="h-screen flex items-center justify-center bg-neutral-1000">Loading...</div>}>
+      <DashboardLayoutContent>{children}</DashboardLayoutContent>
+    </Suspense>
   );
 };
