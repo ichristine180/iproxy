@@ -40,12 +40,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Minimum deposit amount
-    if (price_amount < 5) {
-      return NextResponse.json(
-        { success: false, error: "Minimum deposit amount is $5.00" },
-        { status: 400 }
-      );
-    }
+    // if (price_amount < 5) {
+    //   return NextResponse.json(
+    //     { success: false, error: "Minimum deposit amount is $5.00" },
+    //     { status: 400 }
+    //   );
+    // }
 
     // Check if NowPayments API key is configured
     if (!NOWPAYMENTS_API_KEY) {
