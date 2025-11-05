@@ -6,9 +6,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
-import { User, Lock, Bell, Loader2, CheckCircle2, ToggleLeft, ToggleRight } from "lucide-react";
+import {
+  User,
+  Lock,
+  Bell,
+  Loader2,
+  CheckCircle2,
+  ToggleLeft,
+  ToggleRight,
+} from "lucide-react";
 import { TelegramSetup } from "@/components/TelegramSetup";
 
 interface Profile {
@@ -41,6 +48,9 @@ interface NotificationPreferences {
 export default function ProfilePage() {
   const { refreshUser } = useAuth();
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<
+    "profile" | "password" | "notifications"
+  >("profile");
   const [profile, setProfile] = useState<Profile | null>(null);
   const [notifications, setNotifications] =
     useState<NotificationPreferences | null>(null);
@@ -54,7 +64,7 @@ export default function ProfilePage() {
   // Password form state
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  // const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordSaving, setPasswordSaving] = useState(false);
   const [passwordSuccess, setPasswordSuccess] = useState(false);
   const [passwordError, setPasswordError] = useState("");
@@ -77,8 +87,6 @@ export default function ProfilePage() {
         setProfile(data.profile);
         setName(data.profile.name || "");
         setPhone(data.profile.phone || "");
-
-   
 
         setNotifications({
           user_id: data.profile.id,
@@ -149,11 +157,11 @@ export default function ProfilePage() {
     setPasswordError("");
 
     // Validate passwords match
-    if (newPassword !== confirmPassword) {
-      setPasswordError("New passwords do not match");
-      setPasswordSaving(false);
-      return;
-    }
+    // if (newPassword !== confirmPassword) {
+    //   setPasswordError("New passwords do not match");
+    //   setPasswordSaving(false);
+    //   return;
+    // }
 
     try {
       const response = await fetch("/api/profile/change-password", {
@@ -173,7 +181,7 @@ export default function ProfilePage() {
         setPasswordSuccess(true);
         setCurrentPassword("");
         setNewPassword("");
-        setConfirmPassword("");
+        // setConfirmPassword("");
         setTimeout(() => setPasswordSuccess(false), 3000);
       } else {
         setPasswordError(data.error || "Failed to change password");
@@ -238,7 +246,7 @@ export default function ProfilePage() {
       <div className="space-y-8">
         {/* Page Title */}
         <div>
-          <h1 className="tp-sub-headline text-neutral-0 pb-3">
+          <h1 className="tp-headline-s text-neutral-0 py-3">
             Profile Settings
           </h1>
           <p className="tp-body-s text-neutral-400">
@@ -246,70 +254,44 @@ export default function ProfilePage() {
           </p>
         </div>
 
-        <Tabs defaultValue="profile" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 !bg-neutral-900 border border-neutral-700 rounded-xl p-1.5 mb-6">
-            <TabsTrigger
-              value="profile"
-              className="tp-body-s !bg-transparent data-[state=active]:!bg-[rgb(var(--brand-400))] data-[state=active]:!text-neutral-900  data-[state=active]:font-semibold text-neutral-500 hover:text-neutral-300 rounded-lg  transition-all"
+        {/* Tabs */}
+        <div className="flex items-center border-b border-neutral-800 bg-black/90 mb-6">
+          {[
+            { id: "profile", label: "Profile", icon: User },
+            { id: "password", label: "Password", icon: Lock },
+            { id: "notifications", label: "Notifications", icon: Bell },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() =>
+                setActiveTab(tab.id as "profile" | "password" | "notifications")
+              }
+              className={`relative pr-16 py-4 font-semibold text-sm sm:text-base transition-colors flex items-center gap-2 ${
+                activeTab === tab.id
+                  ? "text-[rgb(var(--brand-400))]"
+                  : "text-neutral-300 hover:text-white"
+              }`}
             >
-              <User className="h-4 w-4" />
-              Profile
-            </TabsTrigger>
-            <TabsTrigger
-              value="password"
-              className="tp-body-s !bg-transparent data-[state=active]:!bg-[rgb(var(--brand-400))] data-[state=active]:!text-neutral-900 data-[state=active]:!shadow-lg data-[state=active]:!shadow-[rgb(var(--brand-300))]/40 data-[state=active]:font-semibold text-neutral-500 hover:text-neutral-300 rounded-lg py-3 transition-all"
-            >
-              <Lock className="h-4 w-4 mr-2" />
-              Password
-            </TabsTrigger>
-            <TabsTrigger
-              value="notifications"
-              className="tp-body-s !bg-transparent data-[state=active]:!bg-[rgb(var(--brand-400))] data-[state=active]:!text-neutral-900 data-[state=active]:!shadow-lg data-[state=active]:!shadow-[rgb(var(--brand-300))]/40 data-[state=active]:font-semibold text-neutral-500 hover:text-neutral-300 rounded-lg py-3 transition-all"
-            >
-              <Bell className="h-4 w-4 mr-2" />
-              Notifications
-            </TabsTrigger>
-          </TabsList>
+              <tab.icon className="h-4 w-4" />
+              {tab.label}
+              {activeTab === tab.id && (
+                <span className="absolute bottom-0 left-0 w-full h-[2px] bg-[rgb(var(--brand-400))]" />
+              )}
+            </button>
+          ))}
+        </div>
 
-          {/* Profile Tab */}
-          <TabsContent value="profile" className="mt-0">
-            <div
-              className="rounded-xl overflow-hidden"
-              style={{
-                border: "1px solid rgb(64, 64, 64)",
-                background: "rgb(23, 23, 23)",
-              }}
-            >
-              <div className="p-6 border-b border-neutral-800">
+        {/* Profile Tab */}
+        {activeTab === "profile" && (
+          <div className="mt-0">
+            <div className="card card-custom gutter-b">
+              <div className="p-6">
                 <h2 className="tp-body font-semibold text-neutral-0 mb-2">
-                  Profile Information
+                  {profile?.email}
                 </h2>
-                <p className="tp-body-s text-neutral-400">
-                  Update your personal information and contact details
-                </p>
               </div>
               <div className="p-6">
                 <form onSubmit={handleProfileUpdate} className="space-y-6">
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="email"
-                      className="tp-body-s text-neutral-400"
-                    >
-                      Email
-                    </Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={profile?.email || ""}
-                      disabled
-                      className="border-0 form-control h-auto px-8 py-4 rounded-lg w-full"
-                    />
-                    <p className="tp-body-xs text-neutral-500">
-                      Email cannot be changed.{" "}
-                      {profile?.emailVerified && " Verified"}
-                    </p>
-                  </div>
-
                   <div className="space-y-2">
                     <Label
                       htmlFor="name"
@@ -323,7 +305,7 @@ export default function ProfilePage() {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="Enter your full name"
-                      className="border-0 form-control h-auto px-8 py-4 rounded-lg w-full"
+                      className="form-control h-auto rounded-lg border-0 py-6 px-8 w-full"
                     />
                   </div>
 
@@ -340,7 +322,7 @@ export default function ProfilePage() {
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="Enter your phone number"
-                      className="border-0 form-control h-auto px-8 py-4 rounded-lg w-full"
+                      className="form-control h-auto rounded-lg border-0 py-6 px-8 w-full"
                     />
                   </div>
 
@@ -377,10 +359,12 @@ export default function ProfilePage() {
                 </form>
               </div>
             </div>
-          </TabsContent>
+          </div>
+        )}
 
-          {/* Password Tab */}
-          <TabsContent value="password" className="mt-0">
+        {/* Password Tab */}
+        {activeTab === "password" && (
+          <div className="mt-0">
             <div
               className="rounded-xl overflow-hidden"
               style={{
@@ -388,13 +372,11 @@ export default function ProfilePage() {
                 background: "rgb(23, 23, 23)",
               }}
             >
-              <div className="p-6 border-b border-neutral-800">
+              <div className="p-6">
                 <h2 className="tp-body font-semibold text-neutral-0 mb-2">
                   Change Password
                 </h2>
-                <p className="tp-body-s text-neutral-400">
-                  Update your password to keep your account secure
-                </p>
+              
               </div>
               <div className="p-6">
                 <form onSubmit={handlePasswordChange} className="space-y-6">
@@ -411,7 +393,7 @@ export default function ProfilePage() {
                       value={currentPassword}
                       onChange={(e) => setCurrentPassword(e.target.value)}
                       placeholder="Enter your current password"
-                      className="border-0 form-control h-auto px-8 py-4 rounded-lg w-full"
+                         className="form-control h-auto rounded-lg border-0 py-6 px-8 w-full"
                       required
                     />
                   </div>
@@ -429,14 +411,14 @@ export default function ProfilePage() {
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       placeholder="Enter your new password"
-                      className="border-0 form-control h-auto px-8 py-4 rounded-lg w-full"
+                       className="form-control h-auto rounded-lg border-0 py-6 px-8 w-full"
                     />
                     <p className="tp-body-xs text-neutral-500">
                       Password must be at least 6 characters long
                     </p>
                   </div>
 
-                  <div className="space-y-2">
+                  {/* <div className="space-y-2">
                     <Label
                       htmlFor="confirmPassword"
                       className="tp-body-s text-neutral-400"
@@ -449,10 +431,10 @@ export default function ProfilePage() {
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="Confirm your new password"
-                      className="border-0 form-control h-auto px-8 py-4 rounded-lg w-full"
+                        className="form-control h-auto rounded-lg border-0 py-6 px-8 w-full"
                       required
                     />
-                  </div>
+                  </div> */}
 
                   {passwordError && (
                     <div className="tp-body-s text-red-500">
@@ -487,10 +469,12 @@ export default function ProfilePage() {
                 </form>
               </div>
             </div>
-          </TabsContent>
+          </div>
+        )}
 
-          {/* Notifications Tab */}
-          <TabsContent value="notifications" className="mt-0">
+        {/* Notifications Tab */}
+        {activeTab === "notifications" && (
+          <div className="mt-0">
             <div
               className="rounded-xl overflow-hidden"
               style={{
@@ -498,15 +482,13 @@ export default function ProfilePage() {
                 background: "rgb(23, 23, 23)",
               }}
             >
-              <div className="p-6 border-b border-neutral-800">
+              <div className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="tp-body font-semibold text-neutral-0 mb-2">
                       Notification Preferences
                     </h2>
-                    <p className="tp-body-s text-neutral-400">
-                      Manage how you receive notifications and alerts
-                    </p>
+                    
                   </div>
                   {notificationsSuccess && (
                     <span className="tp-body-s text-green-500 flex items-center gap-1">
@@ -532,9 +514,9 @@ export default function ProfilePage() {
 
                     {/* Notification Channels */}
                     <div>
-                      <h3 className="tp-body font-semibold text-neutral-0 mb-4">
+                      {/* <h3 className="tp-body font-semibold text-neutral-0 mb-4">
                         Notification Channels
-                      </h3>
+                      </h3> */}
                       <div className="space-y-4">
                         <div className="flex items-center justify-between py-3">
                           <div>
@@ -551,7 +533,10 @@ export default function ProfilePage() {
                           <button
                             type="button"
                             onClick={() =>
-                              handleNotificationUpdate("notify_email", !notifications.notify_email)
+                              handleNotificationUpdate(
+                                "notify_email",
+                                !notifications.notify_email
+                              )
                             }
                             disabled={notificationsSaving}
                             className="disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
@@ -564,7 +549,7 @@ export default function ProfilePage() {
                           </button>
                         </div>
 
-                        <div className="flex items-center justify-between py-3">
+                        <div className="flex items-center justify-between py-1">
                           <div>
                             <Label
                               htmlFor="notify_telegram"
@@ -604,11 +589,11 @@ export default function ProfilePage() {
 
                     {/* Notification Types */}
                     <div>
-                      <h3 className="tp-body font-semibold text-neutral-0 mb-4">
+                      {/* <h3 className="tp-body font-semibold text-neutral-0">
                         Notification Types
-                      </h3>
+                      </h3> */}
                       <div className="space-y-4">
-                        <div className="flex items-center justify-between py-3">
+                        <div className="flex items-center justify-between py-2">
                           <div>
                             <Label
                               htmlFor="proxy_expiry_alerts"
@@ -639,7 +624,7 @@ export default function ProfilePage() {
                           </button>
                         </div>
 
-                        <div className="flex items-center justify-between py-3">
+                        <div className="flex items-center justify-between py-2">
                           <div>
                             <Label
                               htmlFor="renewal_reminders"
@@ -670,7 +655,7 @@ export default function ProfilePage() {
                           </button>
                         </div>
 
-                        <div className="flex items-center justify-between py-3">
+                        <div className="flex items-center justify-between py-2">
                           <div>
                             <Label
                               htmlFor="payment_confirmations"
@@ -701,7 +686,7 @@ export default function ProfilePage() {
                           </button>
                         </div>
 
-                        <div className="flex items-center justify-between py-3">
+                        <div className="flex items-center justify-between py-2">
                           <div>
                             <Label
                               htmlFor="system_updates"
@@ -737,8 +722,8 @@ export default function ProfilePage() {
                 )}
               </div>
             </div>
-          </TabsContent>
-        </Tabs>
+          </div>
+        )}
       </div>
     </div>
   );

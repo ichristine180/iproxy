@@ -160,7 +160,7 @@ function LoginForm() {
                     onChange={(e) =>
                       setFormData({ ...formData, email: e.target.value })
                     }
-                    className="form-control h-auto rounded-lg border-0 py-6 px-8 w-full"
+                   className="form-control h-auto rounded-lg border-0 py-6 px-8 w-full"
                     required
                   />
                 </div>
@@ -184,7 +184,7 @@ function LoginForm() {
                     />
                     <button
                       type="button"
-                      onClick={() => setShowPassword(!showPassword)}
+                      onClick={() => setShowPassword(!showPassword)} 
                       className="absolute right-4 top-6 -translate-y-1/3 text-white/50 hover:text-white/80 transition-colors"
                     >
                       {showPassword ? (

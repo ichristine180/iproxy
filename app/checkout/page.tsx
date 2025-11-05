@@ -58,6 +58,7 @@ type Duration = "daily" | "weekly" | "monthly" | "yearly";
 function CheckoutPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [activeTab, setActiveTab] = useState<"buy-now" | "my-orders">("buy-now");
   const [currentStep, setCurrentStep] = useState<1 | 2>(1);
   const [editingIpLoataiton, setEditingIpLoataiton] = useState(false);
   const [rotationMinutes, setRotationMinutes] = useState(0);
@@ -78,6 +79,8 @@ function CheckoutPageContent() {
   const [isLoadingPlan, setIsLoadingPlan] = useState(true);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [showQuotaDialog, setShowQuotaDialog] = useState(false);
+  const [orderStatusFilter, setOrderStatusFilter] = useState("all");
+  const [orders, setOrders] = useState<any[]>([]);
 
   // Get available duration options from plan pricing
   const getAvailableDurations = () => {
@@ -493,8 +496,35 @@ function CheckoutPageContent() {
               {plan.name}
             </h1>
           </div>
-          {/* Progress Steps */}
-          <div className="flex items-center justify-space-between">
+
+          {/* Tabs */}
+          <div className="flex items-center border-b border-neutral-800 bg-black/90 mb-4">
+            {[
+              { id: "buy-now", label: "Buy now" },
+              { id: "my-orders", label: "My orders" },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as "buy-now" | "my-orders")}
+                className={`relative px-6 py-4 font-semibold text-sm sm:text-base transition-colors ${
+                  activeTab === tab.id
+                    ? "text-[rgb(var(--brand-400))]"
+                    : "text-neutral-300 hover:text-white"
+                }`}
+              >
+                {tab.label}
+                {activeTab === tab.id && (
+                  <span className="absolute bottom-0 left-0 w-full h-[2px] bg-[rgb(var(--brand-400))]" />
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* Content based on active tab */}
+          {activeTab === "buy-now" && (
+            <>
+              {/* Progress Steps */}
+              <div className="flex items-center justify-space-between">
             <div className="w-full">
               {currentStep === 2 && (
                 <button
@@ -529,10 +559,9 @@ function CheckoutPageContent() {
               </button>
             </div>
           </div>
-        </div>
 
-        {/* Main Content */}
-        <div className="flex flex-col lg:flex-row gap-2 sm:gap-6 bg-neutral-800/50 rounded-xl p-10 transition-all justify-between">
+          {/* Main Content */}
+          <div className="flex flex-col lg:flex-row gap-2 sm:gap-6 bg-neutral-800/50 rounded-xl p-10 transition-all justify-between">
           {/* Left Section - Steps */}
           <div className="w-full lg:flex-1 space-y-4 sm:space-y-6 p-3">
             {/* Step 1: Order Details */}
@@ -891,11 +920,11 @@ function CheckoutPageContent() {
           {/* Right Section - Order Summary (Sticky) */}
           <div className="w-full lg:flex-1 lg:sticky lg:top-6 h-fit p-3">
             <div className="border  border-neutral-700 rounded-md p-6 sm:p-6">
-              <h3 className="tp-body-bold">Order summary</h3>
+               <h4 className="tp-body-bold text-neutral-0 !text-[21.4px] !mb-10 text-center">Order summary</h4>
 
               <div className="space-y-2 sm:space-y-3">
-                <div className="flex items-center justify-between text-sm sm:text-base">
-                  <span className="text-neutral-400">Billing Period</span>
+                <div className="flex items-center justify-between tp-body-s tex-neutral-0">
+                  <span className="text-neutral-0">Billing Period</span>
                   <span className="font-semibold text-white">
                     {durationQuantity}{" "}
                     {durationQuantity === 1
@@ -906,7 +935,7 @@ function CheckoutPageContent() {
                 </div>
 
                 <div className="flex items-center justify-between text-sm sm:text-base">
-                  <span className="text-neutral-400">IP Rotation</span>
+                  <span className="text-neutral-0">IP Rotation</span>
                   <span className="tp-body-s  text-white">
                     {rotationMinutes === 0
                       ? "No rotation"
@@ -916,7 +945,7 @@ function CheckoutPageContent() {
 
                 <div className="border-t border-neutral-800 pt-2 sm:pt-3 space-y-2">
                   <div className="flex items-center justify-between text-sm sm:text-base">
-                    <span className="text-neutral-400">
+                    <span className="text-neutral-0">
                       Price per{" "}
                       {durationOptions.find((d) => d.value === duration)?.label}
                     </span>
@@ -926,7 +955,7 @@ function CheckoutPageContent() {
                   </div>
 
                   <div className="flex items-center justify-between text-sm sm:text-base">
-                    <span className="text-neutral-400">
+                    <span className="text-neutral-0">
                       Base Cost (×{durationQuantity})
                     </span>
                     <span className="font-semibold text-white">
@@ -937,7 +966,7 @@ function CheckoutPageContent() {
                   {totalRotationCost > 0 && (
                     <>
                       <div className="flex items-center justify-between text-sm sm:text-base">
-                        <span className="text-neutral-400 text-xs sm:text-sm">
+                        <span className="text-neutral-10 text-xs sm:text-sm">
                           Rotation (+${rotationCostPerUnit}/
                           {durationOptions
                             .find((d) => d.value === duration)
@@ -954,10 +983,10 @@ function CheckoutPageContent() {
 
                 <div className="border-t border-neutral-800 pt-2 sm:pt-3">
                   <div className="flex items-center justify-between mb-1 sm:mb-2">
-                    <span className="text-neutral-400 text-sm sm:text-base">
+                    <span className="text-neutral-0 text-sm sm:text-base">
                       Total Price
                     </span>
-                    <span className="text-2xl sm:text-3xl font-bold text-white">
+                    <span className="tp-body-bold text-white">
                       ${finalPrice.toFixed(2)}
                     </span>
                   </div>
@@ -1005,6 +1034,133 @@ function CheckoutPageContent() {
               </div>
             </div>
           </div>
+        </div>
+            </>
+          )}
+
+          {/* My Orders Tab Content */}
+          {activeTab === "my-orders" && (
+            <div className="space-y-4">
+  {/* Header */}
+   <h2 className="tp-body text-brand-400 uppercase tracking-wider py-3">
+              YOUR ORDERS
+            </h2>
+
+  {/* Orders Container */}
+  <div className="card card-custom gutter-b padding-32-36">
+   <div className="card-body px-20">
+     {/* Top Controls */}
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+      <div className="flex items-center flex-wrap gap-3">
+        <h3 className="text-white font-semibold text-lg">
+          {plan?.name || "Residential"}
+        </h3>
+        <span className="px-3 py-2 bg-neutral-600 text-neutral-0 rounded-sm text-sm">
+          Current balance: <span className="font-semibold">0 GB</span>
+        </span>
+      </div>
+      <button
+        onClick={() => setActiveTab("buy-now")}
+        className=" flex btn button-primary px-15 mt-8  hover:bg-brand-300 hover:text-brand-600">
+        <Plus className="h-5 w-5" />
+        New order
+      </button>
+    </div>
+
+    {/* Filter */}
+    <div className="mb-6">
+      <label className="text-white font-medium mb-2 block">Status</label>
+      <Select value={orderStatusFilter} onValueChange={setOrderStatusFilter}>
+        <SelectTrigger className="w-[320px] h-[46px] bg-neutral-800 border border-neutral-700 text-white rounded-md">
+          <SelectValue placeholder="All" />
+        </SelectTrigger>
+        <SelectContent className="z-50 bg-neutral-600">
+          <SelectItem value="all">All</SelectItem>
+          <SelectItem value="pending">Pending</SelectItem>
+          <SelectItem value="active">Active</SelectItem>
+          <SelectItem value="completed">Completed</SelectItem>
+          <SelectItem value="cancelled">Cancelled</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+
+    {/* Orders Table */}
+    <div className="overflow-x-auto rounded-lg">
+      <table className="min-w-full text-left">
+        <thead>
+          <tr className="bg-neutral-600 text-neutral-200 text-sm uppercase px-12">
+            <th className="px-16 py-3 rounded-l-lg font-medium">ID</th>
+            <th className="px-6 py-3 font-medium">Order date</th>
+            <th className="px-6 py-3 font-medium">Amount</th>
+            <th className="px-6 py-3 font-medium">Status</th>
+            <th className="px-6 py-3 font-medium">Plan</th>
+            <th className="px-16 py-3 rounded-r-lg font-medium text-right">
+              Actions
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {orders.length === 0 ? (
+            <tr>
+              <td
+                colSpan={6}
+                className="text-center py-16 text-neutral-300 text-lg"
+              >
+                <p className="mb-6">You have no orders for this product</p>
+                <button
+                  onClick={() => setActiveTab("buy-now")}
+                  className="btn button-primary px-15 mt-8  hover:bg-brand-300 hover:text-brand-600"
+                >
+                  Buy Now
+                </button>
+              </td>
+            </tr>
+          ) : (
+            orders.map((order) => (
+              <tr
+                key={order.id}
+                className="border-t border-neutral-800 hover:bg-neutral-800/40 transition"
+              >
+                <td className="px-6 py-4 font-mono text-neutral-200">
+                  {order.id}
+                </td>
+                <td className="px-6 py-4 text-neutral-300">{order.date}</td>
+                <td className="px-6 py-4 text-neutral-300">
+                  ${order.amount.toFixed(2)}
+                </td>
+                <td className="px-6 py-4">
+                  <span
+                    className={`px-2 py-1 rounded text-xs font-medium ${
+                      order.status === "active"
+                        ? "bg-green-500/20 text-green-400"
+                        : order.status === "pending"
+                        ? "bg-yellow-500/20 text-yellow-400"
+                        : order.status === "completed"
+                        ? "bg-blue-500/20 text-blue-400"
+                        : "bg-neutral-700 text-neutral-300"
+                    }`}
+                  >
+                    {order.status}
+                  </span>
+                </td>
+                <td className="px-6 py-4 text-neutral-300">{order.plan}</td>
+                <td className="px-6 py-4 text-right">
+                  <button className="text-orange-400 hover:text-orange-300 font-medium">
+                    View
+                  </button>
+                </td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+    </div>
+   </div>
+  </div>
+</div>
+
+          )}
         </div>
 
         {/* Quota Unavailable Dialog */}
