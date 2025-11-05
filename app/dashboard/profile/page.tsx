@@ -242,14 +242,12 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="p-6">
-      <div className="space-y-8">
-        {/* Page Title */}
-        <div>
-          <h1 className="tp-headline-s text-neutral-0 py-3">
+    <div className="margin-12">
+      {/* Page Title */}
+      <h1 className="tp-headline-s text-neutral-0 py-6">
             Profile Settings
           </h1>
-        </div>
+     
 
         {/* Tabs */}
         <div className="flex items-center border-b border-neutral-800 bg-black/90 mb-6">
@@ -720,6 +718,6 @@ export default function ProfilePage() {
           </div>
         )}
       </div>
-    </div>
+
   );
 }

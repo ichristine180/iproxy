@@ -210,7 +210,7 @@ function formatTime(dateString:string) {
   return (
     <div className="margin-12">
       {/* Page Title */}
-      <h1 className="tp-headline-s text-neutral-0 py-3">Add funds</h1>
+      <h1 className="tp-headline-s text-neutral-0 py-6">Add funds</h1>
 
       {/* Tabs */}
       <div className="flex items-center border-b border-neutral-800 bg-black/90">
