@@ -86,7 +86,7 @@ function SignupForm() {
       <div className="min-h-screen flex flex-col lg:flex-row">
         {/* Left Side - Signup Form */}
         <div
-          className="w-full lg:flex-1 flex items-center justify-center relative"
+          className="w-full h-screen lg:flex-1 flex items-center justify-center relative"
           style={{
             background:
               "radial-gradient(ellipse at top, rgba(30, 45, 70, 1) 0%, rgba(18, 22, 28, 1) 60%, rgba(13, 15, 16, 1) 100%)",
@@ -95,7 +95,7 @@ function SignupForm() {
           <div className="w-full" style={{ padding: "20px 0" }}>
             {/* Signup Form */}
             <div
-              className="login-form content-primary p-7 position-relative overflow-hidden"
+              className="login-form content-primary position-relative overflow-hidden p-16"
               style={{ minWidth: "20%" }}
             >
               <div className="flex justify-center mt-xl-0 mt-5">

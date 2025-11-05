@@ -6090,7 +6090,15 @@ html[data-ff-seasonal-promo-display] .promo-banner {
   .login-form {
     min-width: 580px !important;
     margin: 50px;
-    padding: 20px !important;
+    padding: 32px !important;
+  }
+}
+
+@media (min-width: 1520px) {
+  .login-form {
+    min-width: 580px !important;
+    margin: 50px;
+    padding: 96px !important;
   }
 }
 
@@ -6216,13 +6224,6 @@ label {
 .login-form {
   margin: 0 20px;
   color: rgb(var(--neutral-0)) !important;
-  padding: 0 30px 40px !important;
-}
-@media (min-width: 1099px) {
-  .login-form {
-    min-width: 580px !important;
-    margin: 50px;
-    padding: 20px !important;
-  }
+  padding: 0 30px 40px;
 }
 
