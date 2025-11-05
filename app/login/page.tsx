@@ -86,29 +86,56 @@ function LoginForm() {
   return (
     <div className="min-h-screen bg-neutral-950 relative">
       {/* Logo - Fixed Top Left */}
-      <div className="absolute top-6 left-6 z-50">
+      <div className="hidden md:block absolute top-6 left-6 z-50">
         <a href="/" className="flex items-center inner-spacing-xs">
-        
           <span className="text-brand-400 font-bold tp-headline-s pr-2">
             Highbid Proxies
           </span>
         </a>
       </div>
 
-      <div className="min-h-screen flex flex-col lg:flex-row">
+      <div
+        className="min-h-screen flex flex-col lg:flex-row"
+        style={{
+          background:
+            "radial-gradient(ellipse at top, rgba(30, 45, 70, 1) 0%, rgba(18, 22, 28, 1) 60%, rgba(13, 15, 16, 1) 100%)",
+        }}
+      >
+        <div className="flex justify-between z-50 p-5 md:hidden">
+          <a href="/" className="flex items-center inner-spacing-xs">
+            <span className="text-brand-400 font-bold tp-headline-s pr-2">
+              Highbid Proxies
+            </span>
+          </a>
+
+          <a
+            href="/"
+            className="flex items-center inner-spacing-xs text-white hover:text-gray-300 transition-colors"
+          >
+            <ChevronLeft className="w-5 h-5" /> Exit
+          </a>
+        </div>
         {/* Left Side - Signup Form */}
-        <div
-          className="w-full h-screen lg:flex-1 flex items-center justify-center relative"
-          style={{ background: "radial-gradient(ellipse at top, rgba(30, 45, 70, 1) 0%, rgba(18, 22, 28, 1) 60%, rgba(13, 15, 16, 1) 100%)" }}
-        >
-          <div className="w-full" style={{ padding: '20px 0' }}>
+        <div className="w-full h-screen lg:flex-1 flex items-center justify-center relative">
+          <div className="w-full" style={{ padding: "20px 0" }}>
             {/* Login Form Container */}
-            <div className="login-form content-primary p-7 position-relative overflow-hidden" style={{minWidth:"20%"}}>
+            <div
+              className="login-form content-primary p-7 position-relative overflow-hidden"
+              style={{ minWidth: "20%" }}
+            >
               <div className="flex justify-center mt-xl-0 mt-5">
                 <div className="mb-5 w-full max-w-lg">
                   <div className="text-center">
-                    <h2 className="tp-headline-l text-neutral-0" style={{ marginBottom: 'var(--space-5)' }}>Login</h2>
-                    <div className="text-center" style={{ marginTop: 'var(--space-5)' }}>
+                    <h2
+                      className="tp-headline-l text-neutral-0"
+                      style={{ marginBottom: "var(--space-5)" }}
+                    >
+                      Login
+                    </h2>
+                    <div
+                      className="text-center"
+                      style={{ marginTop: "var(--space-5)" }}
+                    >
                       <p className="tp-body text-neutral-0 mr-2">
                         Don't have an account yet?{" "}
                         <Link
@@ -139,12 +166,11 @@ function LoginForm() {
                   <input
                     id="email"
                     type="email"
-               
                     value={formData.email}
                     onChange={(e) =>
                       setFormData({ ...formData, email: e.target.value })
                     }
-                   className="form-control h-auto rounded-md border-0 py-4  w-full"
+                    className="form-control h-auto rounded-md border-0 py-4  w-full"
                     required
                   />
                 </div>
@@ -158,7 +184,6 @@ function LoginForm() {
                     <input
                       id="password"
                       type={showPassword ? "text" : "password"}
-                   
                       value={formData.password}
                       onChange={(e) =>
                         setFormData({ ...formData, password: e.target.value })
@@ -168,7 +193,7 @@ function LoginForm() {
                     />
                     <button
                       type="button"
-                      onClick={() => setShowPassword(!showPassword)} 
+                      onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-4 top-5 -translate-y-1/3 text-white/50 hover:text-white/80 transition-colors"
                     >
                       {showPassword ? (
@@ -192,7 +217,10 @@ function LoginForm() {
                 </div>
 
                 <div className="mt-2 text-center terms-text tp-body-xs">
-                  <Link href="/forgot-password" className="text-brand-400 font-weight-bold tp-body">
+                  <Link
+                    href="/forgot-password"
+                    className="text-brand-400 font-weight-bold tp-body"
+                  >
                     Forgot Your Password?
                   </Link>
                 </div>
@@ -203,7 +231,7 @@ function LoginForm() {
           {/* Exit Button */}
           <a
             href="/"
-            className="absolute bottom-4 left-4 flex items-center inner-spacing-xs text-white hover:text-gray-300 transition-colors"
+            className="hidden md:block absolute bottom-4 left-4 flex items-center inner-spacing-xs text-white hover:text-gray-300 transition-colors"
           >
             <ChevronLeft className="w-5 h-5" /> Exit
           </a>
@@ -227,7 +255,13 @@ function LoginForm() {
             <h2 className="tp-headline-s text-white">
               Consistent performance. Reliable uptime.
             </h2>
-            <p className="tp-body text-white" style={{ marginTop: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
+            <p
+              className="tp-body text-white"
+              style={{
+                marginTop: "var(--space-4)",
+                marginBottom: "var(--space-4)",
+              }}
+            >
               Experience privacy and speed with real 5G mobile proxies. Using
               real carrier networks and real smartphones ensures that your
               traffic looks like genuine mobile user activity, reducing the

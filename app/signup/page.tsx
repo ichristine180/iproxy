@@ -75,7 +75,7 @@ function SignupForm() {
   return (
     <div className="min-h-screen bg-neutral-950 relative">
       {/* Logo - Fixed Top Left */}
-      <div className="absolute top-6 left-6 z-50">
+      <div className="hidden md:block absolute top-6 left-6 z-50">
         <a href="/" className="flex items-center inner-spacing-xs">
           <span className="text-brand-400 font-bold tp-headline-s pr-2">
             Highbid Proxies
@@ -83,15 +83,30 @@ function SignupForm() {
         </a>
       </div>
 
-      <div className="min-h-screen flex flex-col lg:flex-row">
+      <div
+        className="min-h-screen flex flex-col lg:flex-row"
+        style={{
+          background:
+            "radial-gradient(ellipse at top, rgba(30, 45, 70, 1) 0%, rgba(18, 22, 28, 1) 60%, rgba(13, 15, 16, 1) 100%)",
+        }}
+      >
+        <div className="flex justify-between z-50 p-5 md:hidden">
+          <a href="/" className="flex items-center inner-spacing-xs">
+            <span className="text-brand-400 font-bold tp-headline-s pr-2">
+              Highbid Proxies
+            </span>
+          </a>
+
+          <a
+            href="/"
+            className="flex items-center inner-spacing-xs text-white hover:text-gray-300 transition-colors"
+          >
+            <ChevronLeft className="w-5 h-5" /> Exit
+          </a>
+        </div>
+
         {/* Left Side - Signup Form */}
-        <div
-          className="w-full h-screen lg:flex-1 flex items-center justify-center relative"
-          style={{
-            background:
-              "radial-gradient(ellipse at top, rgba(30, 45, 70, 1) 0%, rgba(18, 22, 28, 1) 60%, rgba(13, 15, 16, 1) 100%)",
-          }}
-        >
+        <div className="w-full h-screen lg:flex-1 flex items-center justify-center relative">
           <div className="w-full" style={{ padding: "20px 0" }}>
             {/* Signup Form */}
             <div
@@ -185,11 +200,23 @@ function SignupForm() {
                   </button>
                   <div className="text-center terms-text tp-body-xs mt-3 text-white">
                     By clicking Sign Up you agree with the{" "}
-                    <Link passHref href="/terms" target="_blank" className="text-white terms-text" style={{fontSize:12}}>
+                    <Link
+                      passHref
+                      href="/terms"
+                      target="_blank"
+                      className="text-white terms-text"
+                      style={{ fontSize: 12 }}
+                    >
                       <u>Terms</u>
                     </Link>{" "}
                     and{" "}
-                    <Link passHref href="/privacy" target="_blank" className="text-white terms-text" style={{fontSize:12}}>
+                    <Link
+                      passHref
+                      href="/privacy"
+                      target="_blank"
+                      className="text-white terms-text"
+                      style={{ fontSize: 12 }}
+                    >
                       <u>Privacy Policy</u>
                     </Link>
                   </div>
@@ -201,7 +228,7 @@ function SignupForm() {
           {/* Exit Button */}
           <a
             href="/"
-            className="absolute bottom-4 left-4 flex items-center inner-spacing-xs text-white hover:text-gray-300 transition-colors"
+            className="hidden md:block absolute  bottom-4 left-4 flex items-center inner-spacing-xs text-white hover:text-gray-300 transition-colors"
           >
             <ChevronLeft className="w-5 h-5" /> Exit
           </a>

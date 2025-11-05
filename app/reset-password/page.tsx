@@ -73,11 +73,14 @@ export default function ResetPasswordPage() {
         </a>
       </div>
 
-      <div className="min-h-screen flex flex-col lg:flex-row">
+      <div
+        className="min-h-screen flex flex-col lg:flex-row"
+        style={{ background: "radial-gradient(ellipse at top, rgba(30, 45, 70, 1) 0%, rgba(18, 22, 28, 1) 60%, rgba(13, 15, 16, 1) 100%)" , height: '100vh'}}
+      >
         {/* Left Side - Reset Password Form */}
         <div
           className="w-full lg:flex-1 flex items-center justify-center relative"
-          style={{ background: "radial-gradient(ellipse at top, rgba(30, 45, 70, 1) 0%, rgba(18, 22, 28, 1) 60%, rgba(13, 15, 16, 1) 100%)" }}
+          style={{ height: '100vh' }}
         >
           <div className="w-full" style={{ padding: '20px 0' }}>
             {/* Form Container */}

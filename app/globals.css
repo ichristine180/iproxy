@@ -6081,7 +6081,7 @@ html[data-ff-seasonal-promo-display] .promo-banner {
 }
 
 .login-form {
-  margin: 0 20px;
+  margin: 0;
   color: rgb(var(--neutral-0)) !important;
   padding: 0 30px 40px !important;
 }
@@ -6221,9 +6221,10 @@ label {
 .subheader {
   padding: 16px 16px 0 16px;
 }
-.login-form {
+
+/* .login-form {
   margin: 0 20px;
   color: rgb(var(--neutral-0)) !important;
   padding: 0 30px 40px;
-}
+} */
 
