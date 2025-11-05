@@ -314,7 +314,7 @@ export default function AdminPlansPage() {
                 {plans.map((plan) => (
                   <tr
                     key={plan.id}
-                    className="border-b hover:bg-neutral-800/50/50 transition-colors"
+                    className="border-b hover:bg-neutral-800/50 transition-colors"
                     style={{ borderBottomWidth: '1px', borderBottomColor: 'rgb(38, 38, 38)' }}
                   >
                     <td className="py-4 px-4">

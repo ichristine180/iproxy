@@ -38,83 +38,59 @@
   --danger-500: 189, 47, 47;
 
   /* Typography Variables */
-  --font-heading: Poppins, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  /* --font-heading: Poppins, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-body: Poppins, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-accent: Poppins, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; */
 
-  /* ============================================
-     SPACING SYSTEM (Base Unit: 8px)
-
-     OVERVIEW:
-     This spacing system ensures consistent layout and rhythm across
-     the entire website. All spacing values are based on an 8px grid
-     system for mathematical harmony and scalability.
-
-     USAGE GUIDELINES:
-     1. Use semantic tokens (--space-inner-*, --space-section-*) over raw values
-     2. Apply utility classes (.section-spacing, .inner-spacing-md) when possible
-     3. Maintain vertical rhythm by using consistent spacing within sections
-     4. Follow responsive spacing patterns defined below
-
-     RESPONSIVE SPACING RULES:
-     - Mobile (< 768px):    Section: 32px, Inner: 16px, Container: 16px
-     - Tablet (768-1089px): Section: 48px, Inner: 24px, Container: 32px
-     - Desktop (≥ 1090px):  Section: 64px, Inner: 24-32px, Container: 80px+
-
-     QUICK REFERENCE:
-     --space-4 (16px):  Inner spacing, tight grouping
-     --space-6 (24px):  Standard inner spacing, component padding
-     --space-8 (32px):  Large inner spacing, mobile section spacing
-     --space-12 (48px): Tablet section spacing
-     --space-16 (64px): Desktop section spacing
-     --space-20 (80px): Desktop container padding
-
-     ============================================ */
-
-  /* Base Spacing Scale */
   --space-0: 0;
-  --space-1: 0.25rem;   /* 4px - Minimal spacing */
-  --space-2: 0.5rem;    /* 8px - Base unit */
-  --space-3: 0.75rem;   /* 12px */
-  --space-4: 1rem;      /* 16px - Small spacing */
-  --space-5: 1.25rem;   /* 20px */
-  --space-6: 1.5rem;    /* 24px - Medium spacing */
-  --space-8: 2rem;      /* 32px - Large spacing */
-  --space-10: 2.5rem;   /* 40px */
-  --space-12: 3rem;     /* 48px - Section spacing */
-  --space-14: 3.5rem;   /* 56px */
-  --space-16: 4rem;     /* 64px - Extra large spacing */
-  --space-20: 5rem;     /* 80px */
-  --space-24: 6rem;     /* 96px */
-  --space-28: 7rem;     /* 112px */
-  --space-32: 8rem;     /* 128px */
+  --space-1: 0.25rem; /* 4px - Minimal spacing */
+  --space-2: 0.5rem; /* 8px - Base unit */
+  --space-3: 0.75rem; /* 12px */
+  --space-4: 1rem; /* 16px - Small spacing */
+  --space-5: 1.25rem; /* 20px */
+  --space-6: 1.5rem; /* 24px - Medium spacing */
+  --space-8: 2rem; /* 32px - Large spacing */
+  --space-10: 2.5rem; /* 40px */
+  --space-12: 3rem; /* 48px - Section spacing */
+  --space-14: 3.5rem; /* 56px */
+  --space-16: 4rem; /* 64px - Extra large spacing */
+  --space-20: 5rem; /* 80px */
+  --space-24: 6rem; /* 96px */
+  --space-28: 7rem; /* 112px */
+  --space-32: 8rem; /* 128px */
 
   /* Semantic Spacing Tokens */
   /* Inner Block Spacing (within sections) */
-  --space-inner-xs: var(--space-4);   /* 16px - Tight grouping */
-  --space-inner-sm: var(--space-5);   /* 20px */
-  --space-inner-md: var(--space-6);   /* 24px - Standard inner spacing */
-  --space-inner-lg: var(--space-8);   /* 32px - Loose inner spacing */
+  --space-inner-xs: var(--space-4); /* 16px - Tight grouping */
+  --space-inner-sm: var(--space-5); /* 20px */
+  --space-inner-md: var(--space-6); /* 24px - Standard inner spacing */
+  --space-inner-lg: var(--space-8); /* 32px - Loose inner spacing */
 
   /* Section-Level Spacing (between major sections) */
-  --space-section-mobile: var(--space-8);    /* 32px */
-  --space-section-tablet: var(--space-12);   /* 48px */
-  --space-section-desktop: var(--space-16);  /* 64px */
-  --space-section-xl: var(--space-20);       /* 80px */
+  --space-section-mobile: var(--space-8); /* 32px */
+  --space-section-tablet: var(--space-12); /* 48px */
+  --space-section-desktop: var(--space-16); /* 64px */
+  --space-section-xl: var(--space-20); /* 80px */
 
   /* Horizontal Container Padding */
-  --space-container-mobile: var(--space-4);   /* 16px */
-  --space-container-tablet: var(--space-8);   /* 32px */
+  --space-container-mobile: var(--space-4); /* 16px */
+  --space-container-tablet: var(--space-8); /* 32px */
   --space-container-desktop: var(--space-20); /* 80px */
-  --space-container-xl: var(--space-28);      /* 112px */
+  --space-container-xl: var(--space-28); /* 112px */
 
   /* Component Spacing */
-  --space-component-gap: var(--space-4);      /* 16px - Gap between related elements */
-  --space-component-padding: var(--space-6);  /* 24px - Internal component padding */
-  --space-card-padding: var(--space-6);       /* 24px - Card internal spacing */
-  --space-button-padding-y: var(--space-3);   /* 12px - Button vertical padding */
-  --space-button-padding-x: var(--space-6);   /* 24px - Button horizontal padding */
+  --space-component-gap: var(
+    --space-4
+  ); /* 16px - Gap between related elements */
+  --space-component-padding: var(
+    --space-6
+  ); /* 24px - Internal component padding */
+  --space-card-padding: var(--space-6); /* 24px - Card internal spacing */
+  --space-button-padding-y: var(--space-3); /* 12px - Button vertical padding */
+  --space-button-padding-x: var(
+    --space-6
+  ); /* 24px - Button horizontal padding */
 
   /* Legacy support (gradually migrate away from these) */
   --ct-heading-spacing: 2.5rem;
@@ -139,13 +115,75 @@
    BASE TYPOGRAPHY
    ============================================ */
 
+@font-face {
+  font-family: "Poppins";
+  src: url(/fonts/Poppins-Regular.woff2) format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Poppins";
+  src: url(/fonts/Poppins-Italic.woff2) format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Poppins";
+  src: url(/fonts/Poppins-Medium.woff2) format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Poppins";
+  src: url(/fonts/Poppins-MediumItalic.woff2) format("woff2");
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Poppins";
+  src: url(/fonts/Poppins-SemiBold.woff2) format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Poppins";
+  src: url(/fonts/Poppins-SemiBoldItalic.woff2) format("woff2");
+  font-weight: 600;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Poppins";
+  src: url(/fonts/Poppins-Bold.woff2) format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 html,
 body {
-  font-family: var(--font-body);
+  font-family: Poppins, sans-serif !important;
+  height: 100%;
   font-size: 16px; /* Base font size - 1rem = 16px */
   line-height: 1.5;
   color: rgb(var(--neutral-200));
-  background: radial-gradient(ellipse at top, rgba(40, 60, 95, 1) 0%, rgba(22, 28, 38, 1) 60%, rgba(0, 0, 0, 1) 100%);
+  background: radial-gradient(
+    ellipse at top,
+    rgba(40, 60, 95, 1) 0%,
+    rgba(22, 28, 38, 1) 60%,
+    rgba(0, 0, 0, 1) 100%
+  );
   margin: 0;
   height: 100%;
   scroll-behavior: smooth;
@@ -674,16 +712,32 @@ a:hover {
 
 /* Inner Block Spacing - Spacing within sections
    Usage: Apply to content blocks for consistent internal spacing */
-.inner-spacing-xs { gap: var(--space-inner-xs); }
-.inner-spacing-sm { gap: var(--space-inner-sm); }
-.inner-spacing-md { gap: var(--space-inner-md); }
-.inner-spacing-lg { gap: var(--space-inner-lg); }
+.inner-spacing-xs {
+  gap: var(--space-inner-xs);
+}
+.inner-spacing-sm {
+  gap: var(--space-inner-sm);
+}
+.inner-spacing-md {
+  gap: var(--space-inner-md);
+}
+.inner-spacing-lg {
+  gap: var(--space-inner-lg);
+}
 
 /* Vertical Stack Spacing */
-.stack-xs > * + * { margin-top: var(--space-inner-xs); }
-.stack-sm > * + * { margin-top: var(--space-inner-sm); }
-.stack-md > * + * { margin-top: var(--space-inner-md); }
-.stack-lg > * + * { margin-top: var(--space-inner-lg); }
+.stack-xs > * + * {
+  margin-top: var(--space-inner-xs);
+}
+.stack-sm > * + * {
+  margin-top: var(--space-inner-sm);
+}
+.stack-md > * + * {
+  margin-top: var(--space-inner-md);
+}
+.stack-lg > * + * {
+  margin-top: var(--space-inner-lg);
+}
 
 /* Component Spacing - Pre-defined component spacing
    Usage: Apply to cards, panels, and other UI components */
@@ -1039,8 +1093,6 @@ dialog {
 textarea {
   resize: vertical;
 }
-
-
 
 button,
 [role="button"] {
@@ -1623,10 +1675,6 @@ summary::-webkit-details-marker {
 
 .mb-32 {
   margin-bottom: 32px;
-}
-
-.mb-4 {
-  margin-bottom: 4px;
 }
 
 .mb-40 {
@@ -3269,7 +3317,10 @@ summary::-webkit-details-marker {
   padding-top: 12px;
   padding-bottom: 12px;
 }
-
+.py-5{
+   padding-top: 5px;
+  padding-bottom: 5px;
+}
 .py-16 {
   padding-top: 16px;
   padding-bottom: 16px;
@@ -3283,11 +3334,6 @@ summary::-webkit-details-marker {
 .py-32 {
   padding-top: 32px;
   padding-bottom: 32px;
-}
-
-.py-4 {
-  padding-top: 4px;
-  padding-bottom: 4px;
 }
 
 .py-40 {
@@ -3764,7 +3810,12 @@ body {
   scroll-behavior: smooth;
   display: flex;
   flex-direction: column;
-  background: radial-gradient(ellipse at top, rgba(40, 60, 95, 1) 0%, rgba(22, 28, 38, 1) 60%, rgba(0, 0, 0, 1) 100%);
+  background: radial-gradient(
+    ellipse at top,
+    rgba(40, 60, 95, 1) 0%,
+    rgba(22, 28, 38, 1) 60%,
+    rgba(0, 0, 0, 1) 100%
+  );
   color: rgba(var(--neutral-300), 1);
   min-height: 100vh;
   height: -moz-max-content;
@@ -6111,4 +6162,50 @@ label {
 }
 .balance-container {
   margin-right: 16px !important;
+}
+
+/*correction Styles*/
+.pading-16 {
+  /* padding: 0 16px; */
+}
+
+.margin-12 {
+  margin: 0 12px;
+}
+
+.padding-32-36 {
+  padding: 2rem 2.25rem;
+}
+
+.font-16-bold {
+  font-size: 16px;
+  font-weight: bold;
+}
+.card.card-custom {
+  border: 0;
+  box-shadow: 0 0 30px 0 rgba(82, 63, 105, 0.05);
+}
+.card-custom {
+  padding-right: 0 !important;
+  padding-left: 0 !important;
+}
+.card-header,
+.card {
+  background-color: rgb(var(--neutral-800));
+  border-top: 1px solid rgb(var(--neutral-600)) !important;
+  border: none;
+}
+.gutter-b {
+  margin-bottom: 25px;
+}
+.card {
+  word-wrap: break-word;
+  background-clip: border-box;
+  border-radius: 0.5rem;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  min-width: 0;
+  position: relative;
 }

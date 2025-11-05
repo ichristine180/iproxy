@@ -498,11 +498,25 @@ function DashboardPageContent() {
     }
   };
 
-  // Handle extend order
-  const handleExtendOrder = (order: Order) => {
-    // Redirect to checkout with the same plan
-    router.push(`/checkout?plan=${order.plan.id || ""}`);
-    setOpenMenuId(null);
+  const getStatusConfig = (status: any) => {
+    const configs: any = {
+      expired: {
+        img: "/img/svg/order-status/expired.svg",
+        text: "Expired",
+        class: "expired",
+      },
+      active: {
+        img: "/img/svg/order-status/active.svg",
+        text: "Active",
+        class: "active",
+      },
+      pending: {
+        img: "/img/svg/order-status/pending.svg",
+        text: "Pending",
+        class: "pending",
+      },
+    };
+    return configs[status] || configs.expired;
   };
 
   // Handle buy button click
@@ -577,7 +591,7 @@ function DashboardPageContent() {
   // Order Details View
   if (currentView === "details" && selectedOrder) {
     return (
-      <div className="p-3 sm:p-6">
+      <div className="margin-12">
         {/* Back Button */}
         <button
           onClick={() => setCurrentView("list")}
@@ -777,7 +791,9 @@ function DashboardPageContent() {
 
             {/* Rotation Link */}
             <div className="p-3">
-              <h4 className="text-white tb-body-s font-medium py-2">Rotation link</h4>
+              <h4 className="text-white tb-body-s font-medium py-2">
+                Rotation link
+              </h4>
               <div className="flex flex-col sm:flex-row gap-3">
                 <input
                   type="text"
@@ -788,7 +804,7 @@ function DashboardPageContent() {
                 <Button
                   onClick={handleRotateIP}
                   disabled={isRotatingIP}
-                 className="btn button-primary px-15 py-3 hover:bg-brand-300 hover:text-brand-600 mt-8"
+                  className="btn button-primary px-15 py-3 hover:bg-brand-300 hover:text-brand-600 mt-8"
                 >
                   {isRotatingIP ? (
                     <>
@@ -810,15 +826,14 @@ function DashboardPageContent() {
         <div
           className="rounded-xl p-6  mt-6"
           style={{
-              border: "1px solid rgb(64, 64, 64)",
-              background: "rgb(23, 23, 23)",
-            }}
+            border: "1px solid rgb(64, 64, 64)",
+            background: "rgb(23, 23, 23)",
+          }}
         >
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
             <h2 className="text-xl sm:text-2xl font-semibold text-white">
               Order #{selectedOrder.id.slice(0, 6)} information
             </h2>
-           
           </div>
 
           <div className="space-y-4">
@@ -934,14 +949,13 @@ function DashboardPageContent() {
 
   // Orders List View
   return (
-    <div className="p-3 sm:p-6">
+    <div className="margin-12">
       {/* Page Title */}
-
-      <h1 className="tp-sub-headline text-neutral-0 pb-3">Dashboard</h1>
+      <h1 className="tp-sub-headline text-neutral-0 py-4">Dashboard</h1>
 
       {/* Success Messages */}
       {showSuccessMessage && (
-        <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-xl flex items-center gap-3">
+        <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-xl flex items-center 2">
           <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
           <div className="flex-1">
             <p className="tp-body font-semibold text-green-600">
@@ -1029,16 +1043,10 @@ function DashboardPageContent() {
       ) : (
         <div className="space-y-8">
           {/* Proxy Selection Card */}
-          <div
-            className="rounded-xl p-2 sm:p-4"
-            style={{
-              border: "1px solid rgb(64, 64, 64)",
-              background: "rgb(23, 23, 23)",
-            }}
-          >
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8 bg-neutral-800/50/50 border border-neutral-700 rounded-xl p-3 sm:p-6">
+          <div className="rounded-xl p-2 sm:p-4 bg-neutral-800/50 border border-neutral-700">
+            <div className="grid grid-cols-1 lg:grid-cols-2  sm:gap-8 padding-32-36">
               {/* Left Side - Plans List */}
-              <div className="space-y-3">
+              <div className="space-y-3 gap-8 d-flex flex-column">
                 {plans.map((plan) => {
                   const isSelected = selectedPlanId === plan.id;
 
@@ -1048,19 +1056,25 @@ function DashboardPageContent() {
                       onClick={() => setSelectedPlanId(plan.id)}
                       className={`w-full flex items-center justify-between px-5 py-3 rounded-full transition-all cursor-pointer ${
                         isSelected
-                          ? "bg-[rgb(var(--brand-500))] text-white"
-                          : "bg-neutral-800/50/50 text-neutral-400 hover:bg-neutral-800/50 hover:text-white"
+                          ? "bg-[rgb(var(--brand-600))] text-neutral-0"
+                          : "bg-neutral-800/50 text-neutral-400 hover:bg-neutral-800/50 hover:text-white border border-neutral-600"
                       }`}
                     >
                       <div className="flex items-center gap-3">
                         <div
                           className={`p-2 rounded-full ${
-                            isSelected ? "bg-white/20" : "bg-neutral-700"
+                            isSelected ? "bg-white/20" : "bg-neutral-600"
                           }`}
                         >
                           <Server className="h-5 w-5" />
                         </div>
-                        <span className="tp-body">{plan.name}</span>
+                        <span
+                          className={`tp-body ${
+                            isSelected && "text-neutral-0"
+                          }`}
+                        >
+                          {plan.name}
+                        </span>
                       </div>
                       {!isSelected && (
                         <button
@@ -1080,14 +1094,14 @@ function DashboardPageContent() {
               </div>
 
               {/* Right Side - Selected Plan Details */}
-              <div className="p-6 sm:p-6 border-l lg:border-t-0 lg:border-l border-neutral-700">
+              <div className="p-6 sm:p-6 border-l   border-neutral-700">
                 {selectedPlan ? (
                   <>
-                    <h3 className="tp-body mb-2 text-neutral-0">
+                    <h3 className="headline-s pb-3 text-neutral-0">
                       {selectedPlan.name}
                     </h3>
 
-                    <div className="mb-4 pb-4 border-b border-neutral-700">
+                    <div className="mb-4 pb-4">
                       {(() => {
                         const { price, duration } =
                           getLowestPrice(selectedPlan);
@@ -1143,7 +1157,7 @@ function DashboardPageContent() {
                     <button
                       onClick={() => handleBuyNow(selectedPlan.id)}
                       disabled={isCheckingQuota}
-                      className="btn button-primary px-15 mt-8 w-full hover:bg-brand-300 hover:text-brand-600"
+                      className="btn button-primary px-15 mt-8  hover:bg-brand-300 hover:text-brand-600"
                     >
                       {isCheckingQuota ? (
                         <>
@@ -1164,63 +1178,59 @@ function DashboardPageContent() {
           </div>
 
           {/* Orders Section */}
-          <div>
-            <h2 className="tp-body-s text-neutral-0 uppercase tracking-wider mb-4 font-semibold">
+          <div className="pl-0 col-12 content-accent mb-3 text-uppercase tp-title">
+            <h2 className="tp-body text-brand-300 uppercase tracking-wider py-3">
               YOUR ORDERS
             </h2>
-            <div
-              className="rounded-xl overflow-hidden"
-              style={{
-                border: "1px solid rgb(64, 64, 64)",
-                background: "rgb(23, 23, 23)",
-              }}
-            >
-              <div className="p-3 sm:p-6">
-                <h3 className="tp-body font-semibold text-neutral-0 mb-4">
-                  Most Recent
+            <div className="card card-custom gutter-b padding-32-36">
+               <h3 className="card-title align-items-start flex-column px-32">
+                  <span className="font-weight-bolder tp-body-bold content-primary">
+                    Most Recent
+                  </span>
                 </h3>
-                <div>
-                  <label
-                    htmlFor="search-input"
-                    className="tp-body-s text-neutral-400 mb-2 block"
-                  >
-                    Search by order ID or IP
-                  </label>
-                  <div className="relative">
-                    <Search className="absolute right-3 top-1/3 -translate-y-1/2 h-5 w-5 text-neutral-500 pointer-events-none" />
-                    <input
-                      id="search-input"
-                      type="text"
-                      placeholder="Search"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full h-12 pl-3 pr-10 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder:text-neutral-500 focus:outline-none focus:border-[rgb(var(--brand-400))] focus:ring-1 focus:ring-[rgb(var(--brand-400))] transition-colors"
-                    />
-                  </div>
+
+              <div className="card-body padding-32-36">
+                <label className="block text-sm text-neutral-400 mb-2">
+                  Search by order ID or IP
+                </label>
+                <div className="relative">
+                  <Search className="absolute left-2 top-1/3 -translate-y-1/2 h-5 w-5 text-neutral-500" />
+                  <input
+                    type="text"
+                    placeholder="Search"
+                     className="form-control h-auto rounded-lg border-0 py-3 px-10 w-full"
+                  />
                 </div>
               </div>
 
               {orders.length === 0 ? (
-                <div className="text-center py-16 px-6">
-                  <p className="tp-body text-neutral-400">No orders found</p>
+                <div className="text-center px-32 text-neutral-500">
+                  <p>No orders found</p>
                 </div>
               ) : (
                 <>
                   {/* Orders Table */}
-                  <div className="overflow-x-auto p-3 sm:p-6">
-                    <table className="w-full min-w-[600px]">
+                  <div className="overflow-x-auto px-32">
+                    <table className="w-full">
                       <thead>
-                        <tr className="border-b border-neutral-800">
-                          <th className="text-left py-3 px-2 sm:px-4 text-xs font-semibold text-neutral-500 uppercase tracking-wider">
-                            ID ↓
+                        <tr className="">
+                          <th className="text-left py-3 px-3 tp-body-s font-semibold text-neutral-0 bg-neutral-700">
+                            ID 
                           </th>
-                          <th className="text-left py-3 px-2 sm:px-4 text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+                          <th className="text-left py-3 px-4 tp-body-s font-semibold text-neutral-0 bg-neutral-700">
                             Product
                           </th>
-                          <th className="text-left py-3 px-2 sm:px-4 text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+                          <th className="text-left py-3 px-4 tp-body-s font-semibold text-neutral-0 bg-neutral-700">
+                            Status
+                          </th>
+                         
+                          <th className="text-left py-3 px-4 tp-body-s font-semibold text-neutral-0 bg-neutral-700">
                             Order date
                           </th>
-                          <th className="text-left py-3 px-2 sm:px-4 text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+                          <th className="text-left py-3 px-4 tp-body-sfont-semibold text-neutral-0 bg-neutral-700">
+                            Amount
+                          </th>
+                          <th className="text-left py-3 px-4 tp-body-s font-semibold text-neutral-0 bg-neutral-700">
                             Actions
                           </th>
                         </tr>
@@ -1246,26 +1256,59 @@ function DashboardPageContent() {
                             }
                           );
 
+                          // Helper function to get status badge styles
+                          const getStatusBadge = (status: string) => {
+                            const statusStyles = {
+                              active:
+                                "bg-green-500/10 text-green-400 border-green-500/20",
+                              pending:
+                                "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
+                              expired:
+                                "bg-red-500/10 text-red-400 border-red-500/20",
+                              failed:
+                                "bg-red-500/10 text-red-400 border-red-500/20",
+                              cancelled:
+                                "bg-neutral-500/10 text-neutral-400 border-neutral-500/20",
+                            };
+
+                            return (
+                              <span
+                                className={`inline-flex px-3 py-1 rounded-full tp-body-s border capitalize ${
+                                  statusStyles[
+                                    status as keyof typeof statusStyles
+                                  ] || statusStyles.pending
+                                }`}
+                              >
+                                {status}
+                              </span>
+                            );
+                          };
+
                           return (
                             <tr
                               key={order.id}
-                              className=" hover:bg-neutral-800/50/30 transition-colors"
+                              className="hover:bg-neutral-800/50 transition-colors"
                             >
-                              <td className="py-4 px-2 sm:px-4 text-white text-sm font-medium">
+                              <td className="py-4 px-4 tp-body-s">
                                 #{order.id.slice(0, 6)}
                               </td>
-                              <td className="py-4 px-2 sm:px-4 text-white text-sm">
+                              <td className="py-4 px-4 tp-body-s">
                                 {order.plan.name}
                               </td>
-                              <td className="py-4 px-2 sm:px-4 text-white text-sm">
-                                <div className="font-medium">
-                                  {formattedDate}
-                                </div>
-                                <div className="text-xs text-neutral-500 mt-0.5">
+                              <td className="py-4 px-4">
+                                {getStatusBadge(order.status)}
+                              </td>
+                             
+                              <td className="py-4 px-4 text-white">
+                                <div>{formattedDate}</div>
+                                <div className="text-sm text-neutral-500">
                                   {formattedTime}
                                 </div>
                               </td>
-                              <td className="py-4 px-2 sm:px-4">
+                              <td className="py-4 px-4 text-white font-semibold">
+                                ${order.total_amount.toFixed(2)}
+                              </td>
+                              <td className="py-4 px-4">
                                 <div className="flex items-center gap-2">
                                   <button
                                     onClick={() =>
@@ -1305,30 +1348,15 @@ function DashboardPageContent() {
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent
                                       align="end"
-                                      className="w-58 z-50"
+                                      className="w-56"
                                     >
                                       <DropdownMenuItem
                                         onClick={() => handleViewDetails(order)}
-                                        className="cursor-pointer px-3"
+                                        className="cursor-pointer"
                                       >
-                                        <Eye className="mr-3 h-5 w-5" />
-                                        <span className="text-base">
-                                          View Details
-                                        </span>
+                                        <Eye className="mr-2 h-4 w-8" />
+                                        <span>View Details</span>
                                       </DropdownMenuItem>
-                                      {/* {order.status === "active" && (
-                                        <DropdownMenuItem
-                                          onClick={() =>
-                                            handleExtendOrder(order)
-                                          }
-                                          className="cursor-pointer px-3"
-                                        >
-                                          <RefreshCw className="mr-3 h-5 w-5" />
-                                          <span className="text-base">
-                                            Extend Order
-                                          </span>
-                                        </DropdownMenuItem>
-                                      )} */}
                                     </DropdownMenuContent>
                                   </DropdownMenu>
                                 </div>
@@ -1341,14 +1369,14 @@ function DashboardPageContent() {
                   </div>
 
                   {/* Pagination */}
-                  <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-3 sm:px-6 py-4 sm:py-5 border-t border-neutral-800">
-                    <select className="w-full sm:w-auto px-4 sm:px-5 py-2 bg-neutral-800/50/80 border border-neutral-700 rounded-xl text-white text-sm font-medium focus:outline-none focus:border-[rgb(var(--brand-400))] cursor-pointer">
+                  <div className="flex items-center justify-end px-32 gap-8 py-4">
+                    <select className="py-12 px-12 bg-neutral-800 border border-neutral-700 rounded-sm text-white text-sm focus:outline-none focus:border-[rgb(var(--brand-400))]">
                       <option>5 per page</option>
                       <option>10 per page</option>
                       <option>20 per page</option>
                       <option>50 per page</option>
                     </select>
-                    <div className="tp-body-s text-neutral-400 font-medium px-2">
+                    <div className="text-sm text-neutral-400">
                       1-{Math.min(5, orders.length)} of {orders.length}
                     </div>
                   </div>

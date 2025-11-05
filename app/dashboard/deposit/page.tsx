@@ -191,7 +191,7 @@ export default function DepositPage() {
   };
 
   return (
-    <div className="p-6">
+    <div className="margin-12">
       {/* Page Title */}
       <h1 className="tp-sub-headline text-neutral-0 pb-3">Deposit</h1>
 
@@ -226,7 +226,7 @@ export default function DepositPage() {
 
       {/* Content Card */}
       <div className="bg-neutral-900 rounded-xl p-4">
-        <div className="bg-neutral-800/50/50 border border-neutral-700 rounded-xl p-6">
+        <div className="bg-neutral-800/50 border border-neutral-700 rounded-xl p-6">
             {activeTab === "deposit" ? (
               <>
                 {/* Header */}

@@ -340,7 +340,7 @@ export default function AdminUsersPage() {
                     return (
                       <tr
                         key={user.id}
-                        className="border-b hover:bg-neutral-800/50/50 transition-colors"
+                        className="border-b hover:bg-neutral-800/50 transition-colors"
                         style={{ borderBottomWidth: '1px', borderBottomColor: 'rgb(38, 38, 38)' }}
                       >
                         <td className="py-4 px-4 text-white font-mono text-sm">

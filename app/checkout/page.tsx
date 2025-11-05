@@ -483,7 +483,7 @@ function CheckoutPageContent() {
 
   return (
     <DashboardLayout>
-      <div className="p-3 sm:p-6">
+      <div className="margin-12">
         {/* Header */}
         <div className="">
           <h1 className="tp-sub-headline text-neutral-0 pb-3">{plan.name}</h1>
@@ -514,13 +514,13 @@ function CheckoutPageContent() {
         </div>
 
         {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 sm:gap-6">
+        <div className="flex flex-col lg:flex-row gap-2 sm:gap-6 bg-neutral-800/50 rounded-xl p-10 transition-all justify-between">
           {/* Left Section - Steps */}
           <div className="lg:col-span-2 space-y-4 sm:space-y-6">
             {/* Step 1: Order Details */}
             <div
               id="order-details-section"
-              className={`bg-neutral-800/50 border rounded-xl p-3 md:p-5 transition-all ${
+              className={`${
                 currentStep === 1
                   ? "border-neutral-700"
                   : "border-neutral-700/50"
@@ -666,6 +666,7 @@ function CheckoutPageContent() {
                   ))}
                 </div>
               </div>
+              
 
               {/* Continue Button */}
               {currentStep === 1 && (
@@ -704,7 +705,7 @@ function CheckoutPageContent() {
                         ? "border-neutral-700 bg-neutral-800/50/30 opacity-60 cursor-not-allowed"
                         : paymentMethod === "wallet"
                         ? "border-[rgb(var(--brand-400))] bg-neutral-800/50"
-                        : "border-neutral-700 bg-neutral-800/50/50 hover:border-neutral-600"
+                        : "border-neutral-700 bg-neutral-800/50 hover:border-neutral-600"
                     }`}
                   >
                     <div className="flex items-center gap-4 sm:gap-3 mb-2">
@@ -756,7 +757,7 @@ function CheckoutPageContent() {
                     className={`w-full p-3 sm:p-4 rounded-lg border-2 transition-all ${
                       paymentMethod === "crypto"
                         ? "border-[rgb(var(--brand-400))] bg-neutral-800/50"
-                        : "border-neutral-700 bg-neutral-800/50/50 hover:border-neutral-600"
+                        : "border-neutral-700 bg-neutral-800/50 hover:border-neutral-600"
                     }`}
                   >
                     <button
@@ -880,11 +881,12 @@ function CheckoutPageContent() {
                 </div>
               </div>
             )}
+
           </div>
 
           {/* Right Section - Order Summary (Sticky) */}
-          <div className="lg:sticky lg:top-6 h-fit order-first lg:order-last">
-            <div className="bg-neutral-800/50 border border-neutral-700 rounded-lg p-6 sm:p-6">
+          <div className="lg:sticky lg:top-6 h-fit">
+            <div className="border border-neutral-700 rounded-lg p-6 sm:p-6">
               <h3 className="tp-body-bold">
                 Order summary
               </h3>
@@ -998,6 +1000,7 @@ function CheckoutPageContent() {
               </div>
             </div>
           </div>
+          
         </div>
 
         {/* Quota Unavailable Dialog */}

@@ -40,6 +40,7 @@ import {
   Waves,
   Menu,
   X,
+  Banknote,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -109,7 +110,7 @@ export const DashboardLayout = ({
   const [walletBalance, setWalletBalance] = useState<number>(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-console.log(mobileMenuOpen);
+  console.log(mobileMenuOpen);
 
   useEffect(() => {
     fetchPlans();
@@ -156,10 +157,7 @@ console.log(mobileMenuOpen);
   };
 
   return (
-    <div
-      className="h-screen flex w-full md:p-4 p-2 gap-2 md:gap-4 overflow-hidden"
-      style={{ background: "rgb(15, 15, 15)" }}
-    >
+    <div className="h-screen flex w-full  p-2 gap-2 md:gap-4 bg-neutral-1000">
       {/* Mobile Overlay */}
       {mobileMenuOpen && (
         <div
@@ -173,11 +171,13 @@ console.log(mobileMenuOpen);
 
       {/* Sidebar */}
       <aside
-        className={`
+        className={`bg-neutral-800
         w-64 ${
-          sidebarCollapsed ? "lg:w-20" : "lg:w-64"
-        } rounded-xl flex flex-col
-        ${mobileMenuOpen ? "fixed" : "hidden lg:flex"} lg:relative z-50 lg:z-auto
+          sidebarCollapsed ? "lg:w-20" : "lg:w-[265px]"
+        } rounded-lg flex flex-col
+        ${
+          mobileMenuOpen ? "fixed" : "hidden lg:flex"
+        } lg:relative z-50 lg:z-auto
         transition-all duration-300 ease-in-out
         ${
           mobileMenuOpen
@@ -186,10 +186,6 @@ console.log(mobileMenuOpen);
         }
         inset-y-2 left-2 lg:inset-y-0 lg:left-0 lg:h-full p-6
       `}
-        style={{
-          border: "1px solid rgb(64, 64, 64)",
-          background: "rgb(23, 23, 23)",
-        }}
       >
         {/* Logo Section */}
         <div
@@ -197,7 +193,6 @@ console.log(mobileMenuOpen);
           style={{ borderBottom: "1px solid rgb(64, 64, 64)" }}
         >
           <a href="/" className="flex items-center gap-2 overflow-hidden">
-           
             <span
               className={`text-brand-400 font-bold tp-sub-headline-s whitespace-nowrap ${
                 sidebarCollapsed ? "lg:hidden" : ""
@@ -238,15 +233,14 @@ console.log(mobileMenuOpen);
           <Link
             href="/dashboard"
             onClick={() => {
-              console.log("Dashboard link clicked");
               setMobileMenuOpen(false);
             }}
             className={`flex items-center gap-3 ${
               sidebarCollapsed ? "lg:justify-center" : ""
-            } px-4 py-2.5 mx-2 rounded-lg transition-colors ${
+            } py-2.5 pl-4 pr-4 transition-all duration-300 ${
               pathname === "/dashboard"
-                ? "bg-neutral-800/50 text-white"
-                : "text-neutral-400 hover:text-white hover:bg-neutral-800/50/50"
+                ? "bg-[rgb(var(--neutral-600))] text-white border-l-[5px] border-l-solid border-l-[rgb(var(--brand-300))]"
+                : "text-neutral-400 hover:text-white hover:bg-[rgb(var(--neutral-600))] hover:border-l-[5px] hover:border-l-solid hover:border-l-[rgb(var(--brand-300))] border-l-[5px] border-l-solid border-l-transparent"
             }`}
             title="Dashboard"
           >
@@ -264,10 +258,10 @@ console.log(mobileMenuOpen);
             onClick={() => setMobileMenuOpen(false)}
             className={`flex items-center gap-3 ${
               sidebarCollapsed ? "lg:justify-center" : ""
-            } px-4 py-2.5 mx-2 rounded-lg transition-colors ${
+            } py-2.5 pl-4 pr-4 transition-all duration-300 ${
               pathname === "/dashboard/invoices"
-                ? "bg-neutral-800/50 text-white"
-                : "text-neutral-400 hover:text-white hover:bg-neutral-800/50/50"
+                ? "bg-[rgb(var(--neutral-600))] text-white border-l-[5px] border-l-solid border-l-[rgb(var(--brand-300))]"
+                : "text-neutral-400 hover:text-white hover:bg-[rgb(var(--neutral-600))] hover:border-l-[5px] hover:border-l-solid hover:border-l-[rgb(var(--brand-300))] border-l-[5px] border-l-solid border-l-transparent"
             }`}
             title="Invoices"
           >
@@ -287,10 +281,10 @@ console.log(mobileMenuOpen);
             onClick={() => setMobileMenuOpen(false)}
             className={`flex items-center gap-3 ${
               sidebarCollapsed ? "lg:justify-center" : ""
-            } px-4 py-2.5 mx-2 rounded-lg transition-colors ${
+            } py-2.5 pl-4 pr-4 transition-all duration-300 ${
               pathname === "/dashboard/deposit"
-                ? "bg-neutral-800/50 text-white"
-                : "text-neutral-400 hover:text-white hover:bg-neutral-800/50/50"
+                ? "bg-[rgb(var(--neutral-600))] text-white border-l-[5px] border-l-solid border-l-[rgb(var(--brand-300))]"
+                : "text-neutral-400 hover:text-white hover:bg-[rgb(var(--neutral-600))] hover:border-l-[5px] hover:border-l-solid hover:border-l-[rgb(var(--brand-300))] border-l-[5px] border-l-solid border-l-transparent"
             }`}
             title="Deposit"
           >
@@ -340,10 +334,10 @@ console.log(mobileMenuOpen);
                       onClick={() => setMobileMenuOpen(false)}
                       className={`flex items-center gap-3 ${
                         sidebarCollapsed ? "lg:justify-center" : ""
-                      } px-4 py-2.5 mx-2 rounded-lg transition-colors ${
+                      } py-2.5 pl-4 pr-4 transition-all duration-300 ${
                         pathname === `/dashboard/proxies/${channelInfo.id}`
-                          ? "bg-neutral-800/50 text-white"
-                          : "text-neutral-400 hover:text-white hover:bg-neutral-800/50/50"
+                          ? "bg-[rgb(var(--neutral-600))] text-white border-l-[5px] border-l-solid border-l-[rgb(var(--brand-300))]"
+                          : "text-neutral-400 hover:text-white hover:bg-[rgb(var(--neutral-600))] hover:border-l-[5px] hover:border-l-solid hover:border-l-[rgb(var(--brand-300))] border-l-[5px] border-l-solid border-l-transparent"
                       }`}
                       title={channelInfo.name}
                     >
@@ -365,15 +359,9 @@ console.log(mobileMenuOpen);
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col gap-2 md:gap-4 h-full overflow-hidden min-w-0">
+      <div className="flex-1 flex flex-col gap-2 md:gap-4 h-full min-w-0 overflow-y-auto">
         {/* Header */}
-        <header
-          className="backdrop-blur rounded-xl p-2 py-3"
-          style={{
-            border: "1px solid rgb(64, 64, 64)",
-            background: "rgba(23, 23, 23, 0.8)",
-          }}
-        >
+        <header className="sticky top-0 z-10 flex-shrink-0 margin-12 md:margin-8 md:margin-4 backdrop-blur rounded-lg h-[65px] bg-neutral-700">
           <div className="h-full flex items-center justify-between px-2 lg:px-6 gap-2 lg:gap-3">
             {/* Left Section */}
             <div className="flex items-center gap-3 lg:gap-3 min-w-0">
@@ -389,19 +377,19 @@ console.log(mobileMenuOpen);
               </button>
               <a
                 href="/dashboard/profile"
-                className="hidden lg:flex whitespace-nowrap h-40 gap-10 tp-body-s px-24 py-16 hover:text-brand-600 rounded-8 focus-within:outline-brand-100 border-brand-400 text-brand-400 hover:bg-brand-300 active:bg-brand-700 active:text-neutral-0 border-2 border-solid hover:border-transparent active:border-transparent cursor-pointer select-none items-center justify-center gap-[10px] font-bold outline-offset-2 transition-all md:rounded-8 whitespace-nowrap flex-row"
+                className="hidden lg:flex whitespace-nowrap h-40  tp-body-s px-24 py-16 hover:text-brand-600 rounded-8 focus-within:outline-brand-100 border-brand-400 text-brand-400 hover:bg-brand-300 active:bg-brand-700 active:text-neutral-0 border-2 border-solid hover:border-transparent active:border-transparent cursor-pointer select-none items-center justify-center  font-bold outline-offset-2 transition-all md:rounded-8 whitespace-nowrap flex-row"
               >
                 <User className="h-4 w-4" />
-                <span className="text-xs md:text-sm font-medium">
+                <span className="text-xs md:text-sm font-16-bold">
                   My Profile
                 </span>
               </a>
               <a
                 href="/dashboard/deposit"
-                className="hidden lg:flex whitespace-nowrap h-40 gap-10 tp-body-s px-24 py-16 rounded-8 focus-within:outline-brand-100 border-brand-400 text-brand-400 hover:text-brand-600 hover:bg-brand-300 active:bg-brand-700 active:text-neutral-0 border-2 border-solid hover:border-transparent active:border-transparent cursor-pointer select-none items-center justify-center gap-[10px] font-bold outline-offset-2 transition-all md:rounded-8 whitespace-nowrap flex-row"
+                className="hidden lg:flex whitespace-nowrap h-40 tp-body-s px-24 py-16 rounded-8 focus-within:outline-brand-100 border-brand-400 text-brand-400 hover:text-brand-600 hover:bg-brand-300 active:bg-brand-700 active:text-neutral-0 border-2 border-solid hover:border-transparent active:border-transparent cursor-pointer select-none items-center justify-center  font-bold outline-offset-2 transition-all md:rounded-8 whitespace-nowrap flex-row"
               >
                 <DollarSign className="h-4 w-4" />
-                <span className="text-xs md:text-sm font-medium">Deposit</span>
+                <span className="text-xs md:text-sm font-16-bold">Deposit</span>
               </a>
             </div>
 
@@ -420,8 +408,8 @@ console.log(mobileMenuOpen);
               {/* User Menu */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                   <button className="hidden lg:flex  flex items-center gap-2 text-white hover:text-neutral-300 transition-colors">
-                      <span className="tp-body-bold mr-3">
+                  <button className="hidden lg:flex flex items-center gap-2 text-white hover:text-neutral-300 transition-colors focus:outline-none focus:ring-0">
+                    <span className="font-16-bold mr-3">
                       Hi, {user?.email?.split("@")[0]}
                     </span>
                     <Avatar className="h-7 w-7 md:h-8 md:w-8">
@@ -430,13 +418,68 @@ console.log(mobileMenuOpen);
                       </AvatarFallback>
                     </Avatar>
                   </button>
-                 
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem onClick={handleLogout}>
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Logout
-                  </DropdownMenuItem>
+
+                <DropdownMenuContent
+                  align="end"
+                  className="w-[400px] bg-neutral-800 border-0 p-0 overflow-hidden"
+                >
+                  {/* Header with avatar, username, and balance - Full Width Background */}
+                  <div className="bg-neutral-1000 py-6 px-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="bg-brand-600 tp-headline-s text-white p-3 px-5 rounded-lg font-semibold">
+                          {getUserInitials()}
+                        </div>
+                        <span className="text-xl font-normal text-white">
+                          {user?.email?.split("@")[0]}
+                        </span>
+                      </div>
+                      <div className="bg-green-500 text-white px-5 py-2 rounded-lg font-semibold tp-body-s">
+                        ${walletBalance.toFixed(2)}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Menu Items */}
+                  <div className="space-y-1 p-4">
+                    {/* My Profile */}
+                    <DropdownMenuItem className="flex items-start gap-3 p-3 cursor-pointer hover:bg-transparent focus:bg-transparent">
+                      <User className="h-5 w-5 text-brand-600 mt-1 flex-shrink-0" />
+                      <div>
+                        <div className="font-semibold text-white text-base">
+                          My Profile
+                        </div>
+                        <div className="text-sm text-neutral-400">
+                          Account settings and more
+                        </div>
+                      </div>
+                    </DropdownMenuItem>
+
+                    {/* Deposit */}
+                    <DropdownMenuItem className="flex items-start gap-3 p-3 cursor-pointer hover:bg-transparent focus:bg-transparent">
+                      <Banknote className="h-5 w-5 text-brand-600 mt-1 flex-shrink-0" />
+                      <div>
+                        <div className="font-semibold text-white text-base">
+                          Deposit
+                        </div>
+                        <div className="text-sm text-neutral-400">
+                          Add credits
+                        </div>
+                      </div>
+                    </DropdownMenuItem>
+                  </div>
+
+                  {/* Logout Button */}
+                  <div className="p-6">
+                    <button
+                      onClick={handleLogout}
+                      className="w-full bg-[rgb(var(--brand-600))] hover:bg-[rgb(var(--brand-700))] text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors"
+                    >
+                      <LogOut className="h-5 w-5" />
+                      Logout
+                    </button>
+                  </div>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -444,7 +487,7 @@ console.log(mobileMenuOpen);
         </header>
 
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto rounded-xl scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-transparent">
+        <main className="flex-1  rounded-xl scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-transparent">
           {children}
         </main>
       </div>

@@ -215,7 +215,7 @@ export default function AdminDashboardPage() {
           </p>
         </div>
         <div
-          className="rounded-xl p-4 sm:p-5 cursor-pointer hover:bg-neutral-800/50/50 transition-all"
+          className="rounded-xl p-4 sm:p-5 cursor-pointer hover:bg-neutral-800/50 transition-all"
           style={{
             border: "1px solid rgb(64, 64, 64)",
             background: "rgb(23, 23, 23)",
@@ -258,7 +258,7 @@ export default function AdminDashboardPage() {
 
         {stats.processingOrders > 0 && (
           <div
-            className="rounded-xl p-4 sm:p-5 cursor-pointer hover:bg-neutral-800/50/50 transition-all border border-blue-500/20 bg-blue-500/5"
+            className="rounded-xl p-4 sm:p-5 cursor-pointer hover:bg-neutral-800/50 transition-all border border-blue-500/20 bg-blue-500/5"
             onClick={() => router.push("/admin/processing-orders")}
           >
             <div className="flex flex-row items-center justify-between space-y-0 mb-3">
@@ -304,7 +304,7 @@ export default function AdminDashboardPage() {
         )}
 
         <div
-          className="rounded-xl p-4 sm:p-5 cursor-pointer hover:bg-neutral-800/50/50 transition-all"
+          className="rounded-xl p-4 sm:p-5 cursor-pointer hover:bg-neutral-800/50 transition-all"
           style={{
             border: "1px solid rgb(64, 64, 64)",
             background: "rgb(23, 23, 23)",
@@ -323,7 +323,7 @@ export default function AdminDashboardPage() {
         </div>
 
         <div
-          className="rounded-xl p-4 sm:p-5 cursor-pointer hover:bg-neutral-800/50/50 transition-all"
+          className="rounded-xl p-4 sm:p-5 cursor-pointer hover:bg-neutral-800/50 transition-all"
           style={{
             border: "1px solid rgb(64, 64, 64)",
             background: "rgb(23, 23, 23)",
@@ -342,7 +342,7 @@ export default function AdminDashboardPage() {
         </div>
 
         <div
-          className="rounded-xl p-4 sm:p-5 cursor-pointer hover:bg-neutral-800/50/50 transition-all"
+          className="rounded-xl p-4 sm:p-5 cursor-pointer hover:bg-neutral-800/50 transition-all"
           style={{
             border: "1px solid rgb(64, 64, 64)",
             background: "rgb(23, 23, 23)",
@@ -363,7 +363,7 @@ export default function AdminDashboardPage() {
         </div>
 
         <div
-          className="rounded-xl p-4 sm:p-5 cursor-pointer hover:bg-neutral-800/50/50 transition-all"
+          className="rounded-xl p-4 sm:p-5 cursor-pointer hover:bg-neutral-800/50 transition-all"
           style={{
             border: "1px solid rgb(64, 64, 64)",
             background: "rgb(23, 23, 23)",
@@ -382,7 +382,7 @@ export default function AdminDashboardPage() {
         </div>
 
         <div
-          className="rounded-xl p-4 sm:p-5 cursor-pointer hover:bg-neutral-800/50/50 transition-all"
+          className="rounded-xl p-4 sm:p-5 cursor-pointer hover:bg-neutral-800/50 transition-all"
           style={{
             border: "1px solid rgb(64, 64, 64)",
             background: "rgb(23, 23, 23)",

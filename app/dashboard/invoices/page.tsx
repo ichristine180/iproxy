@@ -185,7 +185,7 @@ export default function InvoicesPage() {
       : orders.filter((order) => order.status === statusFilter);
 
   return (
-    <div className="p-3 sm:p-6">
+    <div className="margin-12">
       <div className="w-full">
         {/* Header */}
         <div className="mb-6">
@@ -251,7 +251,7 @@ export default function InvoicesPage() {
                 {filteredOrders.map((order) => (
                   <div
                     key={order.id}
-                    className="p-3 sm:p-5 bg-neutral-800/50/50 rounded-xl hover:bg-neutral-800/50/70 transition-colors border border-neutral-700"
+                    className="p-3 sm:p-5 bg-neutral-800/50 rounded-xl hover:bg-neutral-800/50/70 transition-colors border border-neutral-700"
                   >
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 sm:gap-4">
                       {/* Left Side - Order Details */}
