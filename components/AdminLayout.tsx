@@ -57,7 +57,7 @@ export const AdminLayout = ({
   };
 
   return (
-    <div className="h-screen flex w-full md:p-4 p-2 gap-2 md:gap-4 overflow-hidden" style={{ background: 'rgb(15, 15, 15)' }}>
+    <div className="h-screen flex w-full p-2 gap-2 md:gap-4 bg-neutral-1000">
       {/* Mobile Overlay */}
       {mobileMenuOpen && (
         <div
@@ -68,10 +68,10 @@ export const AdminLayout = ({
 
       {/* Sidebar */}
       <aside
-        className={`
+        className={`bg-neutral-800
         w-64 ${
-          sidebarCollapsed ? "lg:w-20" : "lg:w-64"
-        } rounded-xl flex flex-col
+          sidebarCollapsed ? "lg:w-20" : "lg:w-[265px]"
+        } rounded-lg flex flex-col
         ${mobileMenuOpen ? "fixed" : "hidden lg:flex"} lg:relative z-50 lg:z-auto
         transition-all duration-300 ease-in-out
         ${
@@ -81,7 +81,6 @@ export const AdminLayout = ({
         }
         inset-y-2 left-2 lg:inset-y-0 lg:left-0 lg:h-full p-6
       `}
-        style={{ border: '1px solid rgb(64, 64, 64)', background: 'rgb(23, 23, 23)' }}
       >
         {/* Logo Section */}
         <div
@@ -127,10 +126,12 @@ export const AdminLayout = ({
           <Link
             href="/admin"
             onClick={() => setMobileMenuOpen(false)}
-            className={`flex items-center gap-3 ${sidebarCollapsed ? "lg:justify-center" : ""} px-4 py-2.5 mx-2 rounded-lg transition-colors ${
+            className={`flex items-center gap-3 ${
+              sidebarCollapsed ? "lg:justify-center" : ""
+            } py-2.5 pl-4 pr-4 transition-all duration-300 ${
               pathname === "/admin"
-                ? "bg-neutral-800/50 text-white"
-                : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
+                ? "bg-[rgb(var(--neutral-600))] text-white border-l-[5px] border-l-solid border-l-[rgb(var(--brand-300))]"
+                : "text-neutral-400 hover:text-white hover:bg-[rgb(var(--neutral-600))] hover:border-l-[5px] hover:border-l-solid hover:border-l-[rgb(var(--brand-300))] border-l-[5px] border-l-solid border-l-transparent"
             }`}
             title="Dashboard"
           >
@@ -146,13 +147,17 @@ export const AdminLayout = ({
           <div className="mt-6">
             <button
               onClick={() => setManagementOpen(!managementOpen)}
-              className={`flex items-center justify-between w-full px-4 py-2 text-neutral-500 hover:text-neutral-400 transition-colors ${sidebarCollapsed ? "lg:hidden" : ""}`}
+              className={`flex items-center justify-between w-full px-4 py-2 text-neutral-500 hover:text-neutral-400 transition-colors ${
+                sidebarCollapsed ? "lg:hidden" : ""
+              }`}
             >
-              <span className="text-xs font-semibold uppercase tracking-wider">
+              <span className="tp-body-s font-semibold uppercase tracking-wider">
                 Management
               </span>
               <ChevronDown
-                className={`h-4 w-4 transition-transform ${managementOpen ? "rotate-180" : ""}`}
+                className={`h-4 w-4 transition-transform ${
+                  managementOpen ? "rotate-180" : ""
+                }`}
               />
             </button>
             <div
@@ -165,16 +170,18 @@ export const AdminLayout = ({
                 <Link
                   href="/admin/users"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center gap-3 ${sidebarCollapsed ? "lg:justify-center" : ""} px-4 py-2.5 mx-2 rounded-lg transition-colors ${
+                  className={`flex items-center gap-3 ${
+                    sidebarCollapsed ? "lg:justify-center" : ""
+                  } py-2.5 pl-4 pr-4 transition-all duration-300 ${
                     pathname.includes("/admin/users")
-                      ? "bg-neutral-800/50 text-white"
-                      : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
+                      ? "bg-[rgb(var(--neutral-600))] text-white border-l-[5px] border-l-solid border-l-[rgb(var(--brand-300))]"
+                      : "text-neutral-400 hover:text-white hover:bg-[rgb(var(--neutral-600))] hover:border-l-[5px] hover:border-l-solid hover:border-l-[rgb(var(--brand-300))] border-l-[5px] border-l-solid border-l-transparent"
                   }`}
                   title="Users"
                 >
                   <Users className="h-4 w-4 flex-shrink-0" />
                   <span
-                    className={`tp-body-s ${sidebarCollapsed ? "lg:hidden" : ""}`}
+                    className={`text-sm ${sidebarCollapsed ? "lg:hidden" : ""}`}
                   >
                     Users
                   </span>
@@ -183,16 +190,18 @@ export const AdminLayout = ({
                 <Link
                   href="/admin/orders"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center gap-3 ${sidebarCollapsed ? "lg:justify-center" : ""} px-4 py-2.5 mx-2 rounded-lg transition-colors ${
+                  className={`flex items-center gap-3 ${
+                    sidebarCollapsed ? "lg:justify-center" : ""
+                  } py-2.5 pl-4 pr-4 transition-all duration-300 ${
                     pathname.includes("/admin/orders")
-                      ? "bg-neutral-800/50 text-white"
-                      : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
+                      ? "bg-[rgb(var(--neutral-600))] text-white border-l-[5px] border-l-solid border-l-[rgb(var(--brand-300))]"
+                      : "text-neutral-400 hover:text-white hover:bg-[rgb(var(--neutral-600))] hover:border-l-[5px] hover:border-l-solid hover:border-l-[rgb(var(--brand-300))] border-l-[5px] border-l-solid border-l-transparent"
                   }`}
                   title="Orders"
                 >
                   <Package className="h-4 w-4 flex-shrink-0" />
                   <span
-                    className={`tp-body-s ${sidebarCollapsed ? "lg:hidden" : ""}`}
+                    className={`text-sm ${sidebarCollapsed ? "lg:hidden" : ""}`}
                   >
                     Orders
                   </span>
@@ -201,16 +210,18 @@ export const AdminLayout = ({
                 <Link
                   href="/admin/plans"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center gap-3 ${sidebarCollapsed ? "lg:justify-center" : ""} px-4 py-2.5 mx-2 rounded-lg transition-colors ${
+                  className={`flex items-center gap-3 ${
+                    sidebarCollapsed ? "lg:justify-center" : ""
+                  } py-2.5 pl-4 pr-4 transition-all duration-300 ${
                     pathname.includes("/admin/plans")
-                      ? "bg-neutral-800/50 text-white"
-                      : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
+                      ? "bg-[rgb(var(--neutral-600))] text-white border-l-[5px] border-l-solid border-l-[rgb(var(--brand-300))]"
+                      : "text-neutral-400 hover:text-white hover:bg-[rgb(var(--neutral-600))] hover:border-l-[5px] hover:border-l-solid hover:border-l-[rgb(var(--brand-300))] border-l-[5px] border-l-solid border-l-transparent"
                   }`}
                   title="Plans"
                 >
                   <Tags className="h-4 w-4 flex-shrink-0" />
                   <span
-                    className={`tp-body-s ${sidebarCollapsed ? "lg:hidden" : ""}`}
+                    className={`text-sm ${sidebarCollapsed ? "lg:hidden" : ""}`}
                   >
                     Plans
                   </span>
@@ -219,16 +230,18 @@ export const AdminLayout = ({
                 <Link
                   href="/admin/processing-orders"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center gap-3 ${sidebarCollapsed ? "lg:justify-center" : ""} px-4 py-2.5 mx-2 rounded-lg transition-colors ${
+                  className={`flex items-center gap-3 ${
+                    sidebarCollapsed ? "lg:justify-center" : ""
+                  } py-2.5 pl-4 pr-4 transition-all duration-300 ${
                     pathname.includes("/admin/processing-orders")
-                      ? "bg-neutral-800/50 text-white"
-                      : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
+                      ? "bg-[rgb(var(--neutral-600))] text-white border-l-[5px] border-l-solid border-l-[rgb(var(--brand-300))]"
+                      : "text-neutral-400 hover:text-white hover:bg-[rgb(var(--neutral-600))] hover:border-l-[5px] hover:border-l-solid hover:border-l-[rgb(var(--brand-300))] border-l-[5px] border-l-solid border-l-transparent"
                   }`}
                   title="Processing Orders"
                 >
                   <Clock className="h-4 w-4 flex-shrink-0" />
                   <span
-                    className={`tp-body-s ${sidebarCollapsed ? "lg:hidden" : ""}`}
+                    className={`text-sm ${sidebarCollapsed ? "lg:hidden" : ""}`}
                   >
                     Processing Orders
                   </span>
@@ -237,16 +250,18 @@ export const AdminLayout = ({
                 <Link
                   href="/admin/quota"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center gap-3 ${sidebarCollapsed ? "lg:justify-center" : ""} px-4 py-2.5 mx-2 rounded-lg transition-colors ${
+                  className={`flex items-center gap-3 ${
+                    sidebarCollapsed ? "lg:justify-center" : ""
+                  } py-2.5 pl-4 pr-4 transition-all duration-300 ${
                     pathname.includes("/admin/quota")
-                      ? "bg-neutral-800/50 text-white"
-                      : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
+                      ? "bg-[rgb(var(--neutral-600))] text-white border-l-[5px] border-l-solid border-l-[rgb(var(--brand-300))]"
+                      : "text-neutral-400 hover:text-white hover:bg-[rgb(var(--neutral-600))] hover:border-l-[5px] hover:border-l-solid hover:border-l-[rgb(var(--brand-300))] border-l-[5px] border-l-solid border-l-transparent"
                   }`}
                   title="Quota"
                 >
                   <Database className="h-4 w-4 flex-shrink-0" />
                   <span
-                    className={`tp-body-s ${sidebarCollapsed ? "lg:hidden" : ""}`}
+                    className={`text-sm ${sidebarCollapsed ? "lg:hidden" : ""}`}
                   >
                     Quota
                   </span>
@@ -255,16 +270,18 @@ export const AdminLayout = ({
                 <Link
                   href="/admin/stoplist"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center gap-3 ${sidebarCollapsed ? "lg:justify-center" : ""} px-4 py-2.5 mx-2 rounded-lg transition-colors ${
+                  className={`flex items-center gap-3 ${
+                    sidebarCollapsed ? "lg:justify-center" : ""
+                  } py-2.5 pl-4 pr-4 transition-all duration-300 ${
                     pathname.includes("/admin/stoplist")
-                      ? "bg-neutral-800/50 text-white"
-                      : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
+                      ? "bg-[rgb(var(--neutral-600))] text-white border-l-[5px] border-l-solid border-l-[rgb(var(--brand-300))]"
+                      : "text-neutral-400 hover:text-white hover:bg-[rgb(var(--neutral-600))] hover:border-l-[5px] hover:border-l-solid hover:border-l-[rgb(var(--brand-300))] border-l-[5px] border-l-solid border-l-transparent"
                   }`}
                   title="Stoplist"
                 >
                   <Ban className="h-4 w-4 flex-shrink-0" />
                   <span
-                    className={`tp-body-s ${sidebarCollapsed ? "lg:hidden" : ""}`}
+                    className={`text-sm ${sidebarCollapsed ? "lg:hidden" : ""}`}
                   >
                     Stoplist
                   </span>
@@ -279,7 +296,9 @@ export const AdminLayout = ({
           <Link
             href="/dashboard"
             onClick={() => setMobileMenuOpen(false)}
-            className={`flex items-center gap-3 ${sidebarCollapsed ? "lg:justify-center" : ""} px-4 py-2.5 rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-800/50 transition-colors`}
+            className={`flex items-center gap-3 ${
+              sidebarCollapsed ? "lg:justify-center" : ""
+            } py-2.5 pl-4 pr-4 text-neutral-400 hover:text-white hover:bg-[rgb(var(--neutral-600))] hover:border-l-[5px] hover:border-l-solid hover:border-l-[rgb(var(--brand-300))] border-l-[5px] border-l-solid border-l-transparent transition-all duration-300`}
             title="Back to Dashboard"
           >
             <LayoutDashboard className="h-5 w-5 flex-shrink-0" />
@@ -293,9 +312,9 @@ export const AdminLayout = ({
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col gap-2 md:gap-4 h-full overflow-hidden">
+      <div className="flex-1 flex flex-col gap-2 md:gap-4 h-full min-w-0 overflow-y-auto">
         {/* Header */}
-        <header className="backdrop-blur rounded-xl p-2 py-3" style={{ border: '1px solid rgb(64, 64, 64)', background: 'rgba(23, 23, 23, 0.8)' }}>
+        <header className="sticky top-0 z-10 flex-shrink-0 margin-12 md:margin-8 md:margin-4 backdrop-blur rounded-lg h-[65px] bg-neutral-700">
           <div className="h-full flex items-center justify-between px-2 lg:px-6 gap-2 lg:gap-3">
             {/* Left Section */}
             <div className="flex items-center gap-2 lg:gap-3 min-w-0">
@@ -309,10 +328,10 @@ export const AdminLayout = ({
 
               <a
                 href="/dashboard"
-                className="hidden lg:flex whitespace-nowrap h-40 gap-10 tp-body-s px-24 py-16 rounded-8 focus-within:outline-brand-100 border-brand-400 text-brand-400 hover:text-neutral-0 hover:bg-brand-300 active:bg-brand-700 active:text-neutral-0 border-2 border-solid hover:border-transparent active:border-transparent cursor-pointer select-none items-center justify-center gap-[10px] font-bold outline-offset-2 transition-all md:rounded-8 whitespace-nowrap flex-row"
+                className="hidden lg:flex whitespace-nowrap h-40 tp-body-s px-24 py-16 hover:text-brand-600 rounded-8 focus-within:outline-brand-100 border-brand-400 text-brand-400 hover:bg-brand-300 active:bg-brand-700 active:text-neutral-0 border-2 border-solid hover:border-transparent active:border-transparent cursor-pointer select-none items-center justify-center font-bold outline-offset-2 transition-all md:rounded-8 whitespace-nowrap flex-row"
               >
                 <User className="h-4 w-4" />
-                <span className="text-xs md:text-sm font-medium">
+                <span className="text-xs md:text-sm font-16-bold">
                   User Dashboard
                 </span>
               </a>
@@ -325,8 +344,8 @@ export const AdminLayout = ({
               {/* User Menu */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                 <button className="flex items-center gap-2 text-white hover:text-neutral-300 transition-colors">
-                      <span className="tp-body-bold mr-3">
+                  <button className="hidden lg:flex flex items-center gap-2 text-white hover:text-neutral-300 transition-colors focus:outline-none focus:ring-0">
+                    <span className="font-16-bold mr-3">
                       Hi, {user?.email?.split("@")[0]}
                     </span>
                     <Avatar className="h-7 w-7 md:h-8 md:w-8">
@@ -335,7 +354,6 @@ export const AdminLayout = ({
                       </AvatarFallback>
                     </Avatar>
                   </button>
-                 
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuItem onClick={handleLogout}>
@@ -349,8 +367,8 @@ export const AdminLayout = ({
         </header>
 
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto rounded-xl scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-transparent" style={{ border: '1px solid rgb(64, 64, 64)', background: 'rgb(23, 23, 23)' }}>
-          <div className="p-4 md:p-6">{children}</div>
+        <main className="flex-1 rounded-xl scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-transparent">
+          {children}
         </main>
       </div>
     </div>

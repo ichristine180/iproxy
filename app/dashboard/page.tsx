@@ -16,6 +16,7 @@ import {
   Copy,
   RotateCw,
   ArrowLeft,
+  Smartphone,
 } from "lucide-react";
 import {
   Dialog,
@@ -1057,7 +1058,7 @@ function DashboardPageContent() {
                       className={`w-full flex items-center justify-between px-5 py-3 rounded-full transition-all cursor-pointer ${
                         isSelected
                           ? "bg-[rgb(var(--brand-600))] text-neutral-0"
-                          : "bg-neutral-800/50 text-neutral-400 hover:bg-neutral-800/50 hover:text-white border border-neutral-600"
+                          : "bg-neutral-800/50 text-neutral-400 hover:bg-neutral-700 hover:text-white border border-neutral-600"
                       }`}
                     >
                       <div className="flex items-center gap-3">
@@ -1066,7 +1067,7 @@ function DashboardPageContent() {
                             isSelected ? "bg-white/20" : "bg-neutral-600"
                           }`}
                         >
-                          <Server className="h-5 w-5" />
+                          <Smartphone className="h-5 w-5" />
                         </div>
                         <span
                           className={`tp-body ${
@@ -1074,6 +1075,9 @@ function DashboardPageContent() {
                           }`}
                         >
                           {plan.name}
+                          {plan.pricing && (
+                            <small className="px-2">({plan.pricing[0].duration})</small>
+                          )}
                         </span>
                       </div>
                       {!isSelected && (
@@ -1183,11 +1187,11 @@ function DashboardPageContent() {
               YOUR ORDERS
             </h2>
             <div className="card card-custom gutter-b padding-32-36">
-               <h3 className="card-title align-items-start flex-column px-32">
-                  <span className="font-weight-bolder tp-body-bold content-primary">
-                    Most Recent
-                  </span>
-                </h3>
+              <h3 className="card-title align-items-start flex-column px-32">
+                <span className="font-weight-bolder tp-body-bold content-primary">
+                  Most Recent
+                </span>
+              </h3>
 
               <div className="card-body padding-32-36">
                 <label className="block text-sm text-neutral-400 mb-2">
@@ -1198,7 +1202,7 @@ function DashboardPageContent() {
                   <input
                     type="text"
                     placeholder="Search"
-                     className="form-control h-auto rounded-lg border-0 py-3 px-10 w-full"
+                    className="form-control h-auto rounded-lg border-0 py-3 px-10 w-full"
                   />
                 </div>
               </div>
@@ -1215,7 +1219,7 @@ function DashboardPageContent() {
                       <thead>
                         <tr className="">
                           <th className="text-left py-3 px-3 tp-body-s rounded-l-lg font-semibold text-neutral-0 bg-neutral-600">
-                            ID 
+                            ID
                           </th>
                           <th className="text-left py-3 px-4 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
                             Product
@@ -1223,7 +1227,7 @@ function DashboardPageContent() {
                           <th className="text-left py-3 px-4 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
                             Status
                           </th>
-                         
+
                           <th className="text-left py-3 px-4 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
                             Order date
                           </th>
@@ -1298,7 +1302,7 @@ function DashboardPageContent() {
                               <td className="py-4 px-4">
                                 {getStatusBadge(order.status)}
                               </td>
-                             
+
                               <td className="py-4 px-4 text-white">
                                 <div>{formattedDate}</div>
                                 <div className="text-sm text-neutral-500">
