@@ -479,7 +479,7 @@ export const DashboardLayout = ({
                   <div className="p-6">
                     <button
                       onClick={handleLogout}
-                      className="w-full bg-[rgb(var(--brand-600))] hover:bg-[rgb(var(--brand-700))] text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors"
+                      className="btn button-primary px-15 py-3 hover:bg-brand-300 hover:text-brand-600 flex"
                     >
                       <LogOut className="h-5 w-5" />
                       Logout
