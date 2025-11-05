@@ -6,38 +6,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard,
-  Server,
   FileText,
   CreditCard,
-  Home,
-  Database,
-  Globe,
   Smartphone,
-  Gift,
-  Wrench,
-  Chrome,
-  HelpCircle,
-  Users,
-  BookOpen,
-  CheckSquare,
   ChevronDown,
   ChevronLeft,
   User,
   DollarSign,
   LogOut,
-  Hash,
-  Zap,
-  Shield,
-  Wifi,
-  Activity,
-  Lock,
-  CloudLightning,
-  Radio,
-  Satellite,
-  Network,
-  CircleDot,
-  Radar,
-  Waves,
   Menu,
   X,
   Banknote,
@@ -50,52 +26,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useState, useEffect } from "react";
-
-interface Plan {
-  id: string;
-  name: string;
-  channel: string;
-  price_usd_month: number;
-}
-
-interface ChannelInfo {
-  channel: string;
-  name: string;
-  icon: any;
-}
-
-// Array of available icons for channels
-const availableIcons = [
-  Home,
-  Server,
-  Database,
-  Globe,
-  Smartphone,
-  Gift,
-  Hash,
-  Zap,
-  Shield,
-  Wifi,
-  Activity,
-  Lock,
-  CloudLightning,
-  Radio,
-  Satellite,
-  Network,
-  CircleDot,
-  Radar,
-  Waves,
-];
-
-// Function to get a consistent icon for each channel based on its ID
-const getIconForChannel = (channelId: string) => {
-  // Convert channel ID to a number for consistent icon selection
-  const hash = channelId.split("").reduce((acc, char) => {
-    return char.charCodeAt(0) + ((acc << 5) - acc);
-  }, 0);
-  const index = Math.abs(hash) % availableIcons.length;
-  return availableIcons[index];
-};
+import SidebarLink from "./SideBarLink";
 
 export const DashboardLayout = ({
   children,
@@ -110,7 +41,6 @@ export const DashboardLayout = ({
   const [walletBalance, setWalletBalance] = useState<number>(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  console.log(mobileMenuOpen);
 
   useEffect(() => {
     fetchPlans();
@@ -172,9 +102,7 @@ export const DashboardLayout = ({
       {/* Sidebar */}
       <aside
         className={`bg-neutral-800
-        w-64 ${
-          sidebarCollapsed ? "lg:w-20" : "lg:w-[265px]"
-        } rounded-lg flex flex-col
+        w-[276px] ${sidebarCollapsed ? "lg:w-20" : "lg:w-[285px]"} flex flex-col
         ${
           mobileMenuOpen ? "fixed" : "hidden lg:flex"
         } lg:relative z-50 lg:z-auto
@@ -184,23 +112,33 @@ export const DashboardLayout = ({
             ? "translate-x-0"
             : "-translate-x-full lg:translate-x-0"
         }
-        inset-y-2 left-2 lg:inset-y-0 lg:left-0 lg:h-full p-6
+        inset-y-2 left-2 lg:inset-y-0 lg:left-0 lg:h-full
       `}
+        style={{ padding: "0 17px 0 25px" }}
       >
         {/* Logo Section */}
         <div
-          className="flex items-center justify-between px-4 rounded-t-xl flex-shrink-0 p-3"
-          style={{ borderBottom: "1px solid rgb(64, 64, 64)" }}
+          className="flex items-center justify-between flex-shrink-0 h-[65px] -ml-[25px] -mr-[17px]"
+          style={{
+            borderBottom: "1px solid rgb(64, 64, 64)",
+            borderTopLeftRadius: "8px",
+            borderTopRightRadius: "8px",
+            padding: "0 17px 0 25px",
+          }}
         >
-          <a href="/" className="flex items-center gap-2 overflow-hidden">
+          <Link
+            href="/"
+            passHref
+            className="flex items-center gap-6 overflow-hidden"
+          >
             <span
-              className={`text-brand-400 font-bold tp-sub-headline-s whitespace-nowrap ${
+              className={`text-brand-400 font-bold tp-headline-s whitespace-nowrap ${
                 sidebarCollapsed ? "lg:hidden" : ""
               }`}
             >
               Highbid Proxies
             </span>
-          </a>
+          </Link>
           {/* Toggle button for desktop, Close button for mobile */}
           <div className="flex items-center gap-2 flex-shrink-0">
             <button
@@ -219,7 +157,7 @@ export const DashboardLayout = ({
               title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             >
               <ChevronLeft
-                className={`h-5 w-5 transition-transform ${
+                className={`h-6 w-6 text-brand-400 transition-transform ${
                   sidebarCollapsed ? "rotate-180" : ""
                 }`}
               />
@@ -228,81 +166,47 @@ export const DashboardLayout = ({
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto py-4 scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-transparent">
-          {/* Dashboard */}
-          <Link
+        <nav
+          className="flex-1 overflow-y-auto py-4 scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-transparent -mx-[25px] px-[25px]"
+          style={{ marginRight: "-17px", paddingRight: "17px" }}
+        >
+          <SidebarLink
             href="/dashboard"
-            onClick={() => {
-              setMobileMenuOpen(false);
-            }}
-            className={`flex items-center gap-3 ${
-              sidebarCollapsed ? "lg:justify-center" : ""
-            } py-2.5 pl-4 pr-4 transition-all duration-300 ${
-              pathname === "/dashboard"
-                ? "bg-[rgb(var(--neutral-600))] text-white border-l-[5px] border-l-solid border-l-[rgb(var(--brand-300))]"
-                : "text-neutral-400 hover:text-white hover:bg-[rgb(var(--neutral-600))] hover:border-l-[5px] hover:border-l-solid hover:border-l-[rgb(var(--brand-300))] border-l-[5px] border-l-solid border-l-transparent"
-            }`}
-            title="Dashboard"
-          >
-            <LayoutDashboard className="h-5 w-5 flex-shrink-0" />
-            <span
-              className={`tp-body-s ${sidebarCollapsed ? "lg:hidden" : ""}`}
-            >
-              Dashboard
-            </span>
-          </Link>
+            label="Dashboard"
+            icon={LayoutDashboard}
+            isActive={pathname === "/dashboard"}
+            onClick={() => setMobileMenuOpen(false)}
+            sidebarCollapsed={sidebarCollapsed}
+            asideLeftPad={25}
+            asideRightPad={17}
+          />
 
-          {/* Invoices */}
-          <Link
+          <SidebarLink
             href="/dashboard/invoices"
+            label="Invoices"
+            icon={FileText}
+            isActive={pathname === "/dashboard/invoices"}
             onClick={() => setMobileMenuOpen(false)}
-            className={`flex items-center gap-3 ${
-              sidebarCollapsed ? "lg:justify-center" : ""
-            } py-2.5 pl-4 pr-4 transition-all duration-300 ${
-              pathname === "/dashboard/invoices"
-                ? "bg-[rgb(var(--neutral-600))] text-white border-l-[5px] border-l-solid border-l-[rgb(var(--brand-300))]"
-                : "text-neutral-400 hover:text-white hover:bg-[rgb(var(--neutral-600))] hover:border-l-[5px] hover:border-l-solid hover:border-l-[rgb(var(--brand-300))] border-l-[5px] border-l-solid border-l-transparent"
-            }`}
-            title="Invoices"
-          >
-            <FileText className="h-5 w-5 flex-shrink-0" />
-            <span
-              className={`tp-body-s font-medium ${
-                sidebarCollapsed ? "lg:hidden" : ""
-              }`}
-            >
-              Invoices
-            </span>
-          </Link>
+            sidebarCollapsed={sidebarCollapsed}
+            asideLeftPad={25}
+            asideRightPad={17}
+          />
 
-          {/* Deposit history */}
-          <Link
+          <SidebarLink
             href="/dashboard/deposit"
+            label="Deposit"
+            icon={CreditCard}
+            isActive={pathname === "/dashboard/deposit"}
             onClick={() => setMobileMenuOpen(false)}
-            className={`flex items-center gap-3 ${
-              sidebarCollapsed ? "lg:justify-center" : ""
-            } py-2.5 pl-4 pr-4 transition-all duration-300 ${
-              pathname === "/dashboard/deposit"
-                ? "bg-[rgb(var(--neutral-600))] text-white border-l-[5px] border-l-solid border-l-[rgb(var(--brand-300))]"
-                : "text-neutral-400 hover:text-white hover:bg-[rgb(var(--neutral-600))] hover:border-l-[5px] hover:border-l-solid hover:border-l-[rgb(var(--brand-300))] border-l-[5px] border-l-solid border-l-transparent"
-            }`}
-            title="Deposit"
-          >
-            <CreditCard className="h-5 w-5 flex-shrink-0" />
-            <span
-              className={`tp-body-s font-medium ${
-                sidebarCollapsed ? "lg:hidden" : ""
-              }`}
-            >
-              Deposit
-            </span>
-          </Link>
+            sidebarCollapsed={sidebarCollapsed}
+            asideLeftPad={25}
+            asideRightPad={17}
+          />
 
-          {/* Proxies Section */}
           <div className="mt-6">
             <button
               onClick={() => setProxiesOpen(!proxiesOpen)}
-              className={`flex items-center justify-between w-full px-4 py-2 text-neutral-500 hover:text-neutral-400 transition-colors ${
+              className={`flex items-center justify-between w-full py-2 text-neutral-500 hover:text-neutral-400 transition-colors ${
                 sidebarCollapsed ? "lg:hidden" : ""
               }`}
             >
@@ -315,43 +219,22 @@ export const DashboardLayout = ({
                 }`}
               />
             </button>
-            <div
-              className={`px-4 py-2 text-neutral-500 text-center hidden ${
-                sidebarCollapsed ? "lg:block" : ""
-              }`}
-            >
-              <Server className="h-4 w-4 mx-auto" />
-            </div>
+
             {(proxiesOpen || sidebarCollapsed) && (
               <div className="mt-1">
-                {channels.map((channelInfo) => {
-                  const ChannelIcon = getIconForChannel(channelInfo.id) || Hash; // Fallback to Hash
-
-                  return (
-                    <Link
-                      key={channelInfo.id}
-                      href={`/checkout?plan=${channelInfo.id}`}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className={`flex items-center gap-3 ${
-                        sidebarCollapsed ? "lg:justify-center" : ""
-                      } py-2.5 pl-4 pr-4 transition-all duration-300 ${
-                        pathname === `/dashboard/proxies/${channelInfo.id}`
-                          ? "bg-[rgb(var(--neutral-600))] text-white border-l-[5px] border-l-solid border-l-[rgb(var(--brand-300))]"
-                          : "text-neutral-400 hover:text-white hover:bg-[rgb(var(--neutral-600))] hover:border-l-[5px] hover:border-l-solid hover:border-l-[rgb(var(--brand-300))] border-l-[5px] border-l-solid border-l-transparent"
-                      }`}
-                      title={channelInfo.name}
-                    >
-                      <Smartphone className="h-4 w-4 flex-shrink-0" />
-                      <span
-                        className={`text-sm ${
-                          sidebarCollapsed ? "lg:hidden" : ""
-                        }`}
-                      >
-                        {channelInfo.name}
-                      </span>
-                    </Link>
-                  );
-                })}
+                {channels.map((channel) => (
+                  <SidebarLink
+                    key={channel.id}
+                    href={`/checkout?plan=${channel.id}`}
+                    label={channel.name}
+                    icon={Smartphone}
+                    isActive={pathname === `/dashboard/proxies/${channel.id}`}
+                    onClick={() => setMobileMenuOpen(false)}
+                    sidebarCollapsed={sidebarCollapsed}
+                    asideLeftPad={25}
+                    asideRightPad={17}
+                  />
+                ))}
               </div>
             )}
           </div>
@@ -386,7 +269,7 @@ export const DashboardLayout = ({
                 </span>
               </Link>
               <Link
-              passHref
+                passHref
                 href="/dashboard/deposit"
                 className="hidden lg:flex whitespace-nowrap h-40 tp-body-s px-24 py-16 rounded-8 focus-within:outline-brand-100 border-brand-400 text-brand-400 hover:text-brand-600 hover:bg-brand-300 active:bg-brand-700 active:text-neutral-0 border-2 border-solid hover:border-transparent active:border-transparent cursor-pointer select-none items-center justify-center  font-bold outline-offset-2 transition-all md:rounded-8 whitespace-nowrap flex-row"
               >
@@ -421,13 +304,12 @@ export const DashboardLayout = ({
                     </Avatar>
                   </button>
                 </DropdownMenuTrigger>
-
                 <DropdownMenuContent
                   align="end"
                   className="w-[400px] bg-neutral-800 border-0 p-0 overflow-hidden"
                 >
                   {/* Header with avatar, username, and balance - Full Width Background */}
-                  <div className="bg-neutral-1000 py-6 px-4">
+                  <div className="bg-neutral-900 py-6 px-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="bg-brand-600 tp-headline-s text-white p-3 px-5 rounded-lg font-semibold">
@@ -447,8 +329,16 @@ export const DashboardLayout = ({
                   <div className="space-y-1 p-4">
                     {/* My Profile */}
                     <Link href="/dashboard/profile" passHref>
-                      <DropdownMenuItem className="flex items-start gap-3 p-3 cursor-pointer hover:bg-transparent focus:bg-transparent">
-                        <User className="h-5 w-5 text-brand-600 mt-1 flex-shrink-0" />
+                      <DropdownMenuItem className="flex items-start gap-3 p-3 cursor-pointer !bg-transparent hover:!bg-transparent focus:!bg-transparent active:!bg-transparent data-[highlighted]:!bg-transparent !border-0 !outline-none focus:!outline-none">
+                        <span
+                          className="text-brand-600 mt-1 flex-shrink-0"
+                          style={{ color: "rgb(var(--brand-600))" }}
+                        >
+                          <User
+                            className="h-5 w-5"
+                            style={{ color: "white" }}
+                          />
+                        </span>
                         <div>
                           <div className="font-semibold text-white text-base">
                             My Profile
@@ -461,8 +351,16 @@ export const DashboardLayout = ({
                     </Link>
                     {/* Deposit */}
                     <Link href="/dashboard/deposit" passHref>
-                      <DropdownMenuItem className="flex items-start gap-3 p-3 cursor-pointer hover:bg-transparent focus:bg-transparent">
-                        <Banknote className="h-5 w-5 text-brand-600 mt-1 flex-shrink-0" />
+                      <DropdownMenuItem className="flex items-start gap-3 p-3 cursor-pointer !bg-transparent hover:!bg-transparent focus:!bg-transparent active:!bg-transparent data-[highlighted]:!bg-transparent !border-0 !outline-none focus:!outline-none">
+                        <span
+                          className="text-brand-600 mt-1 flex-shrink-0"
+                          style={{ color: "rgb(var(--brand-600))" }}
+                        >
+                          <Banknote
+                            className="h-5 w-5"
+                            style={{ color: "white" }}
+                          />
+                        </span>
                         <div>
                           <div className="font-semibold text-white text-base">
                             Deposit

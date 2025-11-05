@@ -1044,7 +1044,7 @@ function DashboardPageContent() {
       ) : (
         <div className="space-y-8">
           {/* Proxy Selection Card */}
-          <div className="rounded-xl p-2 sm:p-4 bg-neutral-800/50 border border-neutral-700">
+          <div className="rounded-xl p-2 sm:p-4 card card-custom gutter-b">
             <div className="grid grid-cols-1 lg:grid-cols-2  sm:gap-8 padding-32-36">
               {/* Left Side - Plans List */}
               <div className="space-y-3 gap-8 d-flex flex-column">
@@ -1198,11 +1198,11 @@ function DashboardPageContent() {
                   Search by order ID or IP
                 </label>
                 <div className="relative">
-                  <Search className="absolute left-2 top-1/3 -translate-y-1/2 h-5 w-5 text-neutral-500" />
+                  <Search className="absolute right-2 top-1/3 -translate-y-1/2 h-5 w-5 text-neutral-500" />
                   <input
                     type="text"
                     placeholder="Search"
-                    className="form-control h-auto rounded-lg border-0 py-3 px-10 w-full"
+                    className="form-control h-auto rounded-lg border-0 py-3  w-full"
                   />
                 </div>
               </div>
