@@ -1214,23 +1214,23 @@ function DashboardPageContent() {
                     <table className="w-full">
                       <thead>
                         <tr className="">
-                          <th className="text-left py-3 px-3 tp-body-s font-semibold text-neutral-0 bg-neutral-700">
+                          <th className="text-left py-3 px-3 tp-body-s rounded-l-lg font-semibold text-neutral-0 bg-neutral-600">
                             ID 
                           </th>
-                          <th className="text-left py-3 px-4 tp-body-s font-semibold text-neutral-0 bg-neutral-700">
+                          <th className="text-left py-3 px-4 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
                             Product
                           </th>
-                          <th className="text-left py-3 px-4 tp-body-s font-semibold text-neutral-0 bg-neutral-700">
+                          <th className="text-left py-3 px-4 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
                             Status
                           </th>
                          
-                          <th className="text-left py-3 px-4 tp-body-s font-semibold text-neutral-0 bg-neutral-700">
+                          <th className="text-left py-3 px-4 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
                             Order date
                           </th>
-                          <th className="text-left py-3 px-4 tp-body-sfont-semibold text-neutral-0 bg-neutral-700">
+                          <th className="text-left py-3 px-4 tp-body-sfont-semibold text-neutral-0 bg-neutral-600">
                             Amount
                           </th>
-                          <th className="text-left py-3 px-4 tp-body-s font-semibold text-neutral-0 bg-neutral-700">
+                          <th className="text-left py-3 px-4 tp-body-s rounded-r-lg font-semibold text-neutral-0 bg-neutral-600">
                             Actions
                           </th>
                         </tr>
