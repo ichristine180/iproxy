@@ -2064,7 +2064,7 @@ summary::-webkit-details-marker {
 }
 
 .h-auto {
-  height: auto;
+  height: auto !important;
 }
 
 .h-dvh {
@@ -3317,8 +3317,8 @@ summary::-webkit-details-marker {
   padding-top: 12px;
   padding-bottom: 12px;
 }
-.py-5{
-   padding-top: 5px;
+.py-5 {
+  padding-top: 5px;
   padding-bottom: 5px;
 }
 .py-16 {
@@ -6131,8 +6131,9 @@ form {
   border: 1px solid #444444 !important;
   font-size: 1rem; /* 16px */
   font-weight: 400;
-  line-height: 1.5; /* 24px */
+  line-height: 24px;
   color: #9d9d9d;
+  padding-left: 8px !important;
 }
 .h-auto {
   height: auto !important;
@@ -6210,5 +6211,17 @@ label {
   position: relative;
 }
 .subheader {
-        padding: 16px 16px 0 16px;
-    }
+  padding: 16px 16px 0 16px;
+}
+.login-form {
+  margin: 0 20px;
+  color: rgb(var(--neutral-0)) !important;
+  padding: 0 30px 40px !important;
+}
+@media (min-width: 1099px) {
+  .login-form {
+    min-width: 580px !important;
+    margin: 50px;
+    padding: 20px !important;
+  }
+}

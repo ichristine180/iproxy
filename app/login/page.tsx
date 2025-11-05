@@ -88,23 +88,7 @@ function LoginForm() {
       {/* Logo - Fixed Top Left */}
       <div className="absolute top-6 left-6 z-50">
         <a href="/" className="flex items-center inner-spacing-xs">
-          {/* <div className="relative">
-            <div className="w-7 h-7 bg-[rgb(var(--brand-400))] rounded-lg flex items-center justify-center">
-              <svg
-                className="w-4 h-4 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M13 10V3L4 14h7v7l9-11h-7z"
-                />
-              </svg>
-            </div>
-          </div> */}
+        
           <span className="text-brand-400 font-bold tp-headline-s pr-2">
             Highbid Proxies
           </span>
@@ -114,12 +98,12 @@ function LoginForm() {
       <div className="min-h-screen flex flex-col lg:flex-row">
         {/* Left Side - Signup Form */}
         <div
-          className="w-full lg:flex-1 flex items-center justify-center p-6 md:p-8 relative"
-          style={{ background: "radial-gradient(ellipse at top, rgba(30, 45, 70, 1) 0%, rgba(18, 22, 28, 1) 60%, rgba(13, 15, 16, 1) 100%)", minWidth: "20%" }}
+          className="w-full lg:flex-1 flex items-center justify-center relative"
+          style={{ background: "radial-gradient(ellipse at top, rgba(30, 45, 70, 1) 0%, rgba(18, 22, 28, 1) 60%, rgba(13, 15, 16, 1) 100%)" }}
         >
-          <div className="w-full">
+          <div className="w-full" style={{ padding: '20px 0' }}>
             {/* Login Form Container */}
-            <div className="stack-lg">
+            <div className="login-form content-primary p-7 position-relative overflow-hidden" style={{minWidth:"20%"}}>
               <div className="flex justify-center mt-xl-0 mt-5">
                 <div className="mb-5 w-full max-w-lg">
                   <div className="text-center">
@@ -160,7 +144,7 @@ function LoginForm() {
                     onChange={(e) =>
                       setFormData({ ...formData, email: e.target.value })
                     }
-                   className="form-control h-auto rounded-lg border-0 py-6 px-8 w-full"
+                   className="form-control h-auto rounded-md border-0 py-4  w-full"
                     required
                   />
                 </div>
@@ -179,13 +163,13 @@ function LoginForm() {
                       onChange={(e) =>
                         setFormData({ ...formData, password: e.target.value })
                       }
-                      className="form-control h-auto rounded-lg border-0 py-6 px-8 w-full"
+                      className="form-control h-auto rounded-md border-0 py-4 w-full"
                       required
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)} 
-                      className="absolute right-4 top-6 -translate-y-1/3 text-white/50 hover:text-white/80 transition-colors"
+                      className="absolute right-4 top-5 -translate-y-1/3 text-white/50 hover:text-white/80 transition-colors"
                     >
                       {showPassword ? (
                         <EyeOff className="w-5 h-5" />
@@ -226,7 +210,7 @@ function LoginForm() {
         </div>
 
         {/* Right Side - Promotional Content */}
-        <div className="hidden lg:flex flex-1 relative overflow-hidden container-padding">
+        <div className="hidden lg:flex flex-1 relative overflow-hidden p-6 md:p-8">
           <Image
             src="/blue-bg.png"
             alt="Background"

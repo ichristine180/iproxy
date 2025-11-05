@@ -76,12 +76,12 @@ export default function ResetPasswordPage() {
       <div className="min-h-screen flex flex-col lg:flex-row">
         {/* Left Side - Reset Password Form */}
         <div
-          className="w-full lg:flex-1 flex items-center justify-center p-6 md:p-8 relative"
-          style={{ background: "radial-gradient(ellipse at top, rgba(30, 45, 70, 1) 0%, rgba(18, 22, 28, 1) 60%, rgba(13, 15, 16, 1) 100%)", minWidth: "20%" }}
+          className="w-full lg:flex-1 flex items-center justify-center relative"
+          style={{ background: "radial-gradient(ellipse at top, rgba(30, 45, 70, 1) 0%, rgba(18, 22, 28, 1) 60%, rgba(13, 15, 16, 1) 100%)" }}
         >
-          <div className="w-full">
+          <div className="w-full" style={{ padding: '20px 0' }}>
             {/* Form Container */}
-            <div className="stack-lg">
+            <div className="login-form content-primary p-7 position-relative overflow-hidden" style={{minWidth:"20%"}}>
               <div className="flex justify-center mt-xl-0 mt-5">
                 <div className="mb-5 w-full max-w-lg">
                   <div className="text-center">
@@ -126,15 +126,14 @@ export default function ResetPasswordPage() {
                       placeholder="••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      style={{ paddingLeft: 'var(--space-8)', paddingRight: 'var(--space-8)', paddingTop: 'var(--space-4)', paddingBottom: 'var(--space-4)' }}
-                      className="border-0 form-control h-auto rounded-lg w-full"
+                      className="border-0 form-control h-auto rounded-md py-4 w-full"
                       required
                       minLength={8}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-4 -translate-y-1/2 text-white/50 hover:text-white/80 transition-colors"
+                      className="absolute right-4 top-5 -translate-y-1/3 text-white/50 hover:text-white/80 transition-colors"
                     >
                       {showPassword ? (
                         <EyeOff className="w-5 h-5" />
@@ -160,14 +159,13 @@ export default function ResetPasswordPage() {
                       placeholder="••••••••"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      style={{ paddingLeft: 'var(--space-8)', paddingRight: 'var(--space-8)', paddingTop: 'var(--space-4)', paddingBottom: 'var(--space-4)' }}
-                      className="border-0 form-control h-auto rounded-lg w-full"
+                      className="border-0 form-control h-auto rounded-md py-4 w-full"
                       required
                     />
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-4 -translate-y-1/2 text-white/50 hover:text-white/80 transition-colors"
+                      className="absolute right-4 top-5 -translate-y-1/3 text-white/50 hover:text-white/80 transition-colors"
                     >
                       {showConfirmPassword ? (
                         <EyeOff className="w-5 h-5" />
@@ -208,7 +206,7 @@ export default function ResetPasswordPage() {
         </div>
 
         {/* Right Side - Promotional Content */}
-        <div className="hidden lg:flex flex-1 relative overflow-hidden container-padding">
+        <div className="hidden lg:flex flex-1 relative overflow-hidden p-6 md:p-8">
           <Image
             src="/blue-bg.png"
             alt="Background"

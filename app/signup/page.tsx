@@ -76,24 +76,7 @@ function SignupForm() {
     <div className="min-h-screen bg-neutral-950 relative">
       {/* Logo - Fixed Top Left */}
       <div className="absolute top-6 left-6 z-50">
-        <a href="/" className="flex items-center gap-3">
-          {/* <div className="relative">
-            <div className="w-7 h-7 bg-[rgb(var(--brand-400))] rounded-lg flex items-center justify-center">
-              <svg
-                className="w-4 h-4 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M13 10V3L4 14h7v7l9-11h-7z"
-                />
-              </svg>
-            </div>
-          </div> */}
+        <a href="/" className="flex items-center inner-spacing-xs">
           <span className="text-brand-400 font-bold tp-headline-s pr-2">
             Highbid Proxies
           </span>
@@ -103,16 +86,18 @@ function SignupForm() {
       <div className="min-h-screen flex flex-col lg:flex-row">
         {/* Left Side - Signup Form */}
         <div
-          className="w-full lg:flex-1 flex items-center justify-center p-6 md:p-8 relative"
+          className="w-full lg:flex-1 flex items-center justify-center relative"
           style={{
             background:
               "radial-gradient(ellipse at top, rgba(30, 45, 70, 1) 0%, rgba(18, 22, 28, 1) 60%, rgba(13, 15, 16, 1) 100%)",
-            minWidth: "20%",
           }}
         >
-          <div className="w-full">
+          <div className="w-full" style={{ padding: "20px 0" }}>
             {/* Signup Form */}
-            <div className="space-y-8">
+            <div
+              className="login-form content-primary p-7 position-relative overflow-hidden"
+              style={{ minWidth: "20%" }}
+            >
               <div className="flex justify-center mt-xl-0 mt-5">
                 <div className="mb-5 w-full max-w-lg">
                   <div className="text-center">
@@ -154,7 +139,7 @@ function SignupForm() {
                     onChange={(e) =>
                       setFormData({ ...formData, email: e.target.value })
                     }
-                   className="form-control h-auto rounded-lg border-0 py-6 px-8 w-full"
+                    className="form-control h-auto rounded-md border-0 py-4 w-full"
                     required
                   />
                 </div>
@@ -172,13 +157,13 @@ function SignupForm() {
                       onChange={(e) =>
                         setFormData({ ...formData, password: e.target.value })
                       }
-                       className="form-control h-auto rounded-lg border-0 py-6 px-8 w-full"
+                      className="form-control h-auto rounded-md border-0 py-4 w-full"
                       required
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-4 -translate-y-1/2 text-white/50 hover:text-white/80 transition-colors"
+                      className="absolute right-4 top-5 -translate-y-1/3 text-white/50 hover:text-white/80 transition-colors"
                     >
                       {showPassword ? (
                         <EyeOff className="w-5 h-5" />
@@ -198,17 +183,16 @@ function SignupForm() {
                   >
                     {isLoading ? "Creating account..." : "Create Account"}
                   </button>
-                </div>
-
-                <div className="mt-2 text-center terms-text tp-body-xs">
-                  By clicking Sign Up you agree with the{" "}
-                  <a href="/terms" target="_blank" className="text-white">
-                    <u>Terms</u>
-                  </a>{" "}
-                  and{" "}
-                  <a href="/privacy" target="_blank" className="text-white">
-                    <u>Privacy Policy</u>
-                  </a>
+                  <div className="text-center terms-text tp-body-xs mt-3 text-white">
+                    By clicking Sign Up you agree with the{" "}
+                    <Link passHref href="/terms" target="_blank" className="text-white terms-text" style={{fontSize:12}}>
+                      <u>Terms</u>
+                    </Link>{" "}
+                    and{" "}
+                    <Link passHref href="/privacy" target="_blank" className="text-white terms-text" style={{fontSize:12}}>
+                      <u>Privacy Policy</u>
+                    </Link>
+                  </div>
                 </div>
               </form>
             </div>
@@ -217,56 +201,62 @@ function SignupForm() {
           {/* Exit Button */}
           <a
             href="/"
-            className="absolute bottom-4 left-4 flex items-center gap-2 text-white hover:text-gray-300 transition-colors"
+            className="absolute bottom-4 left-4 flex items-center inner-spacing-xs text-white hover:text-gray-300 transition-colors"
           >
             <ChevronLeft className="w-5 h-5" /> Exit
           </a>
         </div>
 
         {/* Right Side - Promotional Content */}
-        <div className="hidden lg:flex flex-1 relative overflow-hidden container-padding">
-                <Image
-                  src="/blue-bg.png"
-                  alt="Background"
-                  fill
-                  className="object-cover opacity-80"
-                  priority
-                />
-      
-                {/* Decorative circles */}
-                <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-white/10 rounded-full blur-3xl"></div>
-                <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-white/10 rounded-full blur-3xl"></div>
-      
-                <div className="relative z-10  stack-md m-auto">
-                  <h2 className="tp-headline-s text-white">
-                    Consistent performance. Reliable uptime.
-                  </h2>
-                  <p className="tp-body text-white" style={{ marginTop: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
-                    Experience privacy and speed with real 5G mobile proxies. Using
-                    real carrier networks and real smartphones ensures that your
-                    traffic looks like genuine mobile user activity, reducing the
-                    likelihood of flags in data centers, captchas, or sudden blocks.
-                  </p>
-      
-                  <ul className="stack-xs">
-                    {[
-                      "Dedicated Access – private use during your rental period",
-                      "Unlimited Bandwidth – no throttling, no hidden caps",
-                      "IP Rotation - Sticky • Automated • URL-triggered",
-                      "Speed – up to 50 Mbps on 5G",
-                      "Protocols - HTTP / SOCKS5",
-                    ].map((feature) => (
-                      <li
-                        key={feature}
-                        className="flex items-center inner-spacing-xs mt-1"
-                      >
-                        <Check className="w-4 h-4 lg:w-5 lg:h-5 text-green-800 flex-shrink-0" />
-                        <span className="tp-body-s text-white">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
+        <div className="hidden lg:flex flex-1 relative overflow-hidden p-6 md:p-8">
+          <Image
+            src="/blue-bg.png"
+            alt="Background"
+            fill
+            className="object-cover opacity-80"
+            priority
+          />
+
+          {/* Decorative circles */}
+          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-white/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-white/10 rounded-full blur-3xl"></div>
+
+          <div className="relative z-10  stack-md m-auto">
+            <h2 className="tp-headline-s text-white">
+              Consistent performance. Reliable uptime.
+            </h2>
+            <p
+              className="tp-body text-white"
+              style={{
+                marginTop: "var(--space-4)",
+                marginBottom: "var(--space-4)",
+              }}
+            >
+              Experience privacy and speed with real 5G mobile proxies. Using
+              real carrier networks and real smartphones ensures that your
+              traffic looks like genuine mobile user activity, reducing the
+              likelihood of flags in data centers, captchas, or sudden blocks.
+            </p>
+
+            <ul className="stack-xs">
+              {[
+                "Dedicated Access – private use during your rental period",
+                "Unlimited Bandwidth – no throttling, no hidden caps",
+                "IP Rotation - Sticky • Automated • URL-triggered",
+                "Speed – up to 50 Mbps on 5G",
+                "Protocols - HTTP / SOCKS5",
+              ].map((feature) => (
+                <li
+                  key={feature}
+                  className="flex items-center inner-spacing-xs mt-1"
+                >
+                  <Check className="w-4 h-4 lg:w-5 lg:h-5 text-green-800 flex-shrink-0" />
+                  <span className="tp-body-s text-white">{feature}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
   );

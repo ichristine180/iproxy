@@ -2,12 +2,9 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import {
   Loader2,
-  ArrowLeft,
   Search,
-  Filter,
   ChevronLeft,
   ChevronRight,
   Eye,
@@ -47,7 +44,6 @@ export default function AdminUsersPage() {
   const [activeFilter, setActiveFilter] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchInput, setSearchInput] = useState("");
-  const [showFilters, setShowFilters] = useState(false);
 
   const fetchUsers = useCallback(async () => {
     setIsLoading(true);
@@ -73,7 +69,13 @@ export default function AdminUsersPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [pagination.page, pagination.limit, roleFilter, activeFilter, searchQuery]);
+  }, [
+    pagination.page,
+    pagination.limit,
+    roleFilter,
+    activeFilter,
+    searchQuery,
+  ]);
 
   useEffect(() => {
     fetchUsers();
@@ -84,7 +86,7 @@ export default function AdminUsersPage() {
     setPagination((prev) => ({ ...prev, page: 1 }));
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       handleSearch();
     }
@@ -112,7 +114,7 @@ export default function AdminUsersPage() {
 
     return (
       <span
-        className={`inline-flex px-3 py-1 rounded-full text-sm border capitalize ${
+        className={`inline-flex px-3 py-1 rounded-full tp-body-s border capitalize ${
           roleStyles[role as keyof typeof roleStyles] || roleStyles.user
         }`}
       >
@@ -126,14 +128,14 @@ export default function AdminUsersPage() {
       return (
         <div className="flex items-center gap-2">
           <CheckCircle2 className="w-4 h-4 text-green-400" />
-          <span className="text-green-400 text-sm">Active ({count})</span>
+          <span className="text-green-400 tp-body-s">Active ({count})</span>
         </div>
       );
     }
     return (
       <div className="flex items-center gap-2">
         <XCircle className="w-4 h-4 text-neutral-500" />
-        <span className="text-neutral-500 text-sm">Inactive</span>
+        <span className="text-neutral-500 tp-body-s">Inactive</span>
       </div>
     );
   };
@@ -152,263 +154,235 @@ export default function AdminUsersPage() {
 
   if (isLoading && users.length === 0) {
     return (
-      <div className="flex items-center justify-center h-full min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="flex items-center justify-center h-full py-20">
+        <Loader2 className="w-8 h-8 animate-spin text-[rgb(var(--brand-400))]" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 p-4 md:p-6">
+    <div className="margin-12">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => router.back()}
-            className="shrink-0"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-2">
-              All Users
-              {pagination.total > 0 && (
-                <span className="px-3 py-1 rounded-full text-sm font-semibold bg-[rgb(var(--brand-400))] text-white">
-                  {pagination.total}
-                </span>
-              )}
-            </h1>
-            <p className="text-sm text-neutral-400 mt-1">
-              View and manage all registered users
-            </p>
-          </div>
-        </div>
-
-        <Button
-          variant="outline"
-          onClick={() => setShowFilters(!showFilters)}
-          className="border-neutral-700"
-        >
-          <Filter className="h-4 w-4 mr-2" />
-          Filters
-          {activeFiltersCount > 0 && (
-            <span className="ml-2 px-2 py-0.5 rounded-full text-xs bg-[rgb(var(--brand-400))] text-white">
-              {activeFiltersCount}
-            </span>
-          )}
-        </Button>
+      <div className="py-3 mb-5">
+        <h1 className="tp-headline-s text-neutral-0 py-6">
+          All Users
+        </h1>
       </div>
 
       {/* Filters Section */}
-      {showFilters && (
-        <div className="bg-neutral-900 rounded-xl p-6 space-y-4" style={{ border: '1px solid rgb(38, 38, 38)' }}>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Role Filter */}
-            <div>
-              <label className="block text-sm text-neutral-400 mb-2">
-                Role
-              </label>
-              <select
-                value={roleFilter}
-                onChange={(e) => {
-                  setRoleFilter(e.target.value);
-                  setPagination((prev) => ({ ...prev, page: 1 }));
-                }}
-                className="w-full px-4 py-2 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-[rgb(var(--brand-400))]"
-              >
-                <option value="">All Roles</option>
-                <option value="user">User</option>
-                <option value="admin">Admin</option>
-              </select>
-            </div>
+      <div className="bg-neutral-800/50 border border-neutral-700 rounded-xl p-6 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Role Filter */}
+          <div>
+            <label className="block tp-body-s text-neutral-400 mb-2">
+              Role
+            </label>
+            <select
+              value={roleFilter}
+              onChange={(e) => {
+                setRoleFilter(e.target.value);
+                setPagination((prev) => ({ ...prev, page: 1 }));
+              }}
+              className="w-full px-4 py-2 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-[rgb(var(--brand-400))]"
+            >
+              <option value="">All Roles</option>
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
 
-            {/* Active Status Filter */}
-            <div>
-              <label className="block text-sm text-neutral-400 mb-2">
-                Status
-              </label>
-              <select
-                value={activeFilter}
-                onChange={(e) => {
-                  setActiveFilter(e.target.value);
-                  setPagination((prev) => ({ ...prev, page: 1 }));
-                }}
-                className="w-full px-4 py-2 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-[rgb(var(--brand-400))]"
-              >
-                <option value="">All Users</option>
-                <option value="true">Active Users</option>
-                <option value="false">Inactive Users</option>
-              </select>
-            </div>
+          {/* Active Status Filter */}
+          <div>
+            <label className="block tp-body-s text-neutral-400 mb-2">
+              Status
+            </label>
+            <select
+              value={activeFilter}
+              onChange={(e) => {
+                setActiveFilter(e.target.value);
+                setPagination((prev) => ({ ...prev, page: 1 }));
+              }}
+              className="w-full px-4 py-2 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-[rgb(var(--brand-400))]"
+            >
+              <option value="">All Users</option>
+              <option value="true">Active Users</option>
+              <option value="false">Inactive Users</option>
+            </select>
+          </div>
 
-            {/* Clear Filters Button */}
-            <div className="flex items-end lg:col-span-2">
-              <Button
-                variant="outline"
-                onClick={clearFilters}
-                className="w-full border-neutral-700"
-                disabled={activeFiltersCount === 0}
-              >
-                Clear Filters
-              </Button>
-            </div>
+          {/* Clear Filters Button */}
+          <div className="flex items-end lg:col-span-2">
+            <button
+              onClick={clearFilters}
+              disabled={activeFiltersCount === 0}
+              className="w-full px-4 py-2 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white hover:bg-neutral-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Clear Filters
+            </button>
           </div>
         </div>
-      )}
+      </div>
 
       {/* Search and Users Table */}
-      <div className="bg-neutral-900 rounded-xl p-6" style={{ border: '1px solid rgb(38, 38, 38)' }}>
+      <div>
         {/* Search Bar */}
         <div className="mb-6">
-          <label className="block text-sm text-neutral-400 mb-2">
+          <label className="block tp-body-s text-neutral-400 mb-2">
             Search by email
           </label>
-          <div className="relative flex gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/3 -translate-y-1/2 h-5 w-5 text-neutral-500" />
-              <input
-                type="text"
-                placeholder="Search by email..."
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                onKeyPress={handleKeyPress}
-                className="w-full pl-12 pr-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder:text-neutral-500 focus:outline-none focus:border-[rgb(var(--brand-400))] transition-colors"
-              />
-            </div>
-            <Button
-              onClick={handleSearch}
-              className="bg-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-500))] text-white"
-            >
-              Search
-            </Button>
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-500" />
+            <input
+              type="text"
+              placeholder="Search by email..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              className="w-full pl-12 pr-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder:text-neutral-500 focus:outline-none focus:border-[rgb(var(--brand-400))] transition-colors"
+            />
           </div>
         </div>
 
         {/* Loading State */}
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-[rgb(var(--brand-400))]" />
+            <Loader2 className="w-8 h-8 animate-spin text-[rgb(var(--brand-400))]" />
           </div>
         ) : users.length === 0 ? (
-          <div className="text-center py-12 text-neutral-500">
-            <p>No users found</p>
+          <div className="rounded-xl bg-neutral-800/50 border border-neutral-700 p-12 text-center">
+            <p className="tp-body text-neutral-500">No users found</p>
           </div>
         ) : (
           <>
             {/* Users Table */}
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b" style={{ borderBottomWidth: '1px', borderBottomColor: 'rgb(38, 38, 38)' }}>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
-                      User ID
-                    </th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
-                      Email
-                    </th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
-                      Role
-                    </th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
-                      Status
-                    </th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
-                      Joined Date
-                    </th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {users.map((user) => {
-                    const joinDate = new Date(user.created_at);
-                    const formattedDate = joinDate.toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "2-digit",
-                      year: "numeric",
-                    });
-                    const formattedTime = joinDate.toLocaleTimeString("en-US", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      second: "2-digit",
-                      hour12: false,
-                    });
+            <div className="rounded-md bg-neutral-800/50 border border-neutral-700 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-neutral-700">
+                      <th className="text-left py-4 px-6 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
+                        User ID
+                      </th>
+                      <th className="text-left py-4 px-6 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
+                        Email
+                      </th>
+                      <th className="text-left py-4 px-6 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
+                        Role
+                      </th>
+                      <th className="text-left py-4 px-6 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
+                        Status
+                      </th>
+                      <th className="text-left py-4 px-6 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
+                        Joined Date
+                      </th>
+                      <th className="text-left py-4 px-6 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {users.map((user) => {
+                      const joinDate = new Date(user.created_at);
+                      const formattedDate = joinDate.toLocaleDateString(
+                        "en-US",
+                        {
+                          month: "short",
+                          day: "2-digit",
+                          year: "numeric",
+                        }
+                      );
+                      const formattedTime = joinDate.toLocaleTimeString(
+                        "en-US",
+                        {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          second: "2-digit",
+                          hour12: false,
+                        }
+                      );
 
-                    return (
-                      <tr
-                        key={user.id}
-                        className="border-b hover:bg-neutral-800/50 transition-colors"
-                        style={{ borderBottomWidth: '1px', borderBottomColor: 'rgb(38, 38, 38)' }}
-                      >
-                        <td className="py-4 px-4 text-white font-mono text-sm">
-                          #{user.id.slice(0, 8)}
-                        </td>
-                        <td className="py-4 px-4 text-white">{user.email}</td>
-                        <td className="py-4 px-4">{getRoleBadge(user.role)}</td>
-                        <td className="py-4 px-4">
-                          {getActiveBadge(user.isActive, user.activeProxiesCount)}
-                        </td>
-                        <td className="py-4 px-4 text-white">
-                          <div>{formattedDate}</div>
-                          <div className="text-sm text-neutral-500">
-                            {formattedTime}
-                          </div>
-                        </td>
-                        <td className="py-4 px-4">
-                          <button
-                            onClick={() => router.push(`/admin/users/${user.id}`)}
-                            className="p-2 text-neutral-400 hover:text-white transition-colors"
-                            title="View Details"
-                          >
-                            <Eye className="w-5 h-5" />
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                      return (
+                        <tr
+                          key={user.id}
+                          className="border-b border-neutral-700 hover:bg-neutral-700/50 transition-colors cursor-pointer"
+                          onClick={() => router.push(`/admin/users/${user.id}`)}
+                        >
+                          <td className="py-4 px-6 tp-body-s text-white font-mono">
+                            #{user.id.slice(0, 8)}
+                          </td>
+                          <td className="py-4 px-6 tp-body-s text-white">
+                            {user.email}
+                          </td>
+                          <td className="py-4 px-6">
+                            {getRoleBadge(user.role)}
+                          </td>
+                          <td className="py-4 px-6">
+                            {getActiveBadge(
+                              user.isActive,
+                              user.activeProxiesCount
+                            )}
+                          </td>
+                          <td className="py-4 px-6 tp-body-s text-white">
+                            <div>{formattedDate}</div>
+                            <div className="text-sm text-neutral-500">
+                              {formattedTime}
+                            </div>
+                          </td>
+                          <td className="py-4 px-6">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                router.push(`/admin/users/${user.id}`);
+                              }}
+                              className="p-2 text-neutral-400 hover:text-white transition-colors"
+                              title="View Details"
+                            >
+                              <Eye className="w-5 h-5" />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
 
             {/* Pagination */}
-            <div className="flex items-center justify-between mt-6 pt-4 border-t" style={{ borderTopWidth: '1px', borderTopColor: 'rgb(38, 38, 38)' }}>
-              <div className="flex items-center gap-2">
-                <select
-                  value={pagination.limit}
-                  onChange={handleLimitChange}
-                  className="px-3 py-2 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-[rgb(var(--brand-400))]"
-                >
-                  <option value="10">10 per page</option>
-                  <option value="20">20 per page</option>
-                  <option value="50">50 per page</option>
-                  <option value="100">100 per page</option>
-                </select>
-              </div>
+            <div className="flex flex-col sm:flex-row items-center justify-between mt-6 pt-4 gap-4">
+              <select
+                value={pagination.limit}
+                onChange={handleLimitChange}
+                className="py-2 px-3 bg-neutral-800 border border-neutral-700 rounded-lg text-white tp-body-s focus:outline-none focus:border-[rgb(var(--brand-400))]"
+              >
+                <option value="10">10 per page</option>
+                <option value="20">20 per page</option>
+                <option value="50">50 per page</option>
+                <option value="100">100 per page</option>
+              </select>
 
               <div className="flex items-center gap-4">
-                <div className="text-sm text-neutral-400">
-                  Showing{" "}
+                <div className="tp-body-s text-neutral-400">
                   {Math.min(
                     (pagination.page - 1) * pagination.limit + 1,
                     pagination.total
                   )}
-                  -{Math.min(pagination.page * pagination.limit, pagination.total)}{" "}
+                  -
+                  {Math.min(
+                    pagination.page * pagination.limit,
+                    pagination.total
+                  )}{" "}
                   of {pagination.total}
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="icon"
+                  <button
                     onClick={() => handlePageChange(pagination.page - 1)}
                     disabled={pagination.page === 1}
-                    className="border-neutral-700"
+                    className="p-2 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white hover:bg-neutral-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <ChevronLeft className="h-4 w-4" />
-                  </Button>
+                  </button>
 
                   <div className="flex items-center gap-1">
                     {[...Array(Math.min(pagination.totalPages, 5))].map(
@@ -418,40 +392,39 @@ export default function AdminUsersPage() {
                           pageNum = idx + 1;
                         } else if (pagination.page <= 3) {
                           pageNum = idx + 1;
-                        } else if (pagination.page >= pagination.totalPages - 2) {
+                        } else if (
+                          pagination.page >=
+                          pagination.totalPages - 2
+                        ) {
                           pageNum = pagination.totalPages - 4 + idx;
                         } else {
                           pageNum = pagination.page - 2 + idx;
                         }
 
                         return (
-                          <Button
+                          <button
                             key={pageNum}
-                            variant="outline"
-                            size="sm"
                             onClick={() => handlePageChange(pageNum)}
-                            className={`border-neutral-700 min-w-[40px] ${
+                            className={`min-w-[40px] px-3 py-2 border rounded-lg tp-body-s transition-colors ${
                               pagination.page === pageNum
                                 ? "bg-[rgb(var(--brand-400))] border-[rgb(var(--brand-400))] text-white"
-                                : ""
+                                : "bg-neutral-800/50 border-neutral-700 text-white hover:bg-neutral-700"
                             }`}
                           >
                             {pageNum}
-                          </Button>
+                          </button>
                         );
                       }
                     )}
                   </div>
 
-                  <Button
-                    variant="outline"
-                    size="icon"
+                  <button
                     onClick={() => handlePageChange(pagination.page + 1)}
                     disabled={pagination.page === pagination.totalPages}
-                    className="border-neutral-700"
+                    className="p-2 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white hover:bg-neutral-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <ChevronRight className="h-4 w-4" />
-                  </Button>
+                  </button>
                 </div>
               </div>
             </div>
