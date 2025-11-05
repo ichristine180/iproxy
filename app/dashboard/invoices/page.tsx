@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
-import { FileText, Download, ListFilter } from "lucide-react";
+import { FileText, Download } from "lucide-react";
 
 interface Payment {
   id: string;
@@ -10,6 +10,7 @@ interface Payment {
   amount: number;
   currency: string;
   payment_method?: string;
+  provider?: string;
   created_at: string;
 }
 
@@ -39,15 +40,17 @@ export default function InvoicesPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [planFilter, setPlanFilter] = useState<string>("all");
-  const [dateRange, setDateRange] = useState({ from: "", to: "" });
-  const [filterBy, setFilterBy] = useState<string>("all");
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
   const [quantityFilter, setQuantityFilter] = useState<string>("");
   const [amountFilter, setAmountFilter] = useState<string>("");
   const [paymentMethodFilter, setPaymentMethodFilter] = useState<string>("all");
+  const [itemsPerPage, setItemsPerPage] = useState<number>(5);
+  const [currentPage, setCurrentPage] = useState<number>(1);
 
   useEffect(() => {
     loadOrders();
-  }, [planFilter]);
+  }, []);
 
   const loadOrders = async () => {
     setIsLoading(true);
@@ -118,10 +121,57 @@ export default function InvoicesPage() {
     });
   };
 
-  const filteredOrders =
-    planFilter === "all"
-      ? orders
-      : orders.filter((order) => order.plan?.id === planFilter);
+  const filteredOrders = orders.filter((order) => {
+    // Filter by plan
+    if (planFilter !== "all" && order.plan?.id !== planFilter) {
+      return false;
+    }
+
+    // Filter by date range
+    if (startDate || endDate) {
+      const orderDate = new Date(order.created_at);
+      orderDate.setHours(0, 0, 0, 0); // Reset time to start of day for comparison
+
+      if (startDate) {
+        const start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
+        if (orderDate < start) {
+          return false;
+        }
+      }
+
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999); // Set to end of day
+        if (orderDate > end) {
+          return false;
+        }
+      }
+    }
+
+    // Filter by quantity
+    if (quantityFilter && order.quantity !== Number(quantityFilter)) {
+      return false;
+    }
+
+    // Filter by amount
+    if (amountFilter && order.total_amount !== Number(amountFilter)) {
+      return false;
+    }
+
+    // Filter by payment method
+    if (paymentMethodFilter !== "all") {
+      const provider = order.payment?.[0]?.provider || "";
+      if (paymentMethodFilter === "wallet" && provider !== "wallet") {
+        return false;
+      }
+      if (paymentMethodFilter === "crypto" && provider !== "nowpayments") {
+        return false;
+      }
+    }
+
+    return true;
+  });
 
   // Get unique plans from orders
   const uniquePlans = Array.from(
@@ -131,6 +181,18 @@ export default function InvoicesPage() {
         .map((order) => [order.plan!.id, order.plan!])
     ).values()
   );
+
+  // Pagination logic
+  const totalItems = filteredOrders.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedOrders = filteredOrders.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [planFilter, startDate, endDate, quantityFilter, amountFilter, paymentMethodFilter]);
 
   return (
     <div className="margin-12">
@@ -147,17 +209,27 @@ export default function InvoicesPage() {
             <div className="mb-6 px-32">
               {/* First Row: Date and Plan Filter */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-16">
-                {/* Select Date */}
+                {/* Select Date Range */}
                 <div className="space-y-2">
                   <label className="tp-body font-medium text-white">
-                    Select date
+                    Select date range
                   </label>
-                  <input
-                    type="text"
-                    placeholder="2025/10/26 - 2025/10/26"
-                    className="w-full px-4 py-3 bg-neutral-800/50 border border-neutral-700 text-neutral-400 placeholder:text-neutral-500 rounded-sm tp-body-s focus:outline-none focus:border-[rgb(var(--brand-400))] transition-colors"
-                    onFocus={(e) => (e.target.type = "date")}
-                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      placeholder="Start date"
+                      className="w-full px-4 py-3 bg-neutral-800/50 border border-neutral-700 text-neutral-400 placeholder:text-neutral-500 rounded-sm tp-body-s focus:outline-none focus:border-[rgb(var(--brand-400))] transition-colors"
+                    />
+                    <input
+                      type="date"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      placeholder="End date"
+                      className="w-full px-4 py-3 bg-neutral-800/50 border border-neutral-700 text-neutral-400 placeholder:text-neutral-500 rounded-sm tp-body-s focus:outline-none focus:border-[rgb(var(--brand-400))] transition-colors"
+                    />
+                  </div>
                 </div>
 
                 {/* Filter by Plan */}
@@ -288,7 +360,7 @@ export default function InvoicesPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredOrders.map((order) => {
+                    {paginatedOrders.map((order) => {
                       const orderDate = new Date(order.created_at);
                       const formattedDate = orderDate.toLocaleDateString(
                         "en-US",
@@ -364,6 +436,26 @@ export default function InvoicesPage() {
                     })}
                   </tbody>
                 </table>
+
+                {/* Pagination */}
+                <div className="flex items-center justify-end px-32 gap-8 py-4">
+                  <select
+                    value={itemsPerPage}
+                    onChange={(e) => {
+                      setItemsPerPage(Number(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                    className="py-12 px-12 bg-neutral-800 border border-neutral-700 rounded-sm text-white text-sm focus:outline-none focus:border-[rgb(var(--brand-400))]"
+                  >
+                    <option value={5}>5 per page</option>
+                    <option value={10}>10 per page</option>
+                    <option value={20}>20 per page</option>
+                    <option value={50}>50 per page</option>
+                  </select>
+                  <div className="text-sm text-neutral-400">
+                    {startIndex + 1}-{Math.min(endIndex, totalItems)} of {totalItems}
+                  </div>
+                </div>
               </div>
             )}
           </div>

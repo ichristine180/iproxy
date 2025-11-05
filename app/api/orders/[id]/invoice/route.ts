@@ -267,9 +267,9 @@ function generateInvoiceHTML(order: any, user: any): string {
     <!-- Header -->
     <div class="header">
       <div class="company-info">
-        <h1>iProxy</h1>
+        <h1>HighBid proxies</h1>
         <p>Proxy Services Platform</p>
-        <p>support@iproxy.com</p>
+        <p>support@highbidproxies.com</p>
       </div>
       <div class="invoice-info">
         <h2>INVOICE</h2>
@@ -338,7 +338,7 @@ function generateInvoiceHTML(order: any, user: any): string {
     <div class="footer">
       <p>Thank you for your business!</p>
       <p>This is a computer-generated invoice. No signature is required.</p>
-      <p style="margin-top: 20px;">Questions? Contact us at support@iproxy.com</p>
+      <p style="margin-top: 20px;">Questions? Contact us at support@highbidproxies.com</p>
     </div>
   </div>
 </body>

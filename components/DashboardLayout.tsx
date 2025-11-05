@@ -341,7 +341,7 @@ export const DashboardLayout = ({
                       }`}
                       title={channelInfo.name}
                     >
-                      <ChannelIcon className="h-4 w-4 flex-shrink-0" />
+                      <Smartphone className="h-4 w-4 flex-shrink-0" />
                       <span
                         className={`text-sm ${
                           sidebarCollapsed ? "lg:hidden" : ""
