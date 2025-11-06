@@ -93,9 +93,27 @@ export async function POST(request: NextRequest) {
     const pricePerUnit = parseFloat(selectedPricing.price_usd);
     let totalAmount = pricePerUnit * duration_quantity * quantity;
 
-    // Add rotation costs if enabled
+    // Add rotation costs if enabled based on duration and interval
     if (ip_change_enabled && (ip_change_interval_minutes === 3 || ip_change_interval_minutes === 4)) {
-      const rotationCostPerUnit = ip_change_interval_minutes === 3 ? 2 : 1;
+      let rotationCostPerUnit = 0;
+
+      switch (duration_unit) {
+        case 'daily': // Hourly plan
+          rotationCostPerUnit = ip_change_interval_minutes === 3 ? 2 : 1;
+          break;
+        case 'weekly':
+          rotationCostPerUnit = ip_change_interval_minutes === 3 ? 4 : 2;
+          break;
+        case 'monthly':
+          rotationCostPerUnit = ip_change_interval_minutes === 3 ? 10 : 5;
+          break;
+        case 'yearly':
+          rotationCostPerUnit = ip_change_interval_minutes === 3 ? 120 : 60;
+          break;
+        default:
+          rotationCostPerUnit = 0;
+      }
+
       const totalRotationCost = rotationCostPerUnit * duration_quantity * quantity;
       totalAmount += totalRotationCost;
     }

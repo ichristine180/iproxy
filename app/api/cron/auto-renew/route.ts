@@ -446,7 +446,7 @@ To extend your rental for the next period, please:
 
 If you do not take action, your proxy access will be removed after the expiration date.
 
-Manage Your Account: ${process.env.NEXT_PUBLIC_APP_URL || "https://highbidproxies.com"}/dashboard
+Manage Your Account: ${process.env.NEXT_PUBLIC_APP_BASE_URL || "https://highbidproxies.com"}/dashboard
 
 If you have any questions, please contact our support team.
 
@@ -464,8 +464,15 @@ Highbid Proxies Team
 
     // Send email notification if enabled
     if (profile.notify_email !== false) { // Default to true if not set
+      const baseUrl = process.env.NEXT_PUBLIC_APP_BASE_URL;
+
+      if (!baseUrl) {
+        console.error('NEXT_PUBLIC_APP_BASE_URL is not set, skipping email notification');
+        return;
+      }
+
       const emailResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/notifications/email`,
+        `${baseUrl}/api/notifications/email`,
         {
           method: "POST",
           headers: {
@@ -512,12 +519,19 @@ To extend your rental for the next period, please:
 
 If you do not take action, your proxy access will be removed after the expiration date.
 
-[Manage Your Account](${process.env.NEXT_PUBLIC_APP_URL || "https://iproxy.com"}/dashboard)
+[Manage Your Account](${process.env.NEXT_PUBLIC_APP_BASE_URL || "https://highbidproxies.com"}/dashboard)
       `.trim();
+
+      const baseUrl = process.env.NEXT_PUBLIC_APP_BASE_URL;
+
+      if (!baseUrl) {
+        console.error('NEXT_PUBLIC_APP_BASE_URL is not set, skipping Telegram notification');
+        return;
+      }
 
       try {
         const telegramResponse = await fetch(
-          `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/notifications/telegram`,
+          `${baseUrl}/api/notifications/telegram`,
           {
             method: "POST",
             headers: {

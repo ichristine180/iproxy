@@ -142,12 +142,25 @@ function CheckoutPageContent() {
     // Base total price
     const baseTotalPrice = pricePerUnit * durationQuantity;
 
-    // Calculate rotation cost per unit if applicable
+    // Calculate rotation cost per unit based on duration and rotation interval
     let rotationCostPerUnit = 0;
-    if (rotationMinutes === 3) {
-      rotationCostPerUnit = 2; // $2 per unit for 3-minute rotation
-    } else if (rotationMinutes === 4) {
-      rotationCostPerUnit = 1; // $1 per unit for 4-minute rotation
+    if (rotationMinutes === 3 || rotationMinutes === 4) {
+      switch (duration) {
+        case "daily": // Hourly plan
+          rotationCostPerUnit = rotationMinutes === 3 ? 2 : 1;
+          break;
+        case "weekly":
+          rotationCostPerUnit = rotationMinutes === 3 ? 4 : 2;
+          break;
+        case "monthly":
+          rotationCostPerUnit = rotationMinutes === 3 ? 10 : 5;
+          break;
+        case "yearly":
+          rotationCostPerUnit = rotationMinutes === 3 ? 120 : 60;
+          break;
+        default:
+          rotationCostPerUnit = 0;
+      }
     }
 
     // Total rotation cost for all units
@@ -183,7 +196,25 @@ function CheckoutPageContent() {
   // Get rotation price display
   const getRotationPrice = (minutes: number) => {
     if (minutes !== 3 && minutes !== 4) return null;
-    const costPerUnit = minutes === 3 ? 2 : 1;
+
+    let costPerUnit = 0;
+    switch (duration) {
+      case "daily": // Hourly plan
+        costPerUnit = minutes === 3 ? 2 : 1;
+        break;
+      case "weekly":
+        costPerUnit = minutes === 3 ? 4 : 2;
+        break;
+      case "monthly":
+        costPerUnit = minutes === 3 ? 10 : 5;
+        break;
+      case "yearly":
+        costPerUnit = minutes === 3 ? 120 : 60;
+        break;
+      default:
+        costPerUnit = 0;
+    }
+
     const selectedDuration = durationOptions.find((d) => d.value === duration);
     const label = selectedDuration?.label.toLowerCase() || "unit";
     return `+$${costPerUnit}/${label}`;
