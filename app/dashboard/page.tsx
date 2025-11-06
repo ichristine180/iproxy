@@ -955,10 +955,11 @@ function DashboardPageContent() {
       <h1 className="tp-sub-headline text-neutral-0 py-4">Dashboard</h1>
 
       {/* Success Messages */}
+
       {showSuccessMessage && (
-        <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-xl flex items-center 2">
+        <div className="p-6 bg-green-600/10 rounded-sm flex items-center mb-4">
           <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-          <div className="flex-1">
+          <div className="flex-1 px-12">
             <p className="tp-body font-semibold text-green-600">
               Payment Successful!
             </p>
@@ -1076,7 +1077,9 @@ function DashboardPageContent() {
                         >
                           {plan.name}
                           {plan.pricing && (
-                            <small className="px-2">({plan.pricing[0].duration})</small>
+                            <small className="px-2">
+                              ({plan.pricing[0].duration})
+                            </small>
                           )}
                         </span>
                       </div>

@@ -494,7 +494,7 @@ async function provisionProxyForOrder(
     userId,
     userEmail,
     connectionId: selectedConnection.id,
-    expiresAt: expiresAt.toDateString(),
+    expiresAt: expiresAt.toISOString(),
     planName: plan.name || "Plan",
     ipChangeEnabled,
     ipChangeIntervalMinutes,
