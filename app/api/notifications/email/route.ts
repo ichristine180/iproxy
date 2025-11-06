@@ -3,12 +3,12 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { to, subject, html, from } = body;
+    const { to, subject, text, html, from } = body;
 
-    // Validate input
-    if (!to || !subject || !html) {
+    // Validate input - accept either text or html
+    if (!to || !subject || (!text && !html)) {
       return NextResponse.json(
-        { success: false, error: 'to, subject, and html are required' },
+        { success: false, error: 'to, subject, and either text or html are required' },
         { status: 400 }
       );
     }
@@ -37,18 +37,26 @@ export async function POST(request: NextRequest) {
     // Use provided 'from' or fall back to environment variable
     const fromEmail = from || defaultFromEmail;
 
+    // Build email payload - prefer text over html
+    const emailPayload: any = {
+      from: fromEmail,
+      to,
+      subject,
+    };
+
+    if (text) {
+      emailPayload.text = text;
+    } else if (html) {
+      emailPayload.html = html;
+    }
+
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${resendApiKey}`,
       },
-      body: JSON.stringify({
-        from: fromEmail,
-        to,
-        subject,
-        html,
-      }),
+      body: JSON.stringify(emailPayload),
     });
 
     const data = await response.json();

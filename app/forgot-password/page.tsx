@@ -42,8 +42,8 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="min-h-screen bg-neutral-950 relative">
-      {/* Logo - Fixed Top Left */}
-      <div className="absolute top-6 left-6 z-50">
+      {/* Logo - Fixed Top Left - Desktop Only */}
+      <div className="hidden md:block absolute top-6 left-6 z-50">
         <a href="/" className="flex items-center inner-spacing-xs">
           <span className="text-brand-400 font-bold tp-headline-s pr-2">
             Highbid Proxies
@@ -51,15 +51,31 @@ export default function ForgotPasswordPage() {
         </a>
       </div>
 
-      <div className="min-h-screen flex flex-col lg:flex-row">
+      <div
+        className="min-h-screen flex flex-col lg:flex-row"
+        style={{
+          background:
+            "radial-gradient(ellipse at top, rgba(30, 45, 70, 1) 0%, rgba(18, 22, 28, 1) 60%, rgba(13, 15, 16, 1) 100%)",
+        }}
+      >
+        {/* Mobile Header - Logo and Exit Button */}
+        <div className="flex justify-between z-50 p-5 md:hidden">
+          <a href="/" className="flex items-center inner-spacing-xs">
+            <span className="text-brand-400 font-bold tp-headline-s pr-2">
+              Highbid Proxies
+            </span>
+          </a>
+
+          <a
+            href="/"
+            className="flex items-center inner-spacing-xs text-white hover:text-gray-300 transition-colors"
+          >
+            <ChevronLeft className="w-5 h-5" /> Exit
+          </a>
+        </div>
+
         {/* Left Side - Forgot Password Form */}
-        <div
-          className="w-full lg:flex-1 flex items-center justify-center relative"
-          style={{
-            background:
-              "radial-gradient(ellipse at top, rgba(30, 45, 70, 1) 0%, rgba(18, 22, 28, 1) 60%, rgba(13, 15, 16, 1) 100%)",
-          }}
-        >
+        <div className="w-full h-screen lg:flex-1 flex items-center justify-center relative">
           <div className="w-full" style={{ padding: '20px 0' }}>
             {/* Form Container */}
             <div className="login-form content-primary p-7 position-relative overflow-hidden" style={{minWidth:"20%"}}>
@@ -135,10 +151,10 @@ export default function ForgotPasswordPage() {
             </div>
           </div>
 
-          {/* Exit Button */}
+          {/* Exit Button - Desktop Only */}
           <a
             href="/"
-            className="absolute bottom-4 left-4 flex items-center inner-spacing-xs text-white hover:text-gray-300 transition-colors"
+            className="hidden md:flex absolute bottom-4 left-4 items-center inner-spacing-xs text-white hover:text-gray-300 transition-colors"
           >
             <ChevronLeft className="w-5 h-5" /> Exit
           </a>
@@ -150,6 +166,7 @@ export default function ForgotPasswordPage() {
             src="/blue-bg.png"
             alt="Background"
             fill
+            sizes="50vw"
             className="object-cover opacity-80"
             priority
           />

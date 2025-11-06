@@ -243,6 +243,7 @@ function LoginForm() {
             src="/blue-bg.png"
             alt="Background"
             fill
+            sizes="50vw"
             className="object-cover opacity-80"
             priority
           />

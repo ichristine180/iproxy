@@ -424,44 +424,34 @@ async function sendExpiryNotification(
         ? "Action Required: Insufficient Funds for Proxy Auto-Renewal"
         : "Reminder: Your Proxy Rental is Expiring Soon";
 
-    const emailBody = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2>Proxy Rental Expiration Notice</h2>
-        <p>Hello,</p>
-        <p>Your proxy rental <strong>${proxy.label}</strong> will expire on <strong>${expiryDate.toLocaleString()}</strong>.</p>
+    const emailBody = `Proxy Rental Expiration Notice
 
-        ${
-          reason === "insufficient_funds"
-            ? `
-        <p style="color: #d32f2f; font-weight: bold;">
-          Auto-renewal is enabled, but your wallet balance is insufficient to complete the renewal.
-        </p>
-        <p>Required amount: <strong>$${renewalAmount.toFixed(2)}</strong></p>
-        <p>Please top up your deposit to ensure uninterrupted service.</p>
-        `
-            : `
-        <p>Auto-renewal is currently <strong>not activated</strong> for this proxy.</p>
-        <p>To extend your rental for the next period, please:</p>
-        <ol>
-          <li>Top up your deposit with at least <strong>$${renewalAmount.toFixed(2)}</strong></li>
-          <li>Enable auto-renewal for seamless service continuation</li>
-        </ol>
-        `
-        }
+Hello,
 
-        <p>If you do not take action, your proxy access will be removed after the expiration date.</p>
+Your proxy rental "${proxy.label}" will expire on ${expiryDate.toLocaleString()}.
 
-        <p style="margin-top: 30px;">
-          <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://iproxy.com"}/dashboard"
-             style="background-color: #1976d2; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">
-            Manage Your Account
-          </a>
-        </p>
+${
+  reason === "insufficient_funds"
+    ? `⚠️ IMPORTANT: Auto-renewal is enabled, but your wallet balance is insufficient to complete the renewal.
 
-        <p style="color: #666; font-size: 12px; margin-top: 30px;">
-          If you have any questions, please contact our support team.
-        </p>
-      </div>
+Required amount: $${renewalAmount.toFixed(2)}
+
+Please top up your deposit to ensure uninterrupted service.`
+    : `Auto-renewal is currently not activated for this proxy.
+
+To extend your rental for the next period, please:
+1. Top up your deposit with at least $${renewalAmount.toFixed(2)}
+2. Enable auto-renewal for seamless service continuation`
+}
+
+If you do not take action, your proxy access will be removed after the expiration date.
+
+Manage Your Account: ${process.env.NEXT_PUBLIC_APP_URL || "https://highbidproxies.com"}/dashboard
+
+If you have any questions, please contact our support team.
+
+---
+Highbid Proxies Team
     `;
 
     // Check if user has proxy expiry alerts enabled
@@ -484,7 +474,7 @@ async function sendExpiryNotification(
           body: JSON.stringify({
             to: profile.email,
             subject: emailSubject,
-            html: emailBody,
+            text: emailBody,
           }),
         }
       );
@@ -615,23 +605,35 @@ async function updateQuota(supabaseAdmin: any, connectionsToAdd: number) {
 async function deactivateProxy(supabaseAdmin: any, proxy: any, updateQuota = true) {
   try {
     // Step 1: Delete proxy access from iProxy service
-    if (proxy.iproxy_connection_id && proxy.id) {
-      console.log(`Attempting to delete proxy access ${proxy.id} from connection ${proxy.iproxy_connection_id}`);
+    if (proxy.iproxy_connection_id) {
+      console.log(`Attempting to delete proxy accesses from connection ${proxy.iproxy_connection_id}`);
 
-      const deleteResult = await iproxyService.deleteProxyAccess(
-        proxy.iproxy_connection_id,
-        proxy.id
+      // First, get all proxy accesses for this connection
+      const proxyAccessesResult = await iproxyService.getProxiesByConnection(
+        proxy.iproxy_connection_id
       );
 
-      if (!deleteResult.success) {
-        console.error(`Failed to delete proxy access from iProxy: ${deleteResult.error}`);
-        // Continue with database update even if API deletion fails
-        // This ensures we don't leave orphaned records
+      if (proxyAccessesResult.success && proxyAccessesResult.proxies.length > 0) {
+        console.log(`Found ${proxyAccessesResult.proxies.length} proxy accesses to delete`);
+
+        // Delete each proxy access
+        for (const proxyAccess of proxyAccessesResult.proxies) {
+          const deleteResult = await iproxyService.deleteProxyAccess(
+            proxy.iproxy_connection_id,
+            proxyAccess.id
+          );
+
+          if (!deleteResult.success) {
+            console.error(`Failed to delete proxy access ${proxyAccess.id} from iProxy: ${deleteResult.error}`);
+          } else {
+            console.log(`Successfully deleted proxy access ${proxyAccess.id} from iProxy service`);
+          }
+        }
       } else {
-        console.log(`Successfully deleted proxy access ${proxy.id} from iProxy service`);
+        console.warn(`No proxy accesses found for connection ${proxy.iproxy_connection_id} or failed to fetch: ${proxyAccessesResult.error}`);
       }
     } else {
-      console.warn(`Proxy ${proxy.id} missing iproxy_connection_id or id, skipping API deletion`);
+      console.warn(`Proxy ${proxy.id} missing iproxy_connection_id, skipping API deletion`);
     }
 
     // Step 2: Update proxy status to inactive in database

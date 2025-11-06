@@ -17,6 +17,7 @@ function SignupForm() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [emailError, setEmailError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   // const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -36,6 +37,7 @@ function SignupForm() {
     e.preventDefault();
     setIsLoading(true);
     setError("");
+    setEmailError("");
 
     // Validate passwords match
     // if (formData.password !== formData.confirmPassword) {
@@ -63,7 +65,13 @@ function SignupForm() {
         // Redirect to verification page
         router.push("/verify-email");
       } else {
-        setError(data.error || "Signup failed");
+        // Check if error is for a specific field
+        if (data.field === "email") {
+          console.log("Setting email error:", data.error);
+          setEmailError(data.error || "The email has already been taken.");
+        } else {
+          setError(data.error || "Signup failed");
+        }
       }
     } catch (err) {
       setError("An error occurred. Please try again.");
@@ -151,12 +159,21 @@ function SignupForm() {
                     id="email"
                     type="email"
                     value={formData.email}
-                    onChange={(e) =>
-                      setFormData({ ...formData, email: e.target.value })
-                    }
-                    className="form-control h-auto rounded-md border-0 py-4 w-full"
+                    onChange={(e) => {
+                      setFormData({ ...formData, email: e.target.value });
+                      setEmailError(""); // Clear error when user types
+                    }}
+                    className={`form-control h-auto rounded-md py-4 w-full ${emailError ? 'email-error mb-1' : ''}`}
                     required
                   />
+                  <style jsx>{`
+                    .email-error {
+                      border: 1px solid #ef4444 !important; 
+                    }
+                  `}</style>
+                  {emailError && (
+                    <p className="text-sm text-red-400 mt-2">{emailError}</p>
+                  )}
                 </div>
 
                 {/* Password Input */}
@@ -240,6 +257,7 @@ function SignupForm() {
             src="/blue-bg.png"
             alt="Background"
             fill
+            sizes="50vw"
             className="object-cover opacity-80"
             priority
           />

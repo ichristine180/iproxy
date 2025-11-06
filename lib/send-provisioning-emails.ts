@@ -61,22 +61,25 @@ export async function sendProvisioningEmails({
               body: JSON.stringify({
                 to: admin.email,
                 subject: "⚠️ New Order Requires Manual Provisioning",
-                html: `
-                  <h2>Order Awaiting Activation</h2>
-                  <p>A new order requires manual provisioning due to inactive connection.</p>
-                  <h3>Order Details:</h3>
-                  <ul>
-                    <li><strong>Order ID:</strong> ${orderId}</li>
-                    <li><strong>User ID:</strong> ${userId}</li>
-                    <li><strong>User Email:</strong> ${userEmail}</li>
-                    <li><strong>Plan:</strong> ${plan.name}</li>
-                    <li><strong>Quantity:</strong> ${quantity}</li>
-                    <li><strong>Amount:</strong> $${totalAmount.toFixed(2)}</li>
-                    <li><strong>Connection ID:</strong> ${connectionId}</li>
-                    ${duration_days ? `<li><strong>Duration:</strong> ${duration_days} days</li>` : ""}
-                  </ul>
-                  <p><strong>Action Required:</strong> Please activate this order in the admin panel.</p>
-                  <p><a href="${origin}/admin/processing-orders" style="display: inline-block; padding: 10px 20px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 5px;">View Processing Orders</a></p>
+                text: `Order Awaiting Activation
+
+A new order requires manual provisioning due to inactive connection.
+
+Order Details:
+- Order ID: ${orderId}
+- User Email: ${userEmail}
+- Plan: ${plan.name}
+- Quantity: ${quantity}
+- Amount: $${totalAmount.toFixed(2)}
+- Connection ID: ${connectionId}
+${duration_days ? `- Duration: ${duration_days} days` : ""}
+
+ACTION REQUIRED: Please activate this order in the admin panel.
+
+View Processing Orders: ${origin}/admin/processing-orders
+
+---
+Highbid Proxies Team
                 `,
               }),
             });
@@ -170,23 +173,28 @@ ${duration_days ? `• Duration: ${duration_days} days` : ""}
       };
     }
 
-    const emailHtml = `
-      <h2>Thank you for your order!</h2>
-      <p>Hi,</p>
-      <p>We've received your payment and your order is currently being processed.</p>
-      <h3>Order Details:</h3>
-      <ul>
-        <li><strong>Order ID:</strong> ${orderId.slice(0, 8)}</li>
-        <li><strong>Plan:</strong> ${plan.name}</li>
-        <li><strong>Quantity:</strong> ${quantity} proxy${quantity > 1 ? "ies" : ""}</li>
-        <li><strong>Amount Paid:</strong> $${totalAmount.toFixed(2)}</li>
-        ${duration_days ? `<li><strong>Duration:</strong> ${duration_days} days</li>` : ""}
-      </ul>
-      <p><strong>What's Next?</strong></p>
-      <p>Your proxies are being provisioned and will be available shortly. You'll receive another email once they're ready to use.</p>
-      <p>You can check your order status at any time in your dashboard: <a href="${origin}/dashboard">${origin}/dashboard</a></p>
-      <p>If you have any questions, please contact our support team.</p>
-      <p>Best regards,<br>iProxy Team</p>
+    const emailText = `Thank you for your order!
+
+Hi,
+
+We've received your payment and your order is currently being processed.
+
+Order Details:
+- Order ID: ${orderId.slice(0, 8)}
+- Plan: ${plan.name}
+- Amount Paid: $${totalAmount.toFixed(2)}
+${duration_days ? `- Duration: ${duration_days} days` : ""}
+
+What's Next?
+Your proxies are being provisioned and will be available shortly. You'll receive another email once they're ready to use.
+
+You can check your order status at any time in your dashboard:
+${origin}/dashboard
+
+If you have any questions, please contact our support team.
+
+Best regards,
+Highbid Proxies Team
     `;
 
     // Send email if enabled
@@ -197,7 +205,7 @@ ${duration_days ? `• Duration: ${duration_days} days` : ""}
         body: JSON.stringify({
           to: userEmail,
           subject: "Order Received - Processing in Progress",
-          html: emailHtml,
+          text: emailText,
         }),
       });
 
@@ -307,16 +315,19 @@ export async function sendConnectionConfigNeededEmail({
               body: JSON.stringify({
                 to: admin.email,
                 subject: "⚠️ Connection Needs Configuration",
-                html: `
-                  <h2>Connection Requires Configuration</h2>
-                  <p>A connection has been sold and needs to be configured on the Android device.</p>
-                  <h3>Details:</h3>
-                  <ul>
-                    <li><strong>Order ID:</strong> ${orderId}</li>
-                    <li><strong>User Email:</strong> ${userEmail}</li>
-                    <li><strong>Connection ID:</strong> ${connectionId}</li>
-                  </ul>
-                  <p><strong>Action Required:</strong> Please configure this connection on the Android device.</p>
+                text: `Connection Requires Configuration
+
+A connection has been sold and needs to be configured on the Android device.
+
+Details:
+- Order ID: ${orderId}
+- User Email: ${userEmail}
+- Connection ID: ${connectionId}
+
+ACTION REQUIRED: Please configure this connection on the Android device.
+
+---
+Highbid Proxies Team
                 `,
               }),
             });

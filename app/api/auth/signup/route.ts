@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from '@supabase/supabase-js';
 
 export async function POST(request: NextRequest) {
   try {
@@ -31,9 +31,39 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabase = await createClient();
+    // Create service role client to check for existing users
+    const supabaseAdmin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      }
+    );
 
-    // Sign up with Supabase
+    // Check if email already exists by querying profiles table with service role
+    const { data: existingProfile } = await supabaseAdmin
+      .from('profiles')
+      .select('email')
+      .eq('email', email)
+      .maybeSingle();
+
+    if (existingProfile) {
+      return NextResponse.json(
+        { success: false, error: 'The email has already been taken.', field: 'email' },
+        { status: 400 }
+      );
+    }
+
+    // Use regular client for signup
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+
+    // Sign up with Supabase Auth
     const { data, error } = await supabase.auth.signUp({
       email,
       password,

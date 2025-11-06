@@ -52,7 +52,6 @@ const Pricing = () => {
           );
         }
         const data = await response.json();
-        console.log("Fetched plans:", data.plans);
         setPlans(data.plans || []);
       } catch (err) {
         console.error("Error fetching plans:", err);
@@ -86,7 +85,9 @@ const Pricing = () => {
             Select Your Plan
           </h2>
 
-          <p className="text-red-400">{error}</p>
+          <div className="p-4 border-2 border-red-500 rounded-md bg-red-500/10">
+            <p className="text-red-400">{error}</p>
+          </div>
         </div>
       </section>
     );
