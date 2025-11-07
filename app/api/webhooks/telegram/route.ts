@@ -11,7 +11,19 @@ import { createClient } from '@supabase/supabase-js';
  * 3. Bot auto-captures their chat_id and saves to profile
  */
 
+// GET endpoint to verify webhook is accessible
+export async function GET() {
+  return NextResponse.json({
+    status: 'ok',
+    message: 'Telegram webhook endpoint is accessible',
+    timestamp: new Date().toISOString(),
+  });
+}
+
 export async function POST(request: NextRequest) {
+  console.log('=== TELEGRAM WEBHOOK CALLED ===');
+  console.log('Request headers:', Object.fromEntries(request.headers.entries()));
+
   try {
     const body = await request.json();
     console.log('Telegram webhook received:', JSON.stringify(body, null, 2));
@@ -29,6 +41,10 @@ export async function POST(request: NextRequest) {
     console.log(`Telegram message from ${from.username || from.first_name} (${chatId}):`, text);
 
     // Initialize Supabase admin client
+    console.log('Initializing Supabase admin client...');
+    console.log('SUPABASE_URL:', process.env.NEXT_PUBLIC_SUPABASE_URL ? 'Set' : 'Missing');
+    console.log('SUPABASE_SERVICE_ROLE_KEY:', process.env.SUPABASE_SERVICE_ROLE_KEY ? 'Set' : 'Missing');
+
     const supabaseAdmin = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -39,6 +55,7 @@ export async function POST(request: NextRequest) {
       const userId = text.replace('/start verify_', '').trim();
 
       console.log(`Verification request for user: ${userId}`);
+      console.log(`Chat ID: ${chatId}`);
 
       // Update user profile with chat_id
       const { data: profile, error: updateError } = await supabaseAdmin
@@ -51,6 +68,8 @@ export async function POST(request: NextRequest) {
         .eq('id', userId)
         .select('email, role')
         .single();
+
+      console.log('Update result:', { profile, updateError });
 
       if (updateError || !profile) {
         console.error('Failed to update profile:', updateError);

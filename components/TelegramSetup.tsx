@@ -19,6 +19,7 @@ export function TelegramSetup({
 }: TelegramSetupProps) {
   const { toast } = useToast();
   const [isTesting, setIsTesting] = useState(false);
+  const [isPolling, setIsPolling] = useState(false);
   const [status, setStatus] = useState<
     "connected" | "disconnected" | "checking"
   >(currentChatId ? "connected" : "disconnected");
@@ -31,6 +32,28 @@ export function TelegramSetup({
   useEffect(() => {
     setStatus(currentChatId ? "connected" : "disconnected");
   }, [currentChatId]);
+
+  // Auto-polling: Check for connection updates when disconnected
+  useEffect(() => {
+    // Only poll when disconnected and onUpdate callback is provided
+    if (status !== "disconnected" || !onUpdate) {
+      setIsPolling(false);
+      return;
+    }
+
+    setIsPolling(true);
+
+    // Poll every 3 seconds to check if user has connected via Telegram
+    const pollInterval = setInterval(() => {
+      console.log("Polling for Telegram connection updates...");
+      onUpdate();
+    }, 3000);
+
+    return () => {
+      clearInterval(pollInterval);
+      setIsPolling(false);
+    };
+  }, [status, onUpdate]);
 
   const handleTestNotification = async () => {
     if (!currentChatId) {
@@ -196,6 +219,16 @@ You will receive notifications for:
         </div>
       ) : (
         <div className="space-y-4">
+          {/* Active polling indicator */}
+          {isPolling && (
+            <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin text-blue-400" />
+              <p className="text-sm text-blue-400">
+                Waiting for you to connect via Telegram...
+              </p>
+            </div>
+          )}
+
           {/* Instructions */}
           <div className="bg-neutral-900 rounded-lg p-5">
             <p className="text-sm text-neutral-300 mb-3 font-semibold">
