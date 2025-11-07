@@ -6109,7 +6109,6 @@ label {
 .balance-container {
   padding: 0 12px;
   height: 38px;
-  display: flex;
   justify-content: center;
   align-items: center;
   background: #444444;

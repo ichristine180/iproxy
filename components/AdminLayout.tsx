@@ -90,7 +90,7 @@ export const AdminLayout = ({
           <div className="flex items-center gap-2 overflow-hidden">
             <Shield className="h-6 w-6 text-[rgb(var(--brand-400))] flex-shrink-0" />
             <span
-              className={`text-brand-400 font-bold tp-sub-headline-s whitespace-nowrap ${
+              className={`text-brand-400 font-bold tp-headline-s whitespace-nowrap ${
                 sidebarCollapsed ? "lg:hidden" : ""
               }`}
             >

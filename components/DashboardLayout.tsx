@@ -61,7 +61,6 @@ const DashboardLayoutContent = ({
     }
   };
 
-
   const fetchWalletBalance = async () => {
     try {
       const response = await fetch("/api/wallet");
@@ -87,7 +86,6 @@ const DashboardLayoutContent = ({
     }
     return "U";
   };
-
 
   return (
     <div className="h-screen flex w-full  p-2 gap-2 md:gap-4 bg-neutral-1000">
@@ -229,9 +227,14 @@ const DashboardLayoutContent = ({
                   <SidebarLink
                     key={channel.id}
                     href={`/checkout?plan=${channel.id}`}
-                    label={`${channel.name} ${channel.pricing?channel.pricing[0].duration:''}`}
+                    label={`${channel.name} ${
+                      channel.pricing ? channel.pricing[0].duration : ""
+                    }`}
                     icon={Smartphone}
-                    isActive={pathname === "/checkout" && searchParams.get("plan") === channel.id}
+                    isActive={
+                      pathname === "/checkout" &&
+                      searchParams.get("plan") === channel.id
+                    }
                     onClick={() => setMobileMenuOpen(false)}
                     sidebarCollapsed={sidebarCollapsed}
                     asideLeftPad={25}
@@ -284,11 +287,11 @@ const DashboardLayoutContent = ({
             {/* Right Section */}
             <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
               {/* Credits */}
-              <div className="balance-container mr-2 lg:mr-5 content-primary">
+              <div className="hidden lg:flex  balance-container mr-2 lg:mr-5 content-primary">
                 <span className="tp-body-s text-center text-neutral-0 hidden lg:flex lg:inline">
                   Credits:{" "}
                 </span>
-                <span className="tp-headline-s text-neutral-0">
+                <span className=" tp-headline-s text-neutral-0">
                   ${walletBalance.toFixed(2)}
                 </span>
               </div>
@@ -296,8 +299,8 @@ const DashboardLayoutContent = ({
               {/* User Menu */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="hidden lg:flex flex items-center gap-2 text-white hover:text-neutral-300 transition-colors focus:outline-none focus:ring-0">
-                    <span className="font-16-bold mr-3">
+                  <button className=" flex items-center gap-2 text-white hover:text-neutral-300 transition-colors focus:outline-none focus:ring-0">
+                    <span className=" hidden lg:flex font-16-bold mr-3">
                       Hi, {user?.email?.split("@")[0]}
                     </span>
                     <Avatar className="h-7 w-7 md:h-8 md:w-8">
@@ -407,7 +410,13 @@ export const DashboardLayout = ({
   children: React.ReactNode;
 }) => {
   return (
-    <Suspense fallback={<div className="h-screen flex items-center justify-center bg-neutral-1000">Loading...</div>}>
+    <Suspense
+      fallback={
+        <div className="h-screen flex items-center justify-center bg-neutral-1000">
+          Loading...
+        </div>
+      }
+    >
       <DashboardLayoutContent>{children}</DashboardLayoutContent>
     </Suspense>
   );

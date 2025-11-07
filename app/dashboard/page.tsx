@@ -119,6 +119,9 @@ function DashboardPageContent() {
   // Orders and Proxies state
   const [orders, setOrders] = useState<Order[]>([]);
   const [proxies, setProxies] = useState<Proxy[]>([]);
+  const [orderSearchQuery, setOrderSearchQuery] = useState("");
+  const [ordersPerPage, setOrdersPerPage] = useState(5);
+  const [currentOrderPage, setCurrentOrderPage] = useState(1);
   const [downloadingInvoice, setDownloadingInvoice] = useState<string | null>(
     null
   );
@@ -272,6 +275,11 @@ function DashboardPageContent() {
       duration: durationMap[lowestPricing.duration] || lowestPricing.duration,
     };
   };
+
+  // Reset to page 1 when search query changes
+  useEffect(() => {
+    setCurrentOrderPage(1);
+  }, [orderSearchQuery]);
 
   // Handle invoice download
   const handleDownloadInvoice = async (orderId: string) => {
@@ -596,10 +604,10 @@ function DashboardPageContent() {
         {/* Back Button */}
         <button
           onClick={() => setCurrentView("list")}
-          className="pb-3 flex items-center gap-2 text-[rgb(var(--brand-400))] hover:text-[rgb(var(--brand-200))] transition-colors"
+          className="py-3 flex items-center gap-2 text-[rgb(var(--brand-400))] hover:text-[rgb(var(--brand-200))] transition-colors"
         >
           <ArrowLeft className="w-5 h-5 text-neutral-0" />
-          <h1 className="font-bold tp-sub-headline text-neutral-0">Back</h1>
+          <h1 className="font-bold tp-headline-s  text-neutral-0">Back</h1>
         </button>
 
         {/* IP Rotation Success Message */}
@@ -911,28 +919,26 @@ function DashboardPageContent() {
                 {orderProxies[selectedProxyIndex]?.location || "United States"}
               </span>
             </div>
-            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-1 sm:gap-0">
-              <span className="text-neutral-400 text-sm">Quantity</span>
-              <span className="text-white font-medium">1</span>
-            </div>
 
             {/* Auto-renew toggle */}
-            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 p-2 rounded">
-              <span className="text-neutral-400 text-sm">Auto-renew</span>
-              <div className="flex items-center gap-2">
-                <Switch
-                  checked={autoRenew}
-                  onCheckedChange={handleAutoRenewToggle}
-                  disabled={isUpdatingAutoRenew}
-                  style={{
-                    border: "1px solid #73a3f1ff",
-                  }}
-                />
-                <span className="text-white tp-body-s mx-2">
-                  {autoRenew ? "Enabled" : "Disabled"}
-                </span>
+            {selectedOrder.status === "active" && (
+              <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 p-2 rounded">
+                <span className="text-neutral-400 text-sm">Auto-renew</span>
+                <div className="flex items-center gap-2">
+                  <Switch
+                    checked={autoRenew}
+                    onCheckedChange={handleAutoRenewToggle}
+                    disabled={isUpdatingAutoRenew}
+                    style={{
+                      border: "1px solid #73a3f1ff",
+                    }}
+                  />
+                  <span className="text-white tp-body-s mx-2">
+                    {autoRenew ? "Enabled" : "Disabled"}
+                  </span>
+                </div>
               </div>
-            </div>
+            )}
 
             <div className="border-t border-neutral-800 pt-4">
               <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
@@ -1198,52 +1204,84 @@ function DashboardPageContent() {
 
               <div className="card-body padding-32-36">
                 <label className="block text-sm text-neutral-400 mb-2">
-                  Search by order ID or IP
+                  Search by order ID
                 </label>
                 <div className="relative">
                   <Search className="absolute right-2 top-1/3 -translate-y-1/2 h-5 w-5 text-neutral-500" />
                   <input
                     type="text"
                     placeholder="Search"
+                    value={orderSearchQuery}
+                    onChange={(e) => setOrderSearchQuery(e.target.value)}
                     className="form-control h-auto rounded-lg border-0 py-3  w-full"
                   />
                 </div>
               </div>
 
-              {orders.length === 0 ? (
-                <div className="text-center px-32 text-neutral-500">
-                  <p>No orders found</p>
-                </div>
-              ) : (
-                <>
-                  {/* Orders Table */}
-                  <div className="overflow-x-auto px-32">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="">
-                          <th className="text-left py-3 px-3 tp-body-s rounded-l-lg font-semibold text-neutral-0 bg-neutral-600">
-                            ID
-                          </th>
-                          <th className="text-left py-3 px-4 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
-                            Product
-                          </th>
-                          <th className="text-left py-3 px-4 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
-                            Status
-                          </th>
+              {(() => {
+                const filteredOrders = orders.filter((order) =>
+                  orderSearchQuery
+                    ? order.id
+                        .toLowerCase()
+                        .includes(orderSearchQuery.toLowerCase())
+                    : true
+                );
 
-                          <th className="text-left py-3 px-4 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
-                            Order date
-                          </th>
-                          <th className="text-left py-3 px-4 tp-body-sfont-semibold text-neutral-0 bg-neutral-600">
-                            Amount
-                          </th>
-                          <th className="text-left py-3 px-4 tp-body-s rounded-r-lg font-semibold text-neutral-0 bg-neutral-600">
-                            Actions
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {orders.slice(0, 5).map((order) => {
+                // Reset to page 1 when search changes
+                const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
+                const validPage = Math.min(currentOrderPage, Math.max(1, totalPages));
+
+                // Calculate pagination
+                const startIndex = (validPage - 1) * ordersPerPage;
+                const endIndex = startIndex + ordersPerPage;
+                const paginatedOrders = filteredOrders.slice(startIndex, endIndex);
+
+                if (orders.length === 0) {
+                  return (
+                    <div className="text-center px-32 text-neutral-500 py-8">
+                      <p>No orders found</p>
+                    </div>
+                  );
+                }
+
+                if (filteredOrders.length === 0) {
+                  return (
+                    <div className="text-center px-32 text-neutral-500 py-8">
+                      <p>No orders match your search</p>
+                    </div>
+                  );
+                }
+
+                return (
+                  <>
+                    {/* Orders Table */}
+                    <div className="overflow-x-auto px-32">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="">
+                            <th className="text-left py-3 px-3 tp-body-s rounded-l-lg font-semibold text-neutral-0 bg-neutral-600">
+                              ID
+                            </th>
+                            <th className="text-left py-3 px-4 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
+                              Product
+                            </th>
+                            <th className="text-left py-3 px-4 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
+                              Status
+                            </th>
+
+                            <th className="text-left py-3 px-4 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
+                              Order date
+                            </th>
+                            <th className="text-left py-3 px-4 tp-body-sfont-semibold text-neutral-0 bg-neutral-600">
+                              Amount
+                            </th>
+                            <th className="text-left py-3 px-4 tp-body-s rounded-r-lg font-semibold text-neutral-0 bg-neutral-600">
+                              Actions
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {paginatedOrders.map((order) => {
                           const orderDate = new Date(order.start_at);
                           const formattedDate = orderDate.toLocaleDateString(
                             "en-US",
@@ -1376,19 +1414,47 @@ function DashboardPageContent() {
                   </div>
 
                   {/* Pagination */}
-                  <div className="flex items-center justify-end px-32 gap-8 py-4">
-                    <select className="py-12 px-12 bg-neutral-800 border border-neutral-700 rounded-sm text-white text-sm focus:outline-none focus:border-[rgb(var(--brand-400))]">
-                      <option>5 per page</option>
-                      <option>10 per page</option>
-                      <option>20 per page</option>
-                      <option>50 per page</option>
+                  <div className="flex items-center justify-between px-32 gap-8 py-4">
+                    <select
+                      value={ordersPerPage}
+                      onChange={(e) => {
+                        setOrdersPerPage(Number(e.target.value));
+                        setCurrentOrderPage(1);
+                      }}
+                      className="py-12 px-12 bg-neutral-800 border border-neutral-700 rounded-sm text-white text-sm focus:outline-none focus:border-[rgb(var(--brand-400))]"
+                    >
+                      <option value={5}>5 per page</option>
+                      <option value={10}>10 per page</option>
+                      <option value={20}>20 per page</option>
+                      <option value={50}>50 per page</option>
                     </select>
-                    <div className="text-sm text-neutral-400">
-                      1-{Math.min(5, orders.length)} of {orders.length}
+
+                    <div className="flex items-center gap-4">
+                      <div className="text-sm text-neutral-400">
+                        {startIndex + 1}-{Math.min(endIndex, filteredOrders.length)} of {filteredOrders.length}
+                      </div>
+
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setCurrentOrderPage(Math.max(1, currentOrderPage - 1))}
+                          disabled={validPage === 1}
+                          className="px-3 py-1 bg-neutral-800 border border-neutral-700 rounded text-white text-sm hover:bg-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                          Previous
+                        </button>
+                        <button
+                          onClick={() => setCurrentOrderPage(Math.min(totalPages, currentOrderPage + 1))}
+                          disabled={validPage === totalPages}
+                          className="px-3 py-1 bg-neutral-800 border border-neutral-700 rounded text-white text-sm hover:bg-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                          Next
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </>
-              )}
+              );
+              })()}
             </div>
           </div>
         </div>
