@@ -52,19 +52,21 @@ export default function AdminDashboardPage() {
   });
   const [processingOrders, setProcessingOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activatingOrderId, setActivatingOrderId] = useState<string | null>(null);
-
+  const [activatingOrderId, setActivatingOrderId] = useState<string | null>(
+    null
+  );
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
         // Fetch all stats in parallel
-        const [statsResponse, quotaResponse, ordersResponse, plansResponse] = await Promise.all([
-          fetch("/api/admin/stats"),
-          fetch("/api/admin/quota"),
-          fetch("/api/admin/orders?status=processing"),
-          fetch("/api/admin/plans?includeInactive=true"),
-        ]);
+        const [statsResponse, quotaResponse, ordersResponse, plansResponse] =
+          await Promise.all([
+            fetch("/api/admin/stats"),
+            fetch("/api/admin/quota"),
+            fetch("/api/admin/orders?status=processing"),
+            fetch("/api/admin/plans?includeInactive=true"),
+          ]);
 
         const statsData = await statsResponse.json();
         const quotaData = await quotaResponse.json();
@@ -122,7 +124,9 @@ export default function AdminDashboardPage() {
 
       if (data.success) {
         // Remove the activated order from the list
-        setProcessingOrders((prev) => prev.filter((order) => order.id !== orderId));
+        setProcessingOrders((prev) =>
+          prev.filter((order) => order.id !== orderId)
+        );
         // Update stats count
         setStats((prev) => ({
           ...prev,
@@ -151,9 +155,7 @@ export default function AdminDashboardPage() {
     <div className="margin-12">
       {/* Welcome Section */}
       <div className="py-3 mb-5">
-        <h1 className="tp-sub-headline text-neutral-0">
-          Admin Dashboard
-        </h1>
+        <h1 className="tp-sub-headline text-neutral-0">Admin Dashboard</h1>
         <p className="tp-body-s text-neutral-400">
           Monitor and manage your proxy service
         </p>
@@ -161,13 +163,13 @@ export default function AdminDashboardPage() {
 
       {/* Low Quota Warning */}
       {stats.availableQuota < 3 && (
-        <div className="p-5 bg-yellow-500/10 rounded-xl flex items-center gap-3 border border-yellow-500/20 mb-10">
+        <div className="p-5 bg-yellow-500/50 rounded-xl flex items-center gap-3 border border-yellow-500/40 mb-10">
           <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0" />
           <div>
-            <p className="tp-body-s font-medium text-yellow-600">
+            <p className="tp-body-s font-medium text-neutral-0">
               Low Quota Warning
             </p>
-            <p className="tp-body-s text-yellow-600/80 mt-1">
+            <p className="tp-body-s  text-neutral-0 mt-1">
               Available quota is below 3. Please add more connections to the
               quota pool.
             </p>
@@ -179,8 +181,8 @@ export default function AdminDashboardPage() {
       <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {/* Available Quota Card */}
         <div
-          className="rounded-xl p-6 bg-neutral-800/50 border border-neutral-700 cursor-pointer hover:bg-neutral-700 transition-all"
-          onClick={() => router.push('/admin/quota')}
+          className="p-3 card custom-card"
+          onClick={() => router.push("/admin/quota")}
         >
           <div className="flex items-center justify-between mb-4">
             <div
@@ -199,9 +201,7 @@ export default function AdminDashboardPage() {
               />
             </div>
           </div>
-          <h3 className="tp-body-s text-neutral-400 mb-2">
-            Available Quota
-          </h3>
+          <h3 className="tp-body-s text-neutral-400 mb-2">Available Quota</h3>
           <div
             className={`tp-headline font-bold mb-1 ${
               stats.availableQuota < 3 ? "text-yellow-600" : "text-white"
@@ -218,8 +218,8 @@ export default function AdminDashboardPage() {
 
         {/* Total Users Card */}
         <div
-          className="rounded-xl p-6 bg-neutral-800/50 border border-neutral-700 cursor-pointer hover:bg-neutral-700 transition-all"
-          onClick={() => router.push('/admin/users')}
+          className="p-3 card custom-card"
+          onClick={() => router.push("/admin/users")}
         >
           <div className="flex items-center justify-between mb-4">
             <div className="h-12 w-12 rounded-lg bg-blue-500/10 flex items-center justify-center">
@@ -235,8 +235,8 @@ export default function AdminDashboardPage() {
 
         {/* Total Proxies Card */}
         <div
-          className="rounded-xl p-6 bg-neutral-800/50 border border-neutral-700 cursor-pointer hover:bg-neutral-700 transition-all"
-          onClick={() => router.push('/admin/orders')}
+          className="p-3 card custom-card"
+          onClick={() => router.push("/admin/orders")}
         >
           <div className="flex items-center justify-between mb-4">
             <div className="h-12 w-12 rounded-lg bg-[rgb(var(--brand-400))]/10 flex items-center justify-center">
@@ -254,8 +254,8 @@ export default function AdminDashboardPage() {
 
         {/* Plans Card */}
         <div
-          className="rounded-xl p-6 bg-neutral-800/50 border border-neutral-700 cursor-pointer hover:bg-neutral-700 transition-all"
-          onClick={() => router.push('/admin/plans')}
+          className="p-3 card custom-card"
+          onClick={() => router.push("/admin/plans")}
         >
           <div className="flex items-center justify-between mb-4">
             <div className="h-12 w-12 rounded-lg bg-orange-500/10 flex items-center justify-center">
@@ -290,7 +290,7 @@ export default function AdminDashboardPage() {
                 <thead>
                   <tr className="border-b border-neutral-700">
                     <th className="text-left py-4 px-6 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
-                     Connection Id
+                      Connection Id
                     </th>
                     <th className="text-left py-4 px-6 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
                       User
@@ -315,17 +315,23 @@ export default function AdminDashboardPage() {
                 <tbody>
                   {processingOrders.map((order) => {
                     const orderDate = new Date(order.start_at);
-                    const formattedDate = orderDate.toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "2-digit",
-                      year: "numeric",
-                    });
-                    const formattedTime = orderDate.toLocaleTimeString("en-US", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      second: "2-digit",
-                      hour12: false,
-                    });
+                    const formattedDate = orderDate.toLocaleDateString(
+                      "en-US",
+                      {
+                        month: "short",
+                        day: "2-digit",
+                        year: "numeric",
+                      }
+                    );
+                    const formattedTime = orderDate.toLocaleTimeString(
+                      "en-US",
+                      {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit",
+                        hour12: false,
+                      }
+                    );
 
                     return (
                       <tr

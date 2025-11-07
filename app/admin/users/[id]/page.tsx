@@ -111,7 +111,8 @@ export default function AdminUserDetailPage() {
     return (
       <span
         className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm border capitalize ${
-          statusStyles[status as keyof typeof statusStyles] || statusStyles.inactive
+          statusStyles[status as keyof typeof statusStyles] ||
+          statusStyles.inactive
         }`}
       >
         {status === "active" ? (
@@ -149,55 +150,47 @@ export default function AdminUserDetailPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <Loader2 className="w-8 h-8 animate-spin text-[rgb(var(--brand-400))]" />
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="space-y-6 p-4 md:p-6">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => router.back()}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <h1 className="text-2xl md:text-3xl font-bold">User Not Found</h1>
+      <div className="margin-12">
+        <div className="py-3 mb-5">
+          <div className="flex items-center gap-4">
+            <ArrowLeft
+              className="h-5 w-5 text-neutral-0 cursor-pointer"
+              onClick={() => router.back()}
+            />
+            <h1 className="tp-headline-s text-neutral-0">User Not Found</h1>
+          </div>
         </div>
-        <p className="text-muted-foreground">
-          The user you're looking for doesn't exist.
-        </p>
+        <div className="rounded-xl bg-neutral-800/50 border border-neutral-700 p-12 text-center">
+          <p className="tp-body text-neutral-500">
+            The user you're looking for doesn't exist.
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 p-4 md:p-6">
+    <div className="margin-12">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="py-3 mb-5">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => router.back()}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
+          <ArrowLeft className="h-5 w-5 text-neutral-0 cursor-pointer" onClick={() => router.back()} />
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-3">
-              {user.email}
-              {getRoleBadge(user.role)}
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              User ID: #{user.id.slice(0, 8)} • Joined{" "}
-              {new Date(user.created_at).toLocaleDateString("en-US", {
-                month: "long",
-                day: "numeric",
-                year: "numeric",
-              })}
-            </p>
+            <h1 className="tp-headline-s text-neutral-0">{user.email}</h1>
           </div>
         </div>
       </div>
 
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Card>
+        <Card className="card custom-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Proxies</CardTitle>
             <Server className="h-4 w-4 text-muted-foreground" />
@@ -210,9 +203,11 @@ export default function AdminUserDetailPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="card custom-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Proxies</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Active Proxies
+            </CardTitle>
             <CheckCircle2 className="h-4 w-4 text-green-400" />
           </CardHeader>
           <CardContent>
@@ -223,7 +218,7 @@ export default function AdminUserDetailPage() {
           </CardContent>
         </Card>
 
-        <Card>
+      <Card className="card custom-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
             <Package className="h-4 w-4 text-muted-foreground" />
@@ -234,7 +229,7 @@ export default function AdminUserDetailPage() {
           </CardContent>
         </Card>
 
-        <Card>
+         <Card className="card custom-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Active Orders</CardTitle>
             <CheckCircle2 className="h-4 w-4 text-green-400" />
@@ -249,7 +244,7 @@ export default function AdminUserDetailPage() {
       </div>
 
       {/* User Information */}
-      <Card>
+   <Card className="card custom-card mt-8">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <UserIcon className="h-5 w-5 text-primary" />
@@ -273,7 +268,9 @@ export default function AdminUserDetailPage() {
             <div className="mt-1">{getRoleBadge(user.role)}</div>
           </div>
           <div>
-            <label className="text-sm text-muted-foreground">Member Since</label>
+            <label className="text-sm text-muted-foreground">
+              Member Since
+            </label>
             <div className="flex items-center gap-2 mt-1">
               <Calendar className="h-4 w-4 text-muted-foreground" />
               <p className="text-white">
@@ -289,45 +286,45 @@ export default function AdminUserDetailPage() {
       </Card>
 
       {/* Proxies */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Server className="h-5 w-5 text-primary" />
-            Proxies ({user.proxies.length})
-          </CardTitle>
-          <CardDescription>All proxies owned by this user</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {user.proxies.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <Server className="mx-auto h-8 w-8 mb-2 opacity-50" />
-              <p className="text-sm">No proxies found</p>
-            </div>
-          ) : (
+      <div className="mt-8">
+        <h2 className="tp-headline-xs text-neutral-0 mb-4">
+          Proxies ({user.proxies.length})
+        </h2>
+
+        {user.proxies.length === 0 ? (
+          <div className="rounded-xl bg-neutral-800/50 border border-neutral-700 p-12 text-center">
+            <Server className="mx-auto h-8 w-8 mb-2 opacity-50 text-neutral-500" />
+            <p className="tp-body text-neutral-500">No proxies found</p>
+          </div>
+        ) : (
+          <div className="rounded-md bg-neutral-800/50 border border-neutral-700 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-neutral-800">
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
+                  <tr className="border-b border-neutral-700">
+                    <th className="text-left py-4 px-6 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
+                      Proxy ID
+                    </th>
+                    <th className="text-left py-4 px-6 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
                       Label
                     </th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
+                    <th className="text-left py-4 px-6 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
                       Status
                     </th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
+                    <th className="text-left py-4 px-6 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
                       Host
                     </th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
+                    <th className="text-left py-4 px-6 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
                       HTTP Port
                     </th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
+                    <th className="text-left py-4 px-6 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
                       SOCKS5 Port
                     </th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
+                    <th className="text-left py-4 px-6 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
                       Country
                     </th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
-                      Created
+                    <th className="text-left py-4 px-6 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
+                      Created At
                     </th>
                   </tr>
                 </thead>
@@ -335,79 +332,82 @@ export default function AdminUserDetailPage() {
                   {user.proxies.map((proxy) => (
                     <tr
                       key={proxy.id}
-                      className="border-b border-neutral-800 hover:bg-neutral-800/50 transition-colors"
+                      className="border-b border-neutral-700 hover:bg-neutral-700/50 transition-colors"
                     >
-                      <td className="py-4 px-4 text-white">{proxy.label}</td>
-                      <td className="py-4 px-4">
+                      <td className="py-4 px-6 tp-body-s text-white font-mono">
+                        #{proxy.id.slice(0, 8)}
+                      </td>
+                      <td className="py-4 px-6 tp-body-s text-white">{proxy.label}</td>
+                      <td className="py-4 px-6">
                         {getStatusBadge(proxy.status)}
                       </td>
-                      <td className="py-4 px-4 text-white font-mono text-sm">
+                      <td className="py-4 px-6 tp-body-s text-white font-mono">
                         {proxy.host}
                       </td>
-                      <td className="py-4 px-4 text-white">
+                      <td className="py-4 px-6 tp-body-s text-white">
                         {proxy.port_http}
                       </td>
-                      <td className="py-4 px-4 text-white">
+                      <td className="py-4 px-6 tp-body-s text-white">
                         {proxy.port_socks5}
                       </td>
-                      <td className="py-4 px-4 text-white uppercase">
+                      <td className="py-4 px-6 tp-body-s text-white uppercase">
                         {proxy.country || "N/A"}
                       </td>
-                      <td className="py-4 px-4 text-white text-sm">
-                        {new Date(proxy.created_at).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        })}
+                      <td className="py-4 px-6 tp-body-s text-white">
+                        {new Date(proxy.created_at).toLocaleDateString(
+                          "en-US",
+                          {
+                            month: "short",
+                            day: "2-digit",
+                            year: "numeric",
+                          }
+                        )}
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </div>
+        )}
+      </div>
 
       {/* Orders */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Package className="h-5 w-5 text-primary" />
-            Orders ({user.orders.length})
-          </CardTitle>
-          <CardDescription>Order history for this user</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {user.orders.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <Package className="mx-auto h-8 w-8 mb-2 opacity-50" />
-              <p className="text-sm">No orders found</p>
-            </div>
-          ) : (
+      <div className="mt-8">
+        <h2 className="tp-headline-xs text-neutral-0 mb-4">
+          Orders ({user.orders.length})
+        </h2>
+
+        {user.orders.length === 0 ? (
+          <div className="rounded-xl bg-neutral-800/50 border border-neutral-700 p-12 text-center">
+            <Package className="mx-auto h-8 w-8 mb-2 opacity-50 text-neutral-500" />
+            <p className="tp-body text-neutral-500">No orders found</p>
+          </div>
+        ) : (
+          <div className="rounded-md bg-neutral-800/50 border border-neutral-700 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-neutral-800">
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
+                  <tr className="border-b border-neutral-700">
+                    <th className="text-left py-4 px-6 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
                       Order ID
                     </th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
+                    <th className="text-left py-4 px-6 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
                       Plan
                     </th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
+                    <th className="text-left py-4 px-6 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
                       Status
                     </th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
+                    <th className="text-left py-4 px-6 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
                       Amount
                     </th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
-                      Created
+                    <th className="text-left py-4 px-6 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
+                      Created At
                     </th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
-                      Expires
+                    <th className="text-left py-4 px-6 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
+                      Expires At
                     </th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
+                    <th className="text-left py-4 px-6 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
                       Actions
                     </th>
                   </tr>
@@ -416,45 +416,47 @@ export default function AdminUserDetailPage() {
                   {user.orders.map((order) => (
                     <tr
                       key={order.id}
-                      className="border-b border-neutral-800 hover:bg-neutral-800/50 transition-colors"
+                      className="border-b border-neutral-700 hover:bg-neutral-700/50 transition-colors cursor-pointer"
+                      onClick={() => router.push(`/admin/orders/${order.id}`)}
                     >
-                      <td className="py-4 px-4 text-white font-mono text-sm">
+                      <td className="py-4 px-6 tp-body-s text-white font-mono">
                         #{order.id.slice(0, 8)}
                       </td>
-                      <td className="py-4 px-4 text-white">
+                      <td className="py-4 px-6 tp-body-s text-white">
                         {order.plan?.name || "N/A"}
                       </td>
-                      <td className="py-4 px-4">
+                      <td className="py-4 px-6">
                         {getStatusBadge(order.status)}
                       </td>
-                      <td className="py-4 px-4 text-white font-semibold">
+                      <td className="py-4 px-6 tp-body-s text-white font-semibold">
                         ${order.total_amount.toFixed(2)}
                       </td>
-                      <td className="py-4 px-4 text-white text-sm">
+                      <td className="py-4 px-6 tp-body-s text-white">
                         {new Date(order.created_at).toLocaleDateString(
                           "en-US",
                           {
                             month: "short",
-                            day: "numeric",
+                            day: "2-digit",
                             year: "numeric",
                           }
                         )}
                       </td>
-                      <td className="py-4 px-4 text-white text-sm">
+                      <td className="py-4 px-6 tp-body-s text-white">
                         {new Date(order.expires_at).toLocaleDateString(
                           "en-US",
                           {
                             month: "short",
-                            day: "numeric",
+                            day: "2-digit",
                             year: "numeric",
                           }
                         )}
                       </td>
-                      <td className="py-4 px-4">
+                      <td className="py-4 px-6">
                         <button
-                          onClick={() =>
-                            router.push(`/admin/orders/${order.id}`)
-                          }
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            router.push(`/admin/orders/${order.id}`);
+                          }}
                           className="p-2 text-neutral-400 hover:text-white transition-colors"
                           title="View Order"
                         >
@@ -466,9 +468,9 @@ export default function AdminUserDetailPage() {
                 </tbody>
               </table>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

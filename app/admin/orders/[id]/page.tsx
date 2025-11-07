@@ -4,21 +4,11 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
   Loader2,
   ArrowLeft,
   User,
   Package,
   CreditCard,
-  Server,
-  Calendar,
-  Mail,
   DollarSign,
   CheckCircle2,
   XCircle,
@@ -42,6 +32,7 @@ interface Order {
     created_at: string;
   };
   payment?: Array<{
+    provider: string;
     id: string;
     status: string;
     amount: number;
@@ -54,8 +45,10 @@ interface Order {
   created_at: string;
   start_at: string;
   expires_at: string;
+  auto_renew?: boolean;
   metadata?: any;
   proxies?: Array<{
+    iproxy_connection_id: string;
     id: string;
     label: string;
     status: string;
@@ -63,6 +56,7 @@ interface Order {
     port_http: number;
     port_socks5: number;
     country: string;
+    connection_id?: string;
     created_at: string;
   }>;
 }
@@ -118,7 +112,8 @@ export default function AdminOrderDetailPage() {
     return (
       <span
         className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm border capitalize ${
-          statusStyles[status as keyof typeof statusStyles] || statusStyles.pending
+          statusStyles[status as keyof typeof statusStyles] ||
+          statusStyles.pending
         }`}
       >
         {icons[status as keyof typeof icons]}
@@ -130,212 +125,138 @@ export default function AdminOrderDetailPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <Loader2 className="w-8 h-8 animate-spin text-[rgb(var(--brand-400))]" />
       </div>
     );
   }
 
   if (!order) {
     return (
-      <div className="space-y-6 p-4 md:p-6">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => router.back()}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <h1 className="text-2xl md:text-3xl font-bold">Order Not Found</h1>
+      <div className="margin-12">
+        <div className="py-3 mb-5">
+          <div className="flex items-center gap-4">
+            <ArrowLeft
+              className="h-5 w-5 text-neutral-0 cursor-pointer"
+              onClick={() => router.back()}
+            />
+            <h1 className="tp-headline-s text-neutral-0">Order Not Found</h1>
+          </div>
         </div>
-        <p className="text-muted-foreground">
-          The order you're looking for doesn't exist.
-        </p>
+        <div className="rounded-xl bg-neutral-800/50 border border-neutral-700 p-12 text-center">
+          <p className="tp-body text-neutral-500">
+            The order you're looking for doesn't exist.
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 p-4 md:p-6">
+    <div className="margin-12">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="py-3 mb-5">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => router.back()}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-3">
-              Order #{order.id.slice(0, 8)}
-              {getStatusBadge(order.status)}
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Created on {new Date(order.created_at).toLocaleDateString("en-US", {
-                month: "long",
-                day: "numeric",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </p>
-          </div>
+          <ArrowLeft
+            className="h-5 w-5 text-neutral-0 cursor-pointer"
+            onClick={() => router.back()}
+          />
+          <h1 className="tp-headline-s text-neutral-0">
+            Order #{order.id.slice(0, 8)}
+          </h1>
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Customer Information */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <User className="h-5 w-5 text-primary" />
+      {/* Order Details Card */}
+      <div className="bg-neutral-800/50 border border-neutral-700 rounded-xl p-6 mb-6">
+        <h2 className="tp-headline-xs text-neutral-0 mb-6">Order Details</h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Customer Information */}
+          <div className="space-y-4">
+            <h3 className="tp-body font-semibold text-neutral-0 flex items-center gap-2 mb-4">
+              <User className="h-4 w-4 text-[rgb(var(--brand-400))]" />
               Customer Information
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+            </h3>
             <div>
-              <label className="text-sm text-muted-foreground">Email</label>
-              <div className="flex items-center gap-2 mt-1">
-                <Mail className="h-4 w-4 text-muted-foreground" />
-                <p className="text-white">{order.profile?.email || "N/A"}</p>
-              </div>
+              <label className="tp-body-s text-neutral-400">Email</label>
+              <p className="tp-body-s text-white mt-1">{order.profile?.email || "N/A"}</p>
             </div>
             <div>
-              <label className="text-sm text-muted-foreground">User ID</label>
-              <p className="text-white font-mono mt-1">
+              <label className="tp-body-s text-neutral-400">User ID</label>
+              <p className="tp-body-s text-white font-mono mt-1">
                 #{order.user_id.slice(0, 8)}
               </p>
             </div>
             <div>
-              <label className="text-sm text-muted-foreground">Role</label>
-              <p className="text-white capitalize mt-1">
+              <label className="tp-body-s text-neutral-400">Role</label>
+              <p className="tp-body-s text-white capitalize mt-1">
                 {order.profile?.role || "N/A"}
               </p>
             </div>
-            <div>
-              <label className="text-sm text-muted-foreground">
-                Member Since
-              </label>
-              <p className="text-white mt-1">
-                {order.profile?.created_at
-                  ? new Date(order.profile.created_at).toLocaleDateString(
-                      "en-US",
-                      {
-                        month: "long",
-                        day: "numeric",
-                        year: "numeric",
-                      }
-                    )
-                  : "N/A"}
-              </p>
-            </div>
             <Button
-              variant="outline"
-              className="w-full"
+              className="btn button-primary px-15 py-3 hover:bg-brand-300 hover:text-brand-600 mt-4"
               onClick={() => router.push(`/admin/users/${order.user_id}`)}
             >
               View User Profile
             </Button>
-          </CardContent>
-        </Card>
+          </div>
 
-        {/* Plan Information */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Package className="h-5 w-5 text-primary" />
-              Plan Information
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+          {/* Plan & Order Information */}
+          <div className="space-y-4">
+            <h3 className="tp-body font-semibold text-neutral-0 flex items-center gap-2 mb-4">
+              <Package className="h-4 w-4 text-[rgb(var(--brand-400))]" />
+              Plan & Order Info
+            </h3>
             <div>
-              <label className="text-sm text-muted-foreground">Plan Name</label>
-              <p className="text-white font-semibold mt-1">
+              <label className="tp-body-s text-neutral-400">Order ID</label>
+              <p className="tp-body-s text-white font-mono mt-1">{order.id}</p>
+            </div>
+            <div>
+              <label className="tp-body-s text-neutral-400">Status</label>
+              <div className="mt-1">{getStatusBadge(order.status)}</div>
+            </div>
+            <div>
+              <label className="tp-body-s text-neutral-400">Auto-Renew</label>
+              <div className="mt-1">
+                {order.auto_renew ? (
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-green-400" />
+                    <span className="text-green-400 tp-body-s">Enabled</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <XCircle className="w-4 h-4 text-neutral-500" />
+                    <span className="text-neutral-500 tp-body-s">Disabled</span>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div>
+              <label className="tp-body-s text-neutral-400">Plan Name</label>
+              <p className="tp-body-s text-white font-semibold mt-1">
                 {order.plan?.name || "N/A"}
               </p>
             </div>
             <div>
-              <label className="text-sm text-muted-foreground">Channel</label>
-              <p className="text-white capitalize mt-1">
+              <label className="tp-body-s text-neutral-400">Channel</label>
+              <p className="tp-body-s text-white capitalize mt-1">
                 {order.plan?.channel || "N/A"}
               </p>
             </div>
             <div>
-              <label className="text-sm text-muted-foreground">Quantity</label>
-              <p className="text-white mt-1">{order.quantity}</p>
+              <label className="tp-body-s text-neutral-400">Quantity</label>
+              <p className="tp-body-s text-white mt-1">{order.quantity}</p>
             </div>
-            <div>
-              <label className="text-sm text-muted-foreground">Duration</label>
-              <p className="text-white mt-1">
-                {order.plan?.duration_days || 0} days
-              </p>
-            </div>
-            <div>
-              <label className="text-sm text-muted-foreground">
-                Unit Price
-              </label>
-              <p className="text-white mt-1">
-                ${(order.plan?.price || 0).toFixed(2)}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+          </div>
 
-        {/* Order Details */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-primary" />
-              Order Details
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+          {/* Payment & Dates */}
+          <div className="space-y-4">
+            <h3 className="tp-body font-semibold text-neutral-0 flex items-center gap-2 mb-4">
+              <CreditCard className="h-4 w-4 text-[rgb(var(--brand-400))]" />
+              Payment & Dates
+            </h3>
             <div>
-              <label className="text-sm text-muted-foreground">Order ID</label>
-              <p className="text-white font-mono mt-1">{order.id}</p>
-            </div>
-            <div>
-              <label className="text-sm text-muted-foreground">Status</label>
-              <div className="mt-1">{getStatusBadge(order.status)}</div>
-            </div>
-            <div>
-              <label className="text-sm text-muted-foreground">
-                Start Date
-              </label>
-              <p className="text-white mt-1">
-                {new Date(order.start_at).toLocaleDateString("en-US", {
-                  month: "long",
-                  day: "numeric",
-                  year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </p>
-            </div>
-            <div>
-              <label className="text-sm text-muted-foreground">
-                Expiry Date
-              </label>
-              <p className="text-white mt-1">
-                {new Date(order.expires_at).toLocaleDateString("en-US", {
-                  month: "long",
-                  day: "numeric",
-                  year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Payment Information */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CreditCard className="h-5 w-5 text-primary" />
-              Payment Information
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <label className="text-sm text-muted-foreground">
-                Total Amount
-              </label>
+              <label className="tp-body-s text-neutral-400">Total Amount</label>
               <div className="flex items-center gap-2 mt-1">
                 <DollarSign className="h-5 w-5 text-green-400" />
                 <p className="text-2xl font-bold text-white">
@@ -346,78 +267,91 @@ export default function AdminOrderDetailPage() {
             {order.payment && order.payment.length > 0 && order.payment[0] && (
               <>
                 <div>
-                  <label className="text-sm text-muted-foreground">
-                    Payment Status
-                  </label>
-                  <p className="text-white capitalize mt-1">
-                    {order.payment[0].status}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm text-muted-foreground">
+                  <label className="tp-body-s text-neutral-400">
                     Payment Method
                   </label>
-                  <p className="text-white capitalize mt-1">
-                    {order.payment[0].payment_method || "N/A"}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm text-muted-foreground">
-                    Payment Date
-                  </label>
-                  <p className="text-white mt-1">
-                    {new Date(order.payment[0].created_at).toLocaleDateString(
-                      "en-US",
-                      {
-                        month: "long",
-                        day: "numeric",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      }
-                    )}
+                  <p className="tp-body-s text-white capitalize mt-1">
+                    {order.payment[0].provider || "N/A"}
                   </p>
                 </div>
               </>
             )}
-          </CardContent>
-        </Card>
+            <div>
+              <label className="tp-body-s text-neutral-400">
+                Start Date
+              </label>
+              <p className="tp-body-s text-white mt-1">
+                {new Date(order.start_at).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "2-digit",
+                  year: "numeric",
+                })}
+              </p>
+            </div>
+            <div>
+              <label className="tp-body-s text-neutral-400">
+                Expiry Date
+              </label>
+              <p className="tp-body-s text-white mt-1">
+                {new Date(order.expires_at).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "2-digit",
+                  year: "numeric",
+                })}
+              </p>
+            </div>
+            <div>
+              <label className="tp-body-s text-neutral-400">Created At</label>
+              <p className="tp-body-s text-white mt-1">
+                {new Date(order.created_at).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "2-digit",
+                  year: "numeric",
+                })}
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Associated Proxies */}
       {order.proxies && order.proxies.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Server className="h-5 w-5 text-primary" />
-              Associated Proxies ({order.proxies.length})
-            </CardTitle>
-            <CardDescription>
-              Proxies created from this order
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+        <div>
+          <h2 className="tp-headline-xs text-neutral-0 py-3">
+            Associated Proxies ({order.proxies.length})
+          </h2>
+
+          <div className="rounded-md bg-neutral-800/50 border border-neutral-700 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-neutral-800">
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
+                  <tr className="border-b border-neutral-700">
+                    <th className="text-left py-4 px-6 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
+                      Proxy ID
+                    </th>
+                    <th className="text-left py-4 px-6 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
+                      Connection ID
+                    </th>
+                    <th className="text-left py-4 px-6 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
                       Label
                     </th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
+                    <th className="text-left py-4 px-6 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
                       Status
                     </th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
+                    <th className="text-left py-4 px-6 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
                       Host
                     </th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
+                    <th className="text-left py-4 px-6 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
                       HTTP Port
                     </th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
+                    <th className="text-left py-4 px-6 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
                       SOCKS5 Port
                     </th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
+                    <th className="text-left py-4 px-6 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
                       Country
+                    </th>
+                    <th className="text-left py-4 px-6 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
+                      Created At
                     </th>
                   </tr>
                 </thead>
@@ -425,31 +359,44 @@ export default function AdminOrderDetailPage() {
                   {order.proxies.map((proxy) => (
                     <tr
                       key={proxy.id}
-                      className="border-b border-neutral-800 hover:bg-neutral-800/50 transition-colors"
+                      className="border-b border-neutral-700 hover:bg-neutral-700/50 transition-colors"
                     >
-                      <td className="py-4 px-4 text-white">{proxy.label}</td>
-                      <td className="py-4 px-4">
+                      <td className="py-4 px-6 tp-body-s text-white font-mono">
+                        #{proxy.id.slice(0, 8)}
+                      </td>
+                      <td className="py-4 px-6 tp-body-s text-white font-mono">
+                        {proxy.iproxy_connection_id || "N/A"}
+                      </td>
+                      <td className="py-4 px-6 tp-body-s text-white">{proxy.label}</td>
+                      <td className="py-4 px-6">
                         {getStatusBadge(proxy.status)}
                       </td>
-                      <td className="py-4 px-4 text-white font-mono text-sm">
+                      <td className="py-4 px-6 tp-body-s text-white font-mono">
                         {proxy.host}
                       </td>
-                      <td className="py-4 px-4 text-white">
+                      <td className="py-4 px-6 tp-body-s text-white">
                         {proxy.port_http}
                       </td>
-                      <td className="py-4 px-4 text-white">
+                      <td className="py-4 px-6 tp-body-s text-white">
                         {proxy.port_socks5}
                       </td>
-                      <td className="py-4 px-4 text-white uppercase">
+                      <td className="py-4 px-6 tp-body-s text-white uppercase">
                         {proxy.country || "N/A"}
+                      </td>
+                      <td className="py-4 px-6 tp-body-s text-white">
+                        {new Date(proxy.created_at).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "2-digit",
+                          year: "numeric",
+                        })}
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -36,6 +36,7 @@ export async function GET(request: NextRequest) {
     // Get query parameters
     const searchParams = request.nextUrl.searchParams;
     const status = searchParams.get("status");
+    const autoRenew = searchParams.get("auto_renew");
     const search = searchParams.get("search"); // Search by user email, order ID
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "20");
@@ -65,6 +66,10 @@ export async function GET(request: NextRequest) {
     // Apply filters
     if (status) {
       query = query.eq("status", status);
+    }
+
+    if (autoRenew) {
+      query = query.eq("auto_renew", autoRenew === "true");
     }
 
     if (planId) {

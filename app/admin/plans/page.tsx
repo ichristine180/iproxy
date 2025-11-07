@@ -17,7 +17,7 @@ import {
 interface PlanPricing {
   id: string;
   plan_id: string;
-  duration: 'daily' | 'weekly' | 'monthly' | 'yearly';
+  duration: "daily" | "weekly" | "monthly" | "yearly";
   price_usd: number;
   created_at: string;
 }
@@ -25,7 +25,7 @@ interface PlanPricing {
 interface Plan {
   id: string;
   name: string;
-  channel: 'mobile' | 'residential' | 'datacenter';
+  channel: "mobile" | "residential" | "datacenter";
   rotation_api: boolean;
   description: string | null;
   features: any;
@@ -50,18 +50,18 @@ export default function AdminPlansPage() {
     onConfirm: () => void;
   }>({
     isOpen: false,
-    title: '',
-    message: '',
+    title: "",
+    message: "",
     onConfirm: () => {},
   });
-  const [errorMessage, setErrorMessage] = useState<string>('');
+  const [errorMessage, setErrorMessage] = useState<string>("");
 
   // Form state
   const [formData, setFormData] = useState({
-    name: '',
-    channel: 'mobile' as 'mobile' | 'residential' | 'datacenter',
+    name: "",
+    channel: "mobile" as "mobile" | "residential" | "datacenter",
     rotation_api: false,
-    description: '',
+    description: "",
     is_active: true,
     pricing: [] as Array<{ duration: string; price_usd: string }>,
   });
@@ -70,21 +70,21 @@ export default function AdminPlansPage() {
     setIsLoading(true);
     try {
       const params = new URLSearchParams();
-      if (showInactive) params.append('includeInactive', 'true');
+      if (showInactive) params.append("includeInactive", "true");
 
       const response = await fetch(`/api/admin/plans?${params.toString()}`);
       const data = await response.json();
 
-      console.log('API Response:', data);
+      console.log("API Response:", data);
 
       if (data.success) {
-        console.log('Plans data:', data.plans);
+        console.log("Plans data:", data.plans);
         setPlans(data.plans);
       } else {
-        console.error('API returned error:', data.error);
+        console.error("API returned error:", data.error);
       }
     } catch (error) {
-      console.error('Error fetching plans:', error);
+      console.error("Error fetching plans:", error);
     } finally {
       setIsLoading(false);
     }
@@ -101,22 +101,23 @@ export default function AdminPlansPage() {
         name: plan.name,
         channel: plan.channel,
         rotation_api: plan.rotation_api,
-        description: plan.description || '',
+        description: plan.description || "",
         is_active: plan.is_active,
-        pricing: plan.pricing?.map(p => ({
-          duration: p.duration,
-          price_usd: p.price_usd.toString(),
-        })) || [],
+        pricing:
+          plan.pricing?.map((p) => ({
+            duration: p.duration,
+            price_usd: p.price_usd.toString(),
+          })) || [],
       });
     } else {
       setEditingPlan(null);
       setFormData({
-        name: '',
-        channel: 'mobile',
+        name: "",
+        channel: "mobile",
         rotation_api: false,
-        description: '',
+        description: "",
         is_active: true,
-        pricing: [{ duration: 'monthly', price_usd: '' }],
+        pricing: [{ duration: "monthly", price_usd: "" }],
       });
     }
     setIsDialogOpen(true);
@@ -126,12 +127,12 @@ export default function AdminPlansPage() {
     setIsDialogOpen(false);
     setEditingPlan(null);
     setFormData({
-      name: '',
-      channel: 'mobile',
+      name: "",
+      channel: "mobile",
       rotation_api: false,
-      description: '',
+      description: "",
       is_active: true,
-      pricing: [{ duration: 'monthly', price_usd: '' }],
+      pricing: [{ duration: "monthly", price_usd: "" }],
     });
   };
 
@@ -142,12 +143,12 @@ export default function AdminPlansPage() {
     try {
       const url = editingPlan
         ? `/api/admin/plans/${editingPlan.id}`
-        : '/api/admin/plans';
-      const method = editingPlan ? 'PATCH' : 'POST';
+        : "/api/admin/plans";
+      const method = editingPlan ? "PATCH" : "POST";
 
       const response = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
 
@@ -157,11 +158,11 @@ export default function AdminPlansPage() {
         await fetchPlans();
         handleCloseDialog();
       } else {
-        setErrorMessage(data.error || 'Failed to save plan');
+        setErrorMessage(data.error || "Failed to save plan");
       }
     } catch (error) {
-      console.error('Error saving plan:', error);
-      setErrorMessage('Failed to save plan. Please try again.');
+      console.error("Error saving plan:", error);
+      setErrorMessage("Failed to save plan. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -170,12 +171,12 @@ export default function AdminPlansPage() {
   const handleDelete = (planId: string, planName: string) => {
     setConfirmDialog({
       isOpen: true,
-      title: 'Deactivate Plan',
+      title: "Deactivate Plan",
       message: `Are you sure you want to deactivate the plan "${planName}"? This will hide it from users but keep all data intact.`,
       onConfirm: async () => {
         try {
           const response = await fetch(`/api/admin/plans/${planId}`, {
-            method: 'DELETE',
+            method: "DELETE",
           });
 
           const data = await response.json();
@@ -183,13 +184,18 @@ export default function AdminPlansPage() {
           if (data.success) {
             await fetchPlans();
           } else {
-            setErrorMessage(data.error || 'Failed to deactivate plan');
+            setErrorMessage(data.error || "Failed to deactivate plan");
           }
         } catch (error) {
-          console.error('Error deleting plan:', error);
-          setErrorMessage('Failed to deactivate plan. Please try again.');
+          console.error("Error deleting plan:", error);
+          setErrorMessage("Failed to deactivate plan. Please try again.");
         } finally {
-          setConfirmDialog({ isOpen: false, title: '', message: '', onConfirm: () => {} });
+          setConfirmDialog({
+            isOpen: false,
+            title: "",
+            message: "",
+            onConfirm: () => {},
+          });
         }
       },
     });
@@ -205,7 +211,8 @@ export default function AdminPlansPage() {
     return (
       <span
         className={`inline-flex px-3 py-1 rounded-full text-sm border capitalize ${
-          channelStyles[channel as keyof typeof channelStyles] || channelStyles.mobile
+          channelStyles[channel as keyof typeof channelStyles] ||
+          channelStyles.mobile
         }`}
       >
         {channel}
@@ -222,53 +229,34 @@ export default function AdminPlansPage() {
   }
 
   return (
-    <div className="space-y-6 p-4 md:p-6">
+    <div className="margin-12">
       {/* Header */}
-      <div className="flex items-center justify-between">
+       <div className="py-3 mb-5">
         <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
+          <ArrowLeft
+            className="h-5 w-5 text-neutral-0"
             onClick={() => router.back()}
-            className="shrink-0"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
+          />
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-2">
-              Plan Management
-              {plans.length > 0 && (
-                <span className="px-3 py-1 rounded-full text-sm font-semibold bg-[rgb(var(--brand-400))] text-white">
-                  {plans.length}
-                </span>
-              )}
-            </h1>
-            <p className="text-sm text-neutral-400 mt-1">
-              Create and manage subscription plans
-            </p>
+            <h1 className="tp-headline-s text-neutral-0">Plan Management</h1>
           </div>
         </div>
-
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setShowInactive(!showInactive)}
-            className="border-neutral-700"
-          >
-            {showInactive ? 'Hide' : 'Show'} Inactive
-          </Button>
-          <Button
-            onClick={() => handleOpenDialog()}
-            className="bg-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-500))] text-white"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Create Plan
-          </Button>
-        </div>
       </div>
-
+      <div className="">
+      <div className="flex gap-8 p-3">
+        <Button
+          onClick={() => handleOpenDialog()}
+          className="btn button-primary px-15 py-3 hover:bg-brand-300 hover:text-brand-600 mt-8"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Create Plan
+        </Button>
+      </div>
       {/* Plans Table */}
-      <div className="bg-neutral-900 rounded-xl p-6 border border-neutral-800" style={{ borderWidth: '1px', borderColor: 'rgb(38, 38, 38)' }}>
+      <div
+        className="bg-neutral-900 rounded-xl p-6 border border-neutral-800"
+        style={{ borderWidth: "1px", borderColor: "rgb(38, 38, 38)" }}
+      >
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-[rgb(var(--brand-400))]" />
@@ -289,7 +277,13 @@ export default function AdminPlansPage() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b" style={{ borderBottomWidth: '1px', borderBottomColor: 'rgb(38, 38, 38)' }}>
+                <tr
+                  className="border-b"
+                  style={{
+                    borderBottomWidth: "1px",
+                    borderBottomColor: "rgb(38, 38, 38)",
+                  }}
+                >
                   <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
                     Plan Name
                   </th>
@@ -315,11 +309,16 @@ export default function AdminPlansPage() {
                   <tr
                     key={plan.id}
                     className="border-b hover:bg-neutral-800/50 transition-colors"
-                    style={{ borderBottomWidth: '1px', borderBottomColor: 'rgb(38, 38, 38)' }}
+                    style={{
+                      borderBottomWidth: "1px",
+                      borderBottomColor: "rgb(38, 38, 38)",
+                    }}
                   >
                     <td className="py-4 px-4">
                       <div>
-                        <div className="text-white font-medium">{plan.name}</div>
+                        <div className="text-white font-medium">
+                          {plan.name}
+                        </div>
                         {plan.description && (
                           <div className="text-sm text-neutral-500 mt-1">
                             {plan.description}
@@ -327,19 +326,27 @@ export default function AdminPlansPage() {
                         )}
                       </div>
                     </td>
-                    <td className="py-4 px-4">{getChannelBadge(plan.channel)}</td>
+                    <td className="py-4 px-4">
+                      {getChannelBadge(plan.channel)}
+                    </td>
                     <td className="py-4 px-4">
                       {plan.pricing && plan.pricing.length > 0 ? (
                         <div className="space-y-1">
                           {plan.pricing.map((p) => (
                             <div key={p.id} className="text-white text-sm">
-                              <span className="text-neutral-400 capitalize">{p.duration}:</span>{' '}
-                              <span className="font-semibold">${Number(p.price_usd).toFixed(2)}</span>
+                              <span className="text-neutral-400 capitalize">
+                                {p.duration}:
+                              </span>{" "}
+                              <span className="font-semibold">
+                                ${Number(p.price_usd).toFixed(2)}
+                              </span>
                             </div>
                           ))}
                         </div>
                       ) : (
-                        <span className="text-neutral-500 text-sm">No pricing set</span>
+                        <span className="text-neutral-500 text-sm">
+                          No pricing set
+                        </span>
                       )}
                     </td>
                     <td className="py-4 px-4">
@@ -393,10 +400,19 @@ export default function AdminPlansPage() {
       {/* Create/Edit Dialog */}
       {isDialogOpen && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-neutral-900 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" style={{ border: '1px solid rgb(38, 38, 38)' }}>
-            <div className="p-6 border-b" style={{ borderBottomWidth: '1px', borderBottomColor: 'rgb(38, 38, 38)' }}>
+          <div
+            className="bg-neutral-700 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+            style={{ border: "1px solid rgb(38, 38, 38)" }}
+          >
+            <div
+              className="p-6 border-b"
+              style={{
+                borderBottomWidth: "1px",
+                borderBottomColor: "rgb(38, 38, 38)",
+              }}
+            >
               <h2 className="text-2xl font-bold text-white">
-                {editingPlan ? 'Edit Plan' : 'Create New Plan'}
+                {editingPlan ? "Edit Plan" : "Create New Plan"}
               </h2>
             </div>
 
@@ -408,12 +424,18 @@ export default function AdminPlansPage() {
                 <input
                   type="text"
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
                   required
                   className="w-full px-4 py-2 bg-neutral-800/50 rounded-lg text-white focus:outline-none"
-                  style={{ border: '1px solid rgb(64, 64, 64)' }}
-                  onFocus={(e) => e.target.style.borderColor = 'rgb(114, 150, 245)'}
-                  onBlur={(e) => e.target.style.borderColor = 'rgb(64, 64, 64)'}
+                  style={{ border: "1px solid rgb(64, 64, 64)" }}
+                  onFocus={(e) =>
+                    (e.target.style.borderColor = "rgb(114, 150, 245)")
+                  }
+                  onBlur={(e) =>
+                    (e.target.style.borderColor = "rgb(64, 64, 64)")
+                  }
                   placeholder="e.g., Premium Mobile"
                 />
               </div>
@@ -424,12 +446,18 @@ export default function AdminPlansPage() {
                 </label>
                 <select
                   value={formData.channel}
-                  onChange={(e) => setFormData({ ...formData, channel: e.target.value as any })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, channel: e.target.value as any })
+                  }
                   required
                   className="w-full px-4 py-2 bg-neutral-800/50 rounded-lg text-white focus:outline-none"
-                  style={{ border: '1px solid rgb(64, 64, 64)' }}
-                  onFocus={(e) => e.target.style.borderColor = 'rgb(114, 150, 245)'}
-                  onBlur={(e) => e.target.style.borderColor = 'rgb(64, 64, 64)'}
+                  style={{ border: "1px solid rgb(64, 64, 64)" }}
+                  onFocus={(e) =>
+                    (e.target.style.borderColor = "rgb(114, 150, 245)")
+                  }
+                  onBlur={(e) =>
+                    (e.target.style.borderColor = "rgb(64, 64, 64)")
+                  }
                 >
                   <option value="mobile">Mobile</option>
                   <option value="residential">Residential</option>
@@ -454,9 +482,13 @@ export default function AdminPlansPage() {
                           }
                         }}
                         className="px-4 py-2 bg-neutral-800/50 rounded-lg text-white focus:outline-none"
-                        style={{ border: '1px solid rgb(64, 64, 64)' }}
-                        onFocus={(e) => e.target.style.borderColor = 'rgb(114, 150, 245)'}
-                        onBlur={(e) => e.target.style.borderColor = 'rgb(64, 64, 64)'}
+                        style={{ border: "1px solid rgb(64, 64, 64)" }}
+                        onFocus={(e) =>
+                          (e.target.style.borderColor = "rgb(114, 150, 245)")
+                        }
+                        onBlur={(e) =>
+                          (e.target.style.borderColor = "rgb(64, 64, 64)")
+                        }
                       >
                         <option value="daily">Daily</option>
                         <option value="weekly">Weekly</option>
@@ -477,16 +509,22 @@ export default function AdminPlansPage() {
                         }}
                         required
                         className="flex-1 px-4 py-2 bg-neutral-800/50 rounded-lg text-white focus:outline-none"
-                        style={{ border: '1px solid rgb(64, 64, 64)' }}
-                        onFocus={(e) => e.target.style.borderColor = 'rgb(114, 150, 245)'}
-                        onBlur={(e) => e.target.style.borderColor = 'rgb(64, 64, 64)'}
+                        style={{ border: "1px solid rgb(64, 64, 64)" }}
+                        onFocus={(e) =>
+                          (e.target.style.borderColor = "rgb(114, 150, 245)")
+                        }
+                        onBlur={(e) =>
+                          (e.target.style.borderColor = "rgb(64, 64, 64)")
+                        }
                         placeholder="Price (USD)"
                       />
                       {formData.pricing.length > 1 && (
                         <button
                           type="button"
                           onClick={() => {
-                            const newPricing = formData.pricing.filter((_, i) => i !== index);
+                            const newPricing = formData.pricing.filter(
+                              (_, i) => i !== index
+                            );
                             setFormData({ ...formData, pricing: newPricing });
                           }}
                           className="px-3 py-2 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20 transition-colors"
@@ -501,11 +539,14 @@ export default function AdminPlansPage() {
                     onClick={() => {
                       setFormData({
                         ...formData,
-                        pricing: [...formData.pricing, { duration: 'monthly', price_usd: '' }],
+                        pricing: [
+                          ...formData.pricing,
+                          { duration: "monthly", price_usd: "" },
+                        ],
                       });
                     }}
                     className="w-full px-4 py-2 bg-neutral-800/50 text-neutral-300 rounded-lg hover:bg-neutral-700 transition-colors text-sm"
-                    style={{ border: '1px solid rgb(64, 64, 64)' }}
+                    style={{ border: "1px solid rgb(64, 64, 64)" }}
                   >
                     + Add Pricing Tier
                   </button>
@@ -518,12 +559,18 @@ export default function AdminPlansPage() {
                 </label>
                 <textarea
                   value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
                   rows={3}
                   className="w-full px-4 py-2 bg-neutral-800/50 rounded-lg text-white focus:outline-none resize-none"
-                  style={{ border: '1px solid rgb(64, 64, 64)' }}
-                  onFocus={(e) => e.target.style.borderColor = 'rgb(114, 150, 245)'}
-                  onBlur={(e) => e.target.style.borderColor = 'rgb(64, 64, 64)'}
+                  style={{ border: "1px solid rgb(64, 64, 64)" }}
+                  onFocus={(e) =>
+                    (e.target.style.borderColor = "rgb(114, 150, 245)")
+                  }
+                  onBlur={(e) =>
+                    (e.target.style.borderColor = "rgb(64, 64, 64)")
+                  }
                   placeholder="Brief description of the plan"
                 />
               </div>
@@ -533,10 +580,15 @@ export default function AdminPlansPage() {
                   type="checkbox"
                   id="rotation_api"
                   checked={formData.rotation_api}
-                  onChange={(e) => setFormData({ ...formData, rotation_api: e.target.checked })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, rotation_api: e.target.checked })
+                  }
                   className="w-4 h-4 rounded border-neutral-700 bg-neutral-800/50 text-[rgb(var(--brand-400))] focus:ring-[rgb(var(--brand-400))] focus:ring-offset-0"
                 />
-                <label htmlFor="rotation_api" className="text-sm text-neutral-300">
+                <label
+                  htmlFor="rotation_api"
+                  className="text-sm text-neutral-300"
+                >
                   Enable Rotation API
                 </label>
               </div>
@@ -546,7 +598,9 @@ export default function AdminPlansPage() {
                   type="checkbox"
                   id="is_active"
                   checked={formData.is_active}
-                  onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, is_active: e.target.checked })
+                  }
                   className="w-4 h-4 rounded border-neutral-700 bg-neutral-800/50 text-[rgb(var(--brand-400))] focus:ring-[rgb(var(--brand-400))] focus:ring-offset-0"
                 />
                 <label htmlFor="is_active" className="text-sm text-neutral-300">
@@ -575,9 +629,9 @@ export default function AdminPlansPage() {
                       Saving...
                     </>
                   ) : editingPlan ? (
-                    'Update Plan'
+                    "Update Plan"
                   ) : (
-                    'Create Plan'
+                    "Create Plan"
                   )}
                 </Button>
               </div>
@@ -589,7 +643,10 @@ export default function AdminPlansPage() {
       {/* Confirmation Dialog */}
       {confirmDialog.isOpen && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-neutral-900 rounded-xl w-full max-w-md" style={{ border: '1px solid rgb(38, 38, 38)' }}>
+          <div
+            className="bg-neutral-900 rounded-xl w-full max-w-md"
+            style={{ border: "1px solid rgb(38, 38, 38)" }}
+          >
             <div className="p-6">
               <h2 className="text-xl font-bold text-white mb-2">
                 {confirmDialog.title}
@@ -600,7 +657,14 @@ export default function AdminPlansPage() {
               <div className="flex gap-3">
                 <Button
                   variant="outline"
-                  onClick={() => setConfirmDialog({ isOpen: false, title: '', message: '', onConfirm: () => {} })}
+                  onClick={() =>
+                    setConfirmDialog({
+                      isOpen: false,
+                      title: "",
+                      message: "",
+                      onConfirm: () => {},
+                    })
+                  }
                   className="flex-1 border-neutral-700"
                 >
                   Cancel
@@ -620,16 +684,15 @@ export default function AdminPlansPage() {
       {/* Error Message Dialog */}
       {errorMessage && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-neutral-900 rounded-xl w-full max-w-md" style={{ border: '1px solid rgb(38, 38, 38)' }}>
+          <div
+            className="bg-neutral-900 rounded-xl w-full max-w-md"
+            style={{ border: "1px solid rgb(38, 38, 38)" }}
+          >
             <div className="p-6">
-              <h2 className="text-xl font-bold text-red-400 mb-2">
-                Error
-              </h2>
-              <p className="text-neutral-300 text-sm mb-6">
-                {errorMessage}
-              </p>
+              <h2 className="text-xl font-bold text-red-400 mb-2">Error</h2>
+              <p className="text-neutral-300 text-sm mb-6">{errorMessage}</p>
               <Button
-                onClick={() => setErrorMessage('')}
+                onClick={() => setErrorMessage("")}
                 className="w-full bg-[rgb(var(--brand-400))] hover:bg-[rgb(var(--brand-500))] text-white"
               >
                 Close
@@ -638,6 +701,7 @@ export default function AdminPlansPage() {
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 }

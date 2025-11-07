@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { iproxyService } from "@/lib/iproxy-service";
 
 // GET - Fetch all stoplist entries
 export async function GET() {
@@ -84,6 +85,30 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate that connection exists in iProxy
+    const connectionResult = await iproxyService.getConnection(connectionId);
+
+    if (!connectionResult.success) {
+      return NextResponse.json(
+        { error: connectionResult.error || "Connection ID not found in iProxy" },
+        { status: 404 }
+      );
+    }
+
+    // Check if already in stoplist
+    const { data: existing } = await supabase
+      .from("connection_stoplist")
+      .select("id")
+      .eq("connection_id", connectionId)
+      .single();
+
+    if (existing) {
+      return NextResponse.json(
+        { error: "Connection already in stoplist" },
+        { status: 400 }
+      );
+    }
+
     // Add to stoplist
     const { data, error } = await supabase
       .from("connection_stoplist")
@@ -95,12 +120,6 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error("Error adding to stoplist:", error);
-      if (error.code === "23505") {
-        return NextResponse.json(
-          { error: "Connection already in stoplist" },
-          { status: 400 }
-        );
-      }
       return NextResponse.json(
         { error: "Failed to add to stoplist" },
         { status: 500 }

@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import {
   Loader2,
   ArrowLeft,
@@ -89,72 +88,64 @@ export default function ProcessingOrdersPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <Loader2 className="w-8 h-8 animate-spin text-[rgb(var(--brand-400))]" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 p-4 md:p-6">
+    <div className="margin-12">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => router.back()}
-          className="shrink-0"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2 text-white">
-            Processing Orders
-            {orders.length > 0 && (
-              <span className="px-3 py-1 rounded-full text-sm font-semibold bg-blue-600 text-white">
-                {orders.length}
-              </span>
-            )}
-          </h1>
-          <p className="text-sm text-neutral-400 mt-1">
-            Orders awaiting manual activation
-          </p>
+      <div className="py-3 mb-5">
+        <div className="flex items-center gap-4">
+          <ArrowLeft
+            className="h-5 w-5 text-neutral-0 cursor-pointer"
+            onClick={() => router.back()}
+          />
+          <div>
+            <h1 className="tp-headline-s text-neutral-0 flex items-center gap-2">
+              Processing Orders
+              
+            </h1>
+         
+          </div>
         </div>
       </div>
 
       {/* Orders Table */}
-      <div className="bg-neutral-900 rounded-xl p-6" style={{ border: '1px solid rgb(38, 38, 38)' }}>
-        {orders.length === 0 ? (
-          <div className="text-center py-12">
-            <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-white mb-2">All Caught Up!</h3>
-            <p className="text-sm text-neutral-400">
-              No orders awaiting activation at the moment.
-            </p>
-          </div>
-        ) : (
+      {orders.length === 0 ? (
+        <div className="rounded-xl bg-neutral-800/50 border border-neutral-700 p-12 text-center">
+          <CheckCircle className="mx-auto h-8 w-8 mb-2 opacity-50 text-green-400" />
+          <h3 className="tp-body font-semibold text-neutral-0 mb-2">All Caught Up!</h3>
+          <p className="tp-body-s text-neutral-400">
+            No orders awaiting activation at the moment.
+          </p>
+        </div>
+      ) : (
+        <div className="rounded-md bg-neutral-800/50 border border-neutral-700 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b" style={{ borderBottomWidth: '1px', borderBottomColor: 'rgb(38, 38, 38)' }}>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
+                <tr className="border-b border-neutral-700">
+                  <th className="text-left py-4 px-6 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
                     ID
                   </th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
-                    Connection Id
+                  <th className="text-left py-4 px-6 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
+                    Connection ID
                   </th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
+                  <th className="text-left py-4 px-6 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
                     User
                   </th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
+                  <th className="text-left py-4 px-6 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
                     Status
                   </th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
+                  <th className="text-left py-4 px-6 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
                     Order Date
                   </th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
+                  <th className="text-left py-4 px-6 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
                     Amount
                   </th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-neutral-400">
+                  <th className="text-left py-4 px-6 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
                     Actions
                   </th>
                 </tr>
@@ -177,53 +168,49 @@ export default function ProcessingOrdersPage() {
                   return (
                     <tr
                       key={order.id}
-                      className="border-b hover:bg-neutral-800/50 transition-colors"
-                      style={{ borderBottomWidth: '1px', borderBottomColor: 'rgb(38, 38, 38)' }}
+                      className="border-b border-neutral-700 hover:bg-neutral-700/50 transition-colors"
                     >
-                      <td className="py-4 px-4 text-white">
+                      <td className="py-4 px-6 tp-body-s text-white font-mono">
                         #{order.id.slice(0, 6)}
                       </td>
-                      <td className="py-4 px-4 text-white">
+                      <td className="py-4 px-6 tp-body-s text-white font-mono">
                         {order.metadata.connection_id}
                       </td>
-                      <td className="py-4 px-4">
-                        <span className="font-mono text-sm text-neutral-300">
-                          {order.user_id.slice(0, 8)}...
-                        </span>
+                      <td className="py-4 px-6 tp-body-s text-white font-mono">
+                        #{order.user_id.slice(0, 8)}
                       </td>
-                      <td className="py-4 px-4">
-                        <span className="inline-flex px-3 py-1 rounded-full text-sm border border-blue-500/20 bg-blue-500/10 text-blue-400">
+                      <td className="py-4 px-6">
+                        <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm border border-blue-500/20 bg-blue-500/10 text-blue-400 capitalize">
                           Processing
                         </span>
                       </td>
-                      <td className="py-4 px-4 text-white">
+                      <td className="py-4 px-6 tp-body-s text-white">
                         <div>{formattedDate}</div>
-                        <div className="text-sm text-neutral-500">
+                        <div className="text-xs text-neutral-500 mt-1">
                           {formattedTime}
                         </div>
                       </td>
-                      <td className="py-4 px-4 text-white font-semibold">
+                      <td className="py-4 px-6 tp-body-s text-white font-semibold">
                         ${order.total_amount.toFixed(2)}
                       </td>
-                      <td className="py-4 px-4">
-                        <Button
+                      <td className="py-4 px-6">
+                        <button
                           onClick={() => handleActivateOrder(order.id)}
                           disabled={activatingOrders.has(order.id)}
-                          size="sm"
-                          className="bg-green-600 hover:bg-green-700 text-white"
+                          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-green-600 hover:bg-green-700 text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
                           {activatingOrders.has(order.id) ? (
                             <>
-                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              <Loader2 className="w-4 h-4 animate-spin" />
                               Activating...
                             </>
                           ) : (
                             <>
-                              <CheckCircle className="w-4 h-4 mr-2" />
+                              <CheckCircle className="w-4 h-4" />
                               Activate
                             </>
                           )}
-                        </Button>
+                        </button>
                       </td>
                     </tr>
                   );
@@ -231,8 +218,8 @@ export default function ProcessingOrdersPage() {
               </tbody>
             </table>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

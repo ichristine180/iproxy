@@ -291,24 +291,7 @@ export const AdminLayout = ({
           </div>
         </nav>
 
-        {/* Back to Dashboard */}
-        <div className="p-2" style={{ borderTop: '1px solid rgb(64, 64, 64)' }}>
-          <Link
-            href="/dashboard"
-            onClick={() => setMobileMenuOpen(false)}
-            className={`flex items-center gap-3 ${
-              sidebarCollapsed ? "lg:justify-center" : ""
-            } py-2.5 pl-4 pr-4 text-neutral-400 hover:text-white hover:bg-[rgb(var(--neutral-600))] hover:border-l-[5px] hover:border-l-solid hover:border-l-[rgb(var(--brand-300))] border-l-[5px] border-l-solid border-l-transparent transition-all duration-300`}
-            title="Back to Dashboard"
-          >
-            <LayoutDashboard className="h-5 w-5 flex-shrink-0" />
-            <span
-              className={`tp-body-s ${sidebarCollapsed ? "lg:hidden" : ""}`}
-            >
-              Back to Dashboard
-            </span>
-          </Link>
-        </div>
+       
       </aside>
 
       {/* Main Content */}

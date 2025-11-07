@@ -210,38 +210,40 @@ export default function AdminUsersPage() {
             </select>
           </div>
 
+          {/* Search Filter */}
+          <div>
+            <label className="block tp-body-s text-neutral-400 mb-2">
+              Search
+            </label>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/3 -translate-y-1/2 h-4 w-4 text-neutral-500" />
+              <input
+                type="text"
+                placeholder="Search by email..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                className="w-full pl-10 pr-4 py-2 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder:text-neutral-500 focus:outline-none focus:border-[rgb(var(--brand-400))] transition-colors"
+              />
+            </div>
+          </div>
+
           {/* Clear Filters Button */}
-          <div className="flex items-end lg:col-span-2">
+          <div className="flex items-end">
             <button
               onClick={clearFilters}
               disabled={activeFiltersCount === 0}
-              className="w-full px-4 py-2 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white hover:bg-neutral-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Clear Filters"
+              className="h-[42px] px-8 flex items-center justify-center bg-neutral-800/50 border border-neutral-700 rounded-lg text-white hover:bg-neutral-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Clear Filters
+              <XCircle className="h-5 w-5" />
             </button>
           </div>
         </div>
       </div>
 
-      {/* Search and Users Table */}
+      {/* Users Table */}
       <div>
-        {/* Search Bar */}
-        <div className="mb-6">
-          <label className="block tp-body-s text-neutral-400 mb-2">
-            Search by email
-          </label>
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-500" />
-            <input
-              type="text"
-              placeholder="Search by email..."
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              className="w-full pl-12 pr-4 py-3 bg-neutral-800/50 border border-neutral-700 rounded-lg text-white placeholder:text-neutral-500 focus:outline-none focus:border-[rgb(var(--brand-400))] transition-colors"
-            />
-          </div>
-        </div>
 
         {/* Loading State */}
         {isLoading ? (

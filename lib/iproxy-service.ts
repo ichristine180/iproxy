@@ -803,14 +803,7 @@ export class IProxyService {
     error?: string;
   }> {
     try {
-      // // SIMULATING DELETION - NOT ACTUALLY DELETING FOR NOW
-      // console.log(`[SIMULATED] Would delete proxy ${proxyId} from connection ${connectionId}`);
-
-      // // Simulate success response
-      // return {
-      //   success: true,
-      //   deletedId: proxyId,
-      // };
+     
 
       
       // Actual deletion code - commented out for testing
