@@ -32,44 +32,40 @@ export async function GET(request: NextRequest) {
     const threeDaysFromNow = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
 
     // ===== STEP 1: Handle 3-day notifications =====
-    // Find active proxies expiring within the next 3 days (except 1-day plans)
-    const { data: proxiesForNotification, error: notificationFetchError } = await supabaseAdmin
-      .from("proxies")
+    // Find active orders expiring within the next 3 days (except 1-day plans)
+    const { data: ordersForNotification, error: notificationFetchError } = await supabaseAdmin
+      .from("orders")
       .select(`
         *,
-        order:orders!proxies_order_id_fkey(
-          *,
-          plan:plans(*)
-        )
+        plan:plans(*)
       `)
       .eq("status", "active")
       .gt("expires_at", now.toISOString()) // Still in the future
       .lte("expires_at", threeDaysFromNow.toISOString()); // Within next 3 days
 
     if (notificationFetchError) {
-      console.error("Error fetching proxies for notification:", notificationFetchError);
+      console.error("Error fetching orders for notification:", notificationFetchError);
     }
 
     const notificationResults = [];
     let notificationsSent = 0;
 
-    if (proxiesForNotification && proxiesForNotification.length > 0) {
-      for (const proxy of proxiesForNotification) {
+    if (ordersForNotification && ordersForNotification.length > 0) {
+      for (const order of ordersForNotification) {
         try {
           // Skip if notification was already sent in the last 24 hours
-          if (proxy.expiry_notification_sent_at) {
-            const lastNotificationTime = new Date(proxy.expiry_notification_sent_at);
+          if (order.metadata?.expiry_notification_sent_at) {
+            const lastNotificationTime = new Date(order.metadata.expiry_notification_sent_at);
             const hoursSinceLastNotification = (now.getTime() - lastNotificationTime.getTime()) / (1000 * 60 * 60);
 
             if (hoursSinceLastNotification < 24) {
-              console.log(`Skipping proxy ${proxy.id} - notification already sent ${hoursSinceLastNotification.toFixed(1)} hours ago`);
+              console.log(`Skipping order ${order.id} - notification already sent ${hoursSinceLastNotification.toFixed(1)} hours ago`);
               continue;
             }
           }
 
           // Skip 1-day plans
-          const order = proxy.order;
-          if (!order || !order.plan) continue;
+          if (!order.plan) continue;
 
           // Calculate plan duration from order dates
           const startAt = new Date(order.start_at);
@@ -77,7 +73,7 @@ export async function GET(request: NextRequest) {
           const durationDays = Math.ceil((expiresAt.getTime() - startAt.getTime()) / (24 * 60 * 60 * 1000));
 
           if (durationDays <= 1) {
-            console.log(`Skipping 1-day plan notification for proxy ${proxy.id}`);
+            console.log(`Skipping 1-day plan notification for order ${order.id}`);
             continue;
           }
 
@@ -85,23 +81,23 @@ export async function GET(request: NextRequest) {
           const { data: profile } = await supabaseAdmin
             .from("profiles")
             .select("*")
-            .eq("id", proxy.user_id)
+            .eq("id", order.user_id)
             .single();
 
           if (!profile) {
-            console.error(`Profile not found for user ${proxy.user_id}`);
+            console.error(`Profile not found for user ${order.user_id}`);
             continue;
           }
 
-          const expiryDate = new Date(proxy.expires_at);
+          const expiryDate = new Date(order.expires_at);
           let notifyReason = "";
 
-          if (proxy.auto_renew) {
+          if (order.auto_renew) {
             // Check if user has sufficient funds
             const { data: wallet } = await supabaseAdmin
               .from("user_wallet")
               .select("balance")
-              .eq("user_id", proxy.user_id)
+              .eq("user_id", order.user_id)
               .single();
 
             if (!wallet || wallet.balance < order.total_amount) {
@@ -110,21 +106,26 @@ export async function GET(request: NextRequest) {
               await sendExpiryNotification(
                 supabaseAdmin,
                 profile,
-                proxy,
+                order,
                 expiryDate,
                 order.total_amount,
                 "insufficient_funds"
               );
 
-              // Mark notification as sent
+              // Mark notification as sent in metadata
               await supabaseAdmin
-                .from("proxies")
-                .update({ expiry_notification_sent_at: now.toISOString() })
-                .eq("id", proxy.id);
+                .from("orders")
+                .update({
+                  metadata: {
+                    ...order.metadata,
+                    expiry_notification_sent_at: now.toISOString()
+                  }
+                })
+                .eq("id", order.id);
 
               notificationsSent++;
               notificationResults.push({
-                proxy_id: proxy.id,
+                order_id: order.id,
                 user_email: profile.email,
                 reason: notifyReason,
                 sent: true,
@@ -136,30 +137,35 @@ export async function GET(request: NextRequest) {
             await sendExpiryNotification(
               supabaseAdmin,
               profile,
-              proxy,
+              order,
               expiryDate,
               order.total_amount,
               "auto_renew_disabled"
             );
 
-            // Mark notification as sent
+            // Mark notification as sent in metadata
             await supabaseAdmin
-              .from("proxies")
-              .update({ expiry_notification_sent_at: now.toISOString() })
-              .eq("id", proxy.id);
+              .from("orders")
+              .update({
+                metadata: {
+                  ...order.metadata,
+                  expiry_notification_sent_at: now.toISOString()
+                }
+              })
+              .eq("id", order.id);
 
             notificationsSent++;
             notificationResults.push({
-              proxy_id: proxy.id,
+              order_id: order.id,
               user_email: profile.email,
               reason: notifyReason,
               sent: true,
             });
           }
         } catch (error: any) {
-          console.error(`Error sending notification for proxy ${proxy.id}:`, error);
+          console.error(`Error sending notification for order ${order.id}:`, error);
           notificationResults.push({
-            proxy_id: proxy.id,
+            order_id: order.id,
             sent: false,
             error: error.message,
           });
@@ -218,10 +224,8 @@ export async function GET(request: NextRequest) {
             continue;
           }
 
-          // Check if ALL proxies in this order have auto_renew enabled
-          const allAutoRenew = proxies.every(p => p.auto_renew);
-
-          if (allAutoRenew) {
+          // Check if the order has auto_renew enabled
+          if (order.auto_renew) {
             // All proxies have auto-renew enabled - check funds and renew as one order
             const { data: wallet } = await supabaseAdmin
               .from("user_wallet")
@@ -381,7 +385,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       notifications: {
-        checked: proxiesForNotification?.length || 0,
+        checked: ordersForNotification?.length || 0,
         sent: notificationsSent,
         results: notificationResults,
       },
@@ -413,7 +417,7 @@ export async function GET(request: NextRequest) {
 async function sendExpiryNotification(
   _supabaseAdmin: any,
   profile: any,
-  proxy: any,
+  order: any,
   expiryDate: Date,
   renewalAmount: number,
   reason: "insufficient_funds" | "auto_renew_disabled"
@@ -421,14 +425,14 @@ async function sendExpiryNotification(
   try {
     const emailSubject =
       reason === "insufficient_funds"
-        ? "Action Required: Insufficient Funds for Proxy Auto-Renewal"
-        : "Reminder: Your Proxy Rental is Expiring Soon";
+        ? "Action Required: Insufficient Funds for Order Auto-Renewal"
+        : "Reminder: Your Order is Expiring Soon";
 
-    const emailBody = `Proxy Rental Expiration Notice
+    const emailBody = `Order Expiration Notice
 
 Hello,
 
-Your proxy rental "${proxy.label}" will expire on ${expiryDate.toLocaleString()}.
+Your order "${order.plan?.name || 'Proxy Order'}" will expire on ${expiryDate.toLocaleString()}.
 
 ${
   reason === "insufficient_funds"
@@ -498,9 +502,9 @@ Highbid Proxies Team
     // Send Telegram notification if enabled
     if (profile.notify_telegram && profile.telegram_chat_id) {
       const telegramMessage = `
-🔔 *Proxy Rental Expiration Notice*
+🔔 *Order Expiration Notice*
 
-Your proxy rental *${proxy.label}* will expire on *${expiryDate.toLocaleString()}*.
+Your order *${order.plan?.name || 'Proxy Order'}* will expire on *${expiryDate.toLocaleString()}*.
 
 ${
   reason === "insufficient_funds"

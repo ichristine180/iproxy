@@ -65,11 +65,13 @@ interface Order {
   total_amount: number;
   start_at: string;
   expires_at: string;
+  auto_renew?: boolean;
   metadata?: {
     pending_reason?: string;
     manual_provisioning_required?: boolean;
     connection_id?: string;
     duration?: string;
+    expiry_notification_sent_at?: string;
     [key: string]: string | boolean | undefined;
   };
 }
@@ -99,7 +101,6 @@ interface Proxy {
   data_usage_rotation?: number;
   external_ip?: string;
   iproxy_change_url?: string;
-  auto_renew?: boolean;
   has_access?: boolean;
 }
 
@@ -126,6 +127,7 @@ function DashboardPageContent() {
     null
   );
   const [activatingOrder, setActivatingOrder] = useState<string | null>(null);
+  const [updatingAutoRenewOrderId, setUpdatingAutoRenewOrderId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [showTrialMessage, setShowTrialMessage] = useState(false);
@@ -349,14 +351,52 @@ function DashboardPageContent() {
       mergedProxies.length > 0 ? mergedProxies : proxies.slice(0, 1)
     );
 
-    // Set auto-renew state from the first proxy
-    if (
-      mergedProxies.length > 0 &&
-      mergedProxies[0]?.auto_renew !== undefined
-    ) {
-      setAutoRenew(mergedProxies[0]?.auto_renew || false);
+    // Set auto-renew state from the selected order
+    if (selectedOrder?.auto_renew !== undefined) {
+      setAutoRenew(selectedOrder.auto_renew);
     } else {
       setAutoRenew(false);
+    }
+  };
+
+  // Handle toggle auto-renew from orders table
+  const handleToggleAutoRenewFromTable = async (order: Order) => {
+    const newAutoRenewValue = !order.auto_renew;
+    setUpdatingAutoRenewOrderId(order.id);
+
+    try {
+      const response = await fetch(`/api/orders/${order.id}/auto-renew`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ auto_renew: newAutoRenewValue }),
+      });
+
+      const result = await response.json();
+
+      if (!result.success) {
+        alert(`Failed to update auto-renew: ${result.error || "Unknown error"}`);
+        return;
+      }
+
+      // Update local state
+      setOrders(prevOrders =>
+        prevOrders.map(o =>
+          o.id === order.id ? { ...o, auto_renew: newAutoRenewValue } : o
+        )
+      );
+
+      // If this is the selected order in details view, update that too
+      if (selectedOrder?.id === order.id) {
+        setSelectedOrder({ ...selectedOrder, auto_renew: newAutoRenewValue });
+        setAutoRenew(newAutoRenewValue);
+      }
+    } catch (error: any) {
+      console.error("Error updating auto-renew:", error);
+      alert(`Failed to update auto-renew: ${error.message || "Unknown error"}`);
+    } finally {
+      setUpdatingAutoRenewOrderId(null);
     }
   };
 
@@ -454,44 +494,28 @@ function DashboardPageContent() {
 
   // Handle auto-renew toggle
   const handleAutoRenewToggle = async (checked: boolean) => {
-    if (orderProxies.length === 0 || !selectedOrder) return;
+    if (!selectedOrder) return;
 
     setIsUpdatingAutoRenew(true);
     setAutoRenew(checked);
 
     try {
-      // Get all proxies for this order (both HTTP and SOCKS5)
-      const orderProxiesRaw = proxies.filter(
-        (proxy) => proxy.order_id === selectedOrder.id
-      );
+      // Update the order's auto-renew setting
+      const response = await fetch(`/api/orders/${selectedOrder.id}/auto-renew`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ auto_renew: checked }),
+      });
 
-      if (orderProxiesRaw.length === 0) {
-        throw new Error("No proxies found for this order");
-      }
+      const result = await response.json();
 
-      // Update all proxies for this order
-      const updatePromises = orderProxiesRaw.map((proxy) =>
-        fetch(`/api/proxies/${proxy.id}/auto-renew`, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ auto_renew: checked }),
-        }).then((res) => res.json())
-      );
-
-      const results = await Promise.all(updatePromises);
-
-      // Check if any failed
-      const failures = results.filter((result) => !result.success);
-
-      if (failures.length > 0) {
+      if (!result.success) {
         // Revert on failure
         setAutoRenew(!checked);
         alert(
-          `Failed to update auto-renew for ${failures.length} proxy(ies): ${
-            failures[0].error || "Unknown error"
-          }`
+          `Failed to update auto-renew: ${result.error || "Unknown error"}`
         );
       } else {
         // Success - refresh data to get updated values
@@ -1275,6 +1299,9 @@ function DashboardPageContent() {
                             <th className="text-left py-3 px-4 tp-body-sfont-semibold text-neutral-0 bg-neutral-600">
                               Amount
                             </th>
+                            <th className="text-left py-3 px-4 tp-body-s font-semibold text-neutral-0 bg-neutral-600">
+                              Auto-Renew
+                            </th>
                             <th className="text-left py-3 px-4 tp-body-s rounded-r-lg font-semibold text-neutral-0 bg-neutral-600">
                               Actions
                             </th>
@@ -1354,6 +1381,17 @@ function DashboardPageContent() {
                                 ${order.total_amount.toFixed(2)}
                               </td>
                               <td className="py-4 px-4">
+                                <span
+                                  className={`inline-flex px-3 py-1 rounded-full tp-body-s border ${
+                                    order.auto_renew
+                                      ? "bg-green-500/10 text-green-400 border-green-500/20"
+                                      : "bg-neutral-500/10 text-neutral-400 border-neutral-500/20"
+                                  }`}
+                                >
+                                  {order.auto_renew ? "Enabled" : "Disabled"}
+                                </span>
+                              </td>
+                              <td className="py-4 px-4">
                                 <div className="flex items-center gap-2">
                                   <button
                                     onClick={() =>
@@ -1393,7 +1431,7 @@ function DashboardPageContent() {
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent
                                       align="end"
-                                      className="w-56"
+                                      className="w-60 bg-neutral-600"
                                     >
                                       <DropdownMenuItem
                                         onClick={() => handleViewDetails(order)}
@@ -1402,6 +1440,27 @@ function DashboardPageContent() {
                                         <Eye className="mr-2 h-4 w-8" />
                                         <span>View Details</span>
                                       </DropdownMenuItem>
+                                      {order.status === "active" && (
+                                        <DropdownMenuItem
+                                          onClick={() => handleToggleAutoRenewFromTable(order)}
+                                          disabled={updatingAutoRenewOrderId === order.id}
+                                          className="cursor-pointer"
+                                        >
+                                          {updatingAutoRenewOrderId === order.id ? (
+                                            <>
+                                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                              <span>Updating...</span>
+                                            </>
+                                          ) : (
+                                            <>
+                                              <RotateCw className="mr-2 h-4 w-4" />
+                                              <span>
+                                                {order.auto_renew ? "Disable" : "Enable"} Auto-Renew
+                                              </span>
+                                            </>
+                                          )}
+                                        </DropdownMenuItem>
+                                      )}
                                     </DropdownMenuContent>
                                   </DropdownMenu>
                                 </div>

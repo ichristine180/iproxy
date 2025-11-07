@@ -46,7 +46,6 @@ interface Proxy {
   data_usage_rotation?: number;
   external_ip?: string;
   rotation_url?: string;
-  auto_renew?: boolean;
   has_access?: boolean;
 }
 
