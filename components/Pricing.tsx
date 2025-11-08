@@ -34,6 +34,21 @@ const commonFeatures = [
   "Unbeatable IP Reputation",
 ];
 
+const DURATION_ORDER = {
+  daily: 4,
+  weekly: 3,
+  monthly: 2,
+  yearly: 1,
+};
+
+function getPlanPriority(plan: Plan) {
+  if (!plan?.pricing || plan.pricing.length === 0) return 0;
+  return plan.pricing.reduce((max, p) => {
+    const val = DURATION_ORDER[p.duration as keyof typeof DURATION_ORDER] || 0;
+    return Math.max(max, val);
+  }, 0);
+}
+
 const Pricing = () => {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -102,7 +117,9 @@ const Pricing = () => {
       </div>
       {/* Products Grid */}
       <div className="grid grid-cols-1 flex-col inner-spacing-md lg:grid-cols-3">
-        {plans.map((plan) => {
+        {[...plans].sort((a, b) => {
+          return getPlanPriority(b) - getPlanPriority(a);
+        }).map((plan) => {
           // Combine common features with plan-specific features
           const allFeatures = [...commonFeatures];
 
@@ -139,9 +156,11 @@ const Pricing = () => {
                   {plan.name}
                 </h3>
               </div>
-              {plan.pricing && (
+              {plan.pricing && plan.pricing.length > 0 && (
                 <span className="tp-body text-center capitalize">
-                  {plan.pricing[0]?.duration}
+                  {[...plan.pricing].sort((a, b) => {
+                    return (DURATION_ORDER[b.duration as keyof typeof DURATION_ORDER] || 0) - (DURATION_ORDER[a.duration as keyof typeof DURATION_ORDER] || 0);
+                  })[0]?.duration}
                 </span>
               )}
               {/* Price */}
@@ -149,15 +168,9 @@ const Pricing = () => {
                 {plan.pricing && plan.pricing.length > 0 ? (
                   <>
                     <div className="flex flex-wrap gap-2 justify-center">
-                      {plan.pricing
+                      {[...plan.pricing]
                         .sort((a, b) => {
-                          const order = {
-                            daily: 4,
-                            weekly: 3,
-                            monthly: 2,
-                            yearly: 1,
-                          };
-                          return order[a.duration] - order[b.duration];
+                          return (DURATION_ORDER[b.duration as keyof typeof DURATION_ORDER] || 0) - (DURATION_ORDER[a.duration as keyof typeof DURATION_ORDER] || 0);
                         })
                         .map((pricing, index) => {
                           const durationShort = {
