@@ -1082,6 +1082,17 @@ function DashboardPageContent() {
                 {plans.map((plan) => {
                   const isSelected = selectedPlanId === plan.id;
 
+                  // Sort pricing from daily to monthly
+                  const sortedPricing = plan.pricing ? [...plan.pricing].sort((a, b) => {
+                    const order: Record<string, number> = {
+                      daily: 1,
+                      weekly: 2,
+                      monthly: 3,
+                      yearly: 4,
+                    };
+                    return order[a.duration] - order[b.duration];
+                  }) : [];
+
                   return (
                     <div
                       key={plan.id}
@@ -1106,9 +1117,9 @@ function DashboardPageContent() {
                           }`}
                         >
                           {plan.name}
-                          {plan.pricing && (
+                          {sortedPricing.length > 0 && (
                             <small className="px-2">
-                              ({plan.pricing[0].duration})
+                              ({sortedPricing[0].duration})
                             </small>
                           )}
                         </span>

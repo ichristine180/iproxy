@@ -106,11 +106,30 @@ const Pricing = () => {
           // Combine common features with plan-specific features
           const allFeatures = [...commonFeatures];
 
+          // Check if plan has monthly or daily pricing
+          const hasMonthly = plan.pricing?.some(p => p.duration === "monthly");
+          const hasDaily = plan.pricing?.some(p => p.duration === "daily");
+
           return (
             <div
               key={plan.id}
-              className="flex flex-col inner-spacing-xs rounded-16 border border-solid border-neutral-600 bg-neutral-800/50 card-padding max-sm:px-[22px]"
+              className="flex flex-col inner-spacing-xs rounded-16 border border-solid border-neutral-600 bg-neutral-800/50 card-padding max-sm:px-[22px] relative"
             >
+              {/* Badge at top of card */}
+              {hasMonthly && (
+                <div className="absolute -top-3 inset-x-0 flex justify-center">
+                  <span className="text-xs font-semibold px-3 py-1 bg-gray-600 text-white rounded-full whitespace-nowrap">
+                    Most Popular
+                  </span>
+                </div>
+              )}
+              {!hasMonthly && hasDaily && (
+                <div className="absolute -top-3 inset-x-0 flex justify-center">
+                  <span className="text-xs font-semibold px-3 py-1 bg-blue-600 text-white rounded-full whitespace-nowrap">
+                    For Testing
+                  </span>
+                </div>
+              )}
               {/* Icon & Title */}
               <div className="flex items-center justify-center gap-3">
                 <div className="text-[rgb(var(--brand-400))]">
@@ -133,10 +152,10 @@ const Pricing = () => {
                       {plan.pricing
                         .sort((a, b) => {
                           const order = {
-                            daily: 1,
-                            weekly: 2,
-                            monthly: 3,
-                            yearly: 4,
+                            daily: 4,
+                            weekly: 3,
+                            monthly: 2,
+                            yearly: 1,
                           };
                           return order[a.duration] - order[b.duration];
                         })

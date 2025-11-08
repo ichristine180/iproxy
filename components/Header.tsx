@@ -117,10 +117,10 @@ export default function Header() {
                             {plan.pricing
                               .sort((a, b) => {
                                 const order = {
-                                  daily: 1,
-                                  weekly: 2,
-                                  monthly: 3,
-                                  yearly: 4,
+                                  daily: 4,
+                                  weekly: 3,
+                                  monthly: 2,
+                                  yearly: 1,
                                 };
                                 return order[a.duration] - order[b.duration];
                               })
@@ -230,7 +230,17 @@ export default function Header() {
                     </div>
                     {plan.pricing && plan.pricing.length > 0 ? (
                       <div className="flex flex-wrap gap-2">
-                        {plan.pricing.map((pricing, i) => (
+                        {plan.pricing
+                          .sort((a, b) => {
+                            const order = {
+                              daily: 4,
+                              weekly: 3,
+                              monthly: 2,
+                              yearly: 1,
+                            };
+                            return order[a.duration] - order[b.duration];
+                          })
+                          .map((pricing, i) => (
                           <div
                             key={i}
                             className="flex items-center gap-1 bg-neutral-700/40 border border-neutral-600/40 rounded-md px-2 py-1 text-xs text-white"

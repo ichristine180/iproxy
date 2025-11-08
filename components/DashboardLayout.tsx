@@ -223,24 +223,37 @@ const DashboardLayoutContent = ({
 
             {(proxiesOpen || sidebarCollapsed) && (
               <div className="mt-1">
-                {channels.map((channel) => (
-                  <SidebarLink
-                    key={channel.id}
-                    href={`/checkout?plan=${channel.id}`}
-                    label={`${channel.name} ${
-                      channel.pricing ? channel.pricing[0].duration : ""
-                    }`}
-                    icon={Smartphone}
-                    isActive={
-                      pathname === "/checkout" &&
-                      searchParams.get("plan") === channel.id
-                    }
-                    onClick={() => setMobileMenuOpen(false)}
-                    sidebarCollapsed={sidebarCollapsed}
-                    asideLeftPad={25}
-                    asideRightPad={17}
-                  />
-                ))}
+                {channels.map((channel) => {
+                  // Sort pricing from daily to monthly
+                  const sortedPricing = channel.pricing ? [...channel.pricing].sort((a: any, b: any) => {
+                    const order: Record<string, number> = {
+                      daily: 1,
+                      weekly: 2,
+                      monthly: 3,
+                      yearly: 4,
+                    };
+                    return order[a.duration] - order[b.duration];
+                  }) : [];
+
+                  return (
+                    <SidebarLink
+                      key={channel.id}
+                      href={`/checkout?plan=${channel.id}`}
+                      label={`${channel.name} ${
+                        sortedPricing.length > 0 ? sortedPricing[0].duration : ""
+                      }`}
+                      icon={Smartphone}
+                      isActive={
+                        pathname === "/checkout" &&
+                        searchParams.get("plan") === channel.id
+                      }
+                      onClick={() => setMobileMenuOpen(false)}
+                      sidebarCollapsed={sidebarCollapsed}
+                      asideLeftPad={25}
+                      asideRightPad={17}
+                    />
+                  );
+                })}
               </div>
             )}
           </div>
