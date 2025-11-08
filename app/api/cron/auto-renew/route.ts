@@ -265,6 +265,7 @@ export async function GET(request: NextRequest) {
                   start_at: currentExpiry.toISOString(),
                   expires_at: newExpiry.toISOString(),
                   quantity: order.quantity,
+                  auto_renew:true,
                   metadata: {
                     ...order.metadata,
                     auto_renewed: true,
@@ -278,6 +279,12 @@ export async function GET(request: NextRequest) {
                 console.error(`Failed to create renewal order for order ${orderId}:`, orderError);
                 throw orderError;
               }
+
+              // Mark the old order as expired
+              await supabaseAdmin
+                .from("orders")
+                .update({ status: "expired" })
+                .eq("id", orderId);
 
               // Update ALL proxies from this order
               for (const proxy of proxies) {

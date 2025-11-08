@@ -27,6 +27,21 @@ const getPlanIcon = (planName: string) => {
   return <Server className="w-6 h-6" />;
 };
 
+const DURATION_ORDER = {
+  daily: 4,
+  weekly: 3,
+  monthly: 2,
+  yearly: 1,
+};
+
+function getPlanPriority(plan: Plan) {
+  if (!plan?.pricing || plan.pricing.length === 0) return 0;
+  return plan.pricing.reduce((max, p) => {
+    const val = DURATION_ORDER[p.duration as keyof typeof DURATION_ORDER] || 0;
+    return Math.max(max, val);
+  }, 0);
+}
+
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [productsDropdownOpen, setProductsDropdownOpen] = useState(false);
@@ -93,73 +108,73 @@ export default function Header() {
                 )}
               </button>
 
-                {productsDropdownOpen && plans.length > 0 && (
-                <div className="absolute  left-1/2 -translate-x-1/2 bg-neutral-800 border border-neutral-600 rounded-xl shadow-2xl py-6 pointer-events-auto flex flex-col items-center w-[380px] z-50">
-                  {plans.map((plan) => (
-                    <a
-                      key={plan.id}
-                      href={`/login?plan=${plan.id}&redirect=/checkout`}
-                      className="flex h-fit grow items-center !justify-start gap-16 rounded-8 px-16 py-8 text-neutral-0 hover:bg-neutral-700 h-48 gap-10 tp-body px-24 py-16 rounded-8 focus-within:outline-brand-100 flex cursor-pointer select-none items-center justify-center gap-[10px] font-bold outline-offset-2 transition-all md:rounded-8 flex h-fit grow items-center !justify-start gap-16 rounded-8 px-16 py-8 text-neutral-0 hover:bg-neutral-700 flex-row"
-                    >
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <div className="text-[rgb(var(--brand-400))] flex items-center">
-                            {getPlanIcon(plan.name)}
+                {productsDropdownOpen && plans.length > 0 && (() => {
+                const sortedPlans = [...plans].sort((a, b) => {
+                  return getPlanPriority(b) - getPlanPriority(a);
+                });
+
+                return (
+                  <div className="absolute  left-1/2 -translate-x-1/2 bg-neutral-800 border border-neutral-600 rounded-xl shadow-2xl py-6 pointer-events-auto flex flex-col items-center w-[380px] z-50">
+                    {sortedPlans.map((plan) => (
+                      <a
+                        key={plan.id}
+                        href={`/login?plan=${plan.id}&redirect=/checkout`}
+                        className="flex h-fit grow items-center !justify-start gap-16 rounded-8 px-16 py-8 text-neutral-0 hover:bg-neutral-700 h-48 gap-10 tp-body px-24 py-16 rounded-8 focus-within:outline-brand-100 flex cursor-pointer select-none items-center justify-center gap-[10px] font-bold outline-offset-2 transition-all md:rounded-8 flex h-fit grow items-center !justify-start gap-16 rounded-8 px-16 py-8 text-neutral-0 hover:bg-neutral-700 flex-row"
+                      >
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="text-[rgb(var(--brand-400))] flex items-center">
+                              {getPlanIcon(plan.name)}
+                            </div>
+                            <h3 className="font-semibold tp-headline-s">
+                              {plan.name}
+                            </h3>
                           </div>
-                          <h3 className="font-semibold tp-headline-s">
-                            {plan.name}
-                          </h3>
+
+                          {/* Display pricing tiers */}
+                          {plan.pricing && plan.pricing.length > 0 ? (
+                            <div className="flex flex-wrap items-center gap-3 mt-1">
+                              {[...plan.pricing]
+                                .sort((a, b) => {
+                                  return (DURATION_ORDER[b.duration as keyof typeof DURATION_ORDER] || 0) - (DURATION_ORDER[a.duration as keyof typeof DURATION_ORDER] || 0);
+                                })
+                                .map((pricing, index) => {
+                                  const durationShort = {
+                                    daily: "day",
+                                    weekly: "week",
+                                    monthly: "month",
+                                    yearly: "year",
+                                  };
+                                  const durationUnit =
+                                    durationShort[pricing.duration as keyof typeof durationShort] ||
+                                    pricing.duration;
+
+                                  return (
+                                    <div
+                                      key={index}
+                                      className="flex items-center gap-1 bg-neutral-700/40 border border-neutral-600 rounded-md px-1 py-1 text-xs text-white hover:border-[rgb(var(--brand-400))] transition-all"
+                                    >
+                                      <span className="text-[rgb(var(--brand-400))] tp-headline-s">
+                                        ${pricing.price_usd}
+                                      </span>
+                                      <span className="text-white/70">
+                                        / {durationUnit}
+                                      </span>
+                                    </div>
+                                  );
+                                })}
+                            </div>
+                          ) : (
+                            <p className="text-[13px] text-white/60 mt-1">
+                              Custom pricing
+                            </p>
+                          )}
                         </div>
-
-                        {/* Display pricing tiers */}
-                        {plan.pricing && plan.pricing.length > 0 ? (
-                          <div className="flex flex-wrap items-center gap-3 mt-1">
-                            {plan.pricing
-                              .sort((a, b) => {
-                                const order = {
-                                  daily: 4,
-                                  weekly: 3,
-                                  monthly: 2,
-                                  yearly: 1,
-                                };
-                                return order[a.duration] - order[b.duration];
-                              })
-                              .map((pricing, index) => {
-                                const durationShort = {
-                                  daily: "day",
-                                  weekly: "week",
-                                  monthly: "month",
-                                  yearly: "year",
-                                };
-                                const durationUnit =
-                                  durationShort[pricing.duration] ||
-                                  pricing.duration;
-
-                                return (
-                                  <div
-                                    key={index}
-                                    className="flex items-center gap-1 bg-neutral-700/40 border border-neutral-600 rounded-md px-1 py-1 text-xs text-white hover:border-[rgb(var(--brand-400))] transition-all"
-                                  >
-                                    <span className="text-[rgb(var(--brand-400))] tp-headline-s">
-                                      ${pricing.price_usd}
-                                    </span>
-                                    <span className="text-white/70">
-                                      / {durationUnit}
-                                    </span>
-                                  </div>
-                                );
-                              })}
-                          </div>
-                        ) : (
-                          <p className="text-[13px] text-white/60 mt-1">
-                            Custom pricing
-                          </p>
-                        )}
-                      </div>
-                    </a>
-                  ))}
-                </div>
-              )}
+                      </a>
+                    ))}
+                  </div>
+                );
+              })()}
             </div>
           </div>
 
@@ -212,55 +227,55 @@ export default function Header() {
               />
             </button>
 
-            {mobileProductsDropdownOpen && plans.length > 0 && (
-              <div className="flex flex-col gap-2 mt-2">
-                {plans.map((plan) => (
-                  <a
-                    key={plan.id}
-                    href={`/login?plan=${plan.id}&redirect=/checkout`}
-                    className="flex flex-col gap-2 px-4 py-3 bg-neutral-800/50 border border-neutral-700/50 rounded-lg hover:border-[rgb(var(--brand-400))]/30 transition-all"
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="text-[rgb(var(--brand-400))]">
-                        {getPlanIcon(plan.name)}
+            {mobileProductsDropdownOpen && plans.length > 0 && (() => {
+              const sortedPlans = [...plans].sort((a, b) => {
+                return getPlanPriority(b) - getPlanPriority(a);
+              });
+
+              return (
+                <div className="flex flex-col gap-2 mt-2">
+                  {sortedPlans.map((plan) => (
+                    <a
+                      key={plan.id}
+                      href={`/login?plan=${plan.id}&redirect=/checkout`}
+                      className="flex flex-col gap-2 px-4 py-3 bg-neutral-800/50 border border-neutral-700/50 rounded-lg hover:border-[rgb(var(--brand-400))]/30 transition-all"
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="text-[rgb(var(--brand-400))]">
+                          {getPlanIcon(plan.name)}
+                        </div>
+                        <h3 className="text-[14px] font-semibold text-white">
+                          {plan.name}
+                        </h3>
                       </div>
-                      <h3 className="text-[14px] font-semibold text-white">
-                        {plan.name}
-                      </h3>
-                    </div>
-                    {plan.pricing && plan.pricing.length > 0 ? (
-                      <div className="flex flex-wrap gap-2">
-                        {plan.pricing
-                          .sort((a, b) => {
-                            const order = {
-                              daily: 4,
-                              weekly: 3,
-                              monthly: 2,
-                              yearly: 1,
-                            };
-                            return order[a.duration] - order[b.duration];
-                          })
-                          .map((pricing, i) => (
-                          <div
-                            key={i}
-                            className="flex items-center gap-1 bg-neutral-700/40 border border-neutral-600/40 rounded-md px-2 py-1 text-xs text-white"
-                          >
-                            <span className="text-[rgb(var(--brand-400))] font-semibold">
-                              ${pricing.price_usd}
-                            </span>
-                            <span className="text-white/70">
-                              / {pricing.duration}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-xs text-white/60">Custom pricing</p>
-                    )}
-                  </a>
-                ))}
-              </div>
-            )}
+                      {plan.pricing && plan.pricing.length > 0 ? (
+                        <div className="flex flex-wrap gap-2">
+                          {[...plan.pricing]
+                            .sort((a, b) => {
+                              return (DURATION_ORDER[b.duration as keyof typeof DURATION_ORDER] || 0) - (DURATION_ORDER[a.duration as keyof typeof DURATION_ORDER] || 0);
+                            })
+                            .map((pricing, i) => (
+                            <div
+                              key={i}
+                              className="flex items-center gap-1 bg-neutral-700/40 border border-neutral-600/40 rounded-md px-2 py-1 text-xs text-white"
+                            >
+                              <span className="text-[rgb(var(--brand-400))] font-semibold">
+                                ${pricing.price_usd}
+                              </span>
+                              <span className="text-white/70">
+                                / {pricing.duration}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-white/60">Custom pricing</p>
+                      )}
+                    </a>
+                  ))}
+                </div>
+              );
+            })()}
 
             {/* Mobile Login/Register */}
             <a
