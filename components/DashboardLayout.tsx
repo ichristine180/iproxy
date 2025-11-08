@@ -28,6 +28,21 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useState, useEffect, Suspense } from "react";
 import SidebarLink from "./SideBarLink";
 
+const DURATION_ORDER = {
+  daily: 4,
+  weekly: 3,
+  monthly: 2,
+  yearly: 1,
+};
+
+function getPlanPriority(plan: any) {
+  if (!plan?.pricing || plan.pricing.length === 0) return 0;
+  return plan.pricing.reduce((max: number, p: any) => {
+    const val = DURATION_ORDER[p.duration as keyof typeof DURATION_ORDER] || 0;
+    return Math.max(max, val);
+  }, 0);
+}
+
 const DashboardLayoutContent = ({
   children,
 }: {
@@ -223,16 +238,12 @@ const DashboardLayoutContent = ({
 
             {(proxiesOpen || sidebarCollapsed) && (
               <div className="mt-1">
-                {channels.map((channel) => {
-                  // Sort pricing from daily to monthly
+                {[...channels].sort((a, b) => {
+                  return getPlanPriority(b) - getPlanPriority(a);
+                }).map((channel) => {
+                  // Sort pricing from yearly to daily
                   const sortedPricing = channel.pricing ? [...channel.pricing].sort((a: any, b: any) => {
-                    const order: Record<string, number> = {
-                      daily: 1,
-                      weekly: 2,
-                      monthly: 3,
-                      yearly: 4,
-                    };
-                    return order[a.duration] - order[b.duration];
+                    return (DURATION_ORDER[b.duration as keyof typeof DURATION_ORDER] || 0) - (DURATION_ORDER[a.duration as keyof typeof DURATION_ORDER] || 0);
                   }) : [];
 
                   return (

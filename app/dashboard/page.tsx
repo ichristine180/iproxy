@@ -104,6 +104,21 @@ interface Proxy {
   has_access?: boolean;
 }
 
+const DURATION_ORDER = {
+  daily: 4,
+  weekly: 3,
+  monthly: 2,
+  yearly: 1,
+};
+
+function getPlanPriority(plan: Plan) {
+  if (!plan?.pricing || plan.pricing.length === 0) return 0;
+  return plan.pricing.reduce((max, p) => {
+    const val = DURATION_ORDER[p.duration as keyof typeof DURATION_ORDER] || 0;
+    return Math.max(max, val);
+  }, 0);
+}
+
 function DashboardPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -1079,18 +1094,14 @@ function DashboardPageContent() {
             <div className="grid grid-cols-1 lg:grid-cols-2  sm:gap-8 padding-32-36">
               {/* Left Side - Plans List */}
               <div className="space-y-3 gap-8 d-flex flex-column">
-                {plans.map((plan) => {
+                {[...plans].sort((a, b) => {
+                  return getPlanPriority(b) - getPlanPriority(a);
+                }).map((plan) => {
                   const isSelected = selectedPlanId === plan.id;
 
-                  // Sort pricing from daily to monthly
+                  // Sort pricing from yearly to daily
                   const sortedPricing = plan.pricing ? [...plan.pricing].sort((a, b) => {
-                    const order: Record<string, number> = {
-                      daily: 1,
-                      weekly: 2,
-                      monthly: 3,
-                      yearly: 4,
-                    };
-                    return order[a.duration] - order[b.duration];
+                    return (DURATION_ORDER[b.duration as keyof typeof DURATION_ORDER] || 0) - (DURATION_ORDER[a.duration as keyof typeof DURATION_ORDER] || 0);
                   }) : [];
 
                   return (
