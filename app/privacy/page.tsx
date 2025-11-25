@@ -1,9 +1,8 @@
-"use client"
+"use client";
 
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { Card } from "@/components/ui/card";
 
 export default function PrivacyPage() {
   return (
@@ -13,204 +12,447 @@ export default function PrivacyPage() {
       <main className="pt-32 pb-20">
         <div className="container mx-auto px-6 max-w-4xl">
           {/* Header */}
-          <div className="mb-12 [animation:var(--animate-fade-in)]">
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 gradient-text">
-              Privacy Policy
-            </h1>
-            <p className="text-muted-foreground">Last updated: January 1, 2024</p>
-          </div>
+          <h1 className="content-heading tp-headline-l" data-v-129383>
+            Privacy and Confidentiality Policy
+          </h1>
 
           {/* Content */}
           <div className="space-y-8">
-            <Card className="p-8 bg-card/50">
-              <h2 className="text-2xl font-bold mb-4">1. Introduction</h2>
-              <p className="text-muted-foreground mb-4">
-                iProxy ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our proxy rental and management services.
-              </p>
-              <p className="text-muted-foreground">
-                Please read this Privacy Policy carefully. By using our services, you agree to the collection and use of information in accordance with this policy.
-              </p>
-            </Card>
-
-            <Card className="p-8 bg-card/50">
-              <h2 className="text-2xl font-bold mb-4">2. Information We Collect</h2>
-
-              <h3 className="text-xl font-semibold mb-3 mt-6">2.1 Personal Information</h3>
-              <p className="text-muted-foreground mb-4">
-                We collect information that you provide directly to us, including:
-              </p>
-              <ul className="list-disc list-inside text-muted-foreground space-y-2 mb-4">
-                <li>Name and email address</li>
-                <li>Billing information and payment details</li>
-                <li>Account credentials (username and password)</li>
-                <li>Company information (for business accounts)</li>
-                <li>Communication preferences</li>
-              </ul>
-
-              <h3 className="text-xl font-semibold mb-3 mt-6">2.2 Usage Information</h3>
-              <p className="text-muted-foreground mb-4">
-                We automatically collect certain information about your use of our services:
-              </p>
-              <ul className="list-disc list-inside text-muted-foreground space-y-2 mb-4">
-                <li>IP addresses and proxy usage logs</li>
-                <li>Bandwidth consumption and connection metrics</li>
-                <li>API requests and responses</li>
-                <li>Device information and browser type</li>
-                <li>Access times and dates</li>
-              </ul>
-
-              <h3 className="text-xl font-semibold mb-3 mt-6">2.3 Cookies and Tracking</h3>
-              <p className="text-muted-foreground">
-                We use cookies and similar tracking technologies to track activity on our service and hold certain information. You can instruct your browser to refuse all cookies or to indicate when a cookie is being sent.
-              </p>
-            </Card>
-
-            <Card className="p-8 bg-card/50">
-              <h2 className="text-2xl font-bold mb-4">3. How We Use Your Information</h2>
-              <p className="text-muted-foreground mb-4">
-                We use the collected information for various purposes:
-              </p>
-              <ul className="list-disc list-inside text-muted-foreground space-y-2">
-                <li>To provide and maintain our service</li>
-                <li>To process your transactions and manage your account</li>
-                <li>To send you technical notices and support messages</li>
-                <li>To respond to your comments and questions</li>
-                <li>To monitor and analyze usage patterns and trends</li>
-                <li>To detect, prevent, and address technical issues and fraud</li>
-                <li>To improve our services and develop new features</li>
-                <li>To comply with legal obligations</li>
-              </ul>
-            </Card>
-
-            <Card className="p-8 bg-card/50">
-              <h2 className="text-2xl font-bold mb-4">4. How We Share Your Information</h2>
-              <p className="text-muted-foreground mb-4">
-                We may share your information in the following situations:
-              </p>
-
-              <h3 className="text-xl font-semibold mb-3 mt-6">4.1 Service Providers</h3>
-              <p className="text-muted-foreground mb-4">
-                We may share your information with third-party service providers who perform services on our behalf, such as payment processing, data analysis, and customer service.
-              </p>
-
-              <h3 className="text-xl font-semibold mb-3 mt-6">4.2 Legal Requirements</h3>
-              <p className="text-muted-foreground mb-4">
-                We may disclose your information if required to do so by law or in response to valid requests by public authorities (e.g., a court or government agency).
-              </p>
-
-              <h3 className="text-xl font-semibold mb-3 mt-6">4.3 Business Transfers</h3>
-              <p className="text-muted-foreground">
-                In the event of a merger, acquisition, or sale of assets, your information may be transferred. We will provide notice before your information is transferred and becomes subject to a different privacy policy.
-              </p>
-            </Card>
-
-            <Card className="p-8 bg-card/50">
-              <h2 className="text-2xl font-bold mb-4">5. Data Security</h2>
-              <p className="text-muted-foreground mb-4">
-                We implement appropriate technical and organizational security measures to protect your personal information, including:
-              </p>
-              <ul className="list-disc list-inside text-muted-foreground space-y-2 mb-4">
-                <li>Encryption of data in transit and at rest</li>
-                <li>Regular security assessments and audits</li>
-                <li>Access controls and authentication mechanisms</li>
-                <li>Employee training on data protection</li>
-                <li>Incident response procedures</li>
-              </ul>
-              <p className="text-muted-foreground">
-                However, no method of transmission over the Internet or electronic storage is 100% secure. While we strive to use commercially acceptable means to protect your information, we cannot guarantee absolute security.
-              </p>
-            </Card>
-
-            <Card className="p-8 bg-card/50">
-              <h2 className="text-2xl font-bold mb-4">6. Data Retention</h2>
-              <p className="text-muted-foreground mb-4">
-                We retain your personal information only for as long as necessary to fulfill the purposes outlined in this Privacy Policy, unless a longer retention period is required or permitted by law.
-              </p>
-              <p className="text-muted-foreground">
-                Usage logs and connection data are typically retained for 90 days, while account information is retained until you request deletion or your account is terminated.
-              </p>
-            </Card>
-
-            <Card className="p-8 bg-card/50">
-              <h2 className="text-2xl font-bold mb-4">7. Your Privacy Rights</h2>
-              <p className="text-muted-foreground mb-4">
-                Depending on your location, you may have certain rights regarding your personal information:
-              </p>
-              <ul className="list-disc list-inside text-muted-foreground space-y-2 mb-4">
-                <li><strong>Access:</strong> Request access to your personal information</li>
-                <li><strong>Correction:</strong> Request correction of inaccurate information</li>
-                <li><strong>Deletion:</strong> Request deletion of your personal information</li>
-                <li><strong>Portability:</strong> Request transfer of your information</li>
-                <li><strong>Objection:</strong> Object to processing of your information</li>
-                <li><strong>Restriction:</strong> Request restriction of processing</li>
-              </ul>
-              <p className="text-muted-foreground">
-                To exercise these rights, please contact us at privacy@iproxy.com. We will respond to your request within 30 days.
-              </p>
-            </Card>
-
-            <Card className="p-8 bg-card/50">
-              <h2 className="text-2xl font-bold mb-4">8. International Data Transfers</h2>
-              <p className="text-muted-foreground mb-4">
-                Your information may be transferred to and maintained on computers located outside of your state, province, country, or other governmental jurisdiction where data protection laws may differ.
-              </p>
-              <p className="text-muted-foreground">
-                We take appropriate safeguards to ensure that your personal information remains protected in accordance with this Privacy Policy, including the use of Standard Contractual Clauses approved by the European Commission.
-              </p>
-            </Card>
-
-            <Card className="p-8 bg-card/50">
-              <h2 className="text-2xl font-bold mb-4">9. Children's Privacy</h2>
-              <p className="text-muted-foreground">
-                Our services are not intended for individuals under the age of 18. We do not knowingly collect personal information from children. If you are a parent or guardian and believe your child has provided us with personal information, please contact us.
-              </p>
-            </Card>
-
-            <Card className="p-8 bg-card/50">
-              <h2 className="text-2xl font-bold mb-4">10. Third-Party Links</h2>
-              <p className="text-muted-foreground">
-                Our service may contain links to third-party websites. We are not responsible for the privacy practices of these websites. We encourage you to read the privacy policies of every website you visit.
-              </p>
-            </Card>
-
-            <Card className="p-8 bg-card/50">
-              <h2 className="text-2xl font-bold mb-4">11. Changes to This Privacy Policy</h2>
-              <p className="text-muted-foreground mb-4">
-                We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last updated" date.
-              </p>
-              <p className="text-muted-foreground">
-                You are advised to review this Privacy Policy periodically for any changes. Changes are effective when posted on this page.
-              </p>
-            </Card>
-
-            <Card className="p-8 bg-card/50">
-              <h2 className="text-2xl font-bold mb-4">12. Contact Us</h2>
-              <p className="text-muted-foreground mb-4">
-                If you have any questions about this Privacy Policy, please contact us:
-              </p>
-              <p className="text-muted-foreground">
-                Email: privacy@iproxy.com<br />
-                Address: [Your Company Address]<br />
-                Data Protection Officer: dpo@iproxy.com
-              </p>
-            </Card>
-          </div>
-
-          {/* Related Links */}
-          <div className="mt-12 p-6 bg-card/30 border border-border rounded-lg">
-            <h3 className="font-semibold mb-4">Related Documents</h3>
-            <div className="flex flex-wrap gap-4">
-              <Link href="/terms" className="text-accent hover:underline">
-                Terms of Service
-              </Link>
-              <Link href="/refund" className="text-accent hover:underline">
-                Refund Policy
-              </Link>
-              <Link href="/docs" className="text-accent hover:underline">
-                Documentation
-              </Link>
+            <div className="mb-12 [animation:var(--animate-fade-in)]">
+              <h1 className="tp-headline-m" data-v-129383>
+                1. Definitions
+              </h1>
             </div>
+
+            <h3 className="tp-headline-s mb-3 mt-4">1.1. Highbid</h3>
+            <p className="text-muted-foreground mb-4">
+              "Highbid", "we", "our", or "us" means Highbid LTD, and its
+              affiliated companies, which own and operate the System and
+              Services as defined in the Terms of Service.
+            </p>
+
+            <h3 className="tp-headline-s mb-3">1.2. User</h3>
+            <p className="text-muted-foreground mb-4">
+              "User", "you" or "Client" means any individual or legal entity
+              that accesses or uses the System and Services in accordance with
+              the Highbid Terms of Service and is duly authorised to do so.
+            </p>
+
+            <h3 className="tp-headline-s mb-3">1.3. System and Services</h3>
+            <p className="text-muted-foreground mb-4">
+              "System" and "Services" have the meanings given to them in the
+              Highbid Terms of Service and include, without limitation,
+              Highbid's multiple IP address proxy infrastructure, data-gathering,
+              and proxy management solutions.
+            </p>
+
+            <h3 className="tp-headline-s mb-3">1.4. Personal Data</h3>
+            <p className="text-muted-foreground mb-4">
+              "Personal Data" means any information relating to an identified or
+              identifiable natural person, as defined by applicable data
+              protection laws.
+            </p>
+
+            <h3 className="tp-headline-s mb-3">1.5. Processing</h3>
+            <p className="text-muted-foreground mb-4">
+              "Processing" means any operation or set of operations performed on
+              Personal Data, whether or not by automated means, such as
+              collection, recording, organisation, storage, adaptation,
+              retrieval, use, disclosure, or deletion.
+            </p>
+
+            <h3 className="tp-headline-s mb-3">1.6. Confidential Information</h3>
+            <p className="text-muted-foreground mb-4">
+              "Confidential Information" means all non-public, confidential, or
+              proprietary information (in any form or medium) disclosed by one
+              party (the "Disclosing Party") to the other party (the "Receiving
+              Party") or its Representatives in connection with the use of the
+              System and Services, including, without limitation:
+            </p>
+            <ul className="list-disc list-inside text-muted-foreground space-y-2 mb-6">
+              <li>
+                business, technical, operational, financial, and product
+                information;
+              </li>
+              <li>
+                client lists, usage patterns, configurations, and network data;
+              </li>
+              <li>
+                any information that is identified as confidential or that,
+                given its nature or the circumstances of disclosure, should
+                reasonably be understood to be confidential.
+              </li>
+            </ul>
+
+            <h3 className="tp-headline-s mb-3">1.7. Representatives and Affiliates</h3>
+            <p className="text-muted-foreground">
+              "Representatives" means a party's employees, officers, directors,
+              professional advisors, and contractors who need access to
+              Confidential Information for the Permitted Purpose. "Affiliates"
+              means any entity that directly or indirectly controls, is
+              controlled by, or is under common control with a party.
+            </p>
+
+            <h1 className="tp-headline-m" data-v-129383>
+              2. Confidential Information
+            </h1>
+
+            <h3 className="tp-headline-s mb-3 mt-4">
+              2.1. Exclusions from Confidential Information
+            </h3>
+            <p className="text-muted-foreground mb-4">
+              Confidential Information does not include information that:
+            </p>
+            <ul className="list-disc list-inside text-muted-foreground space-y-2 mb-6">
+              <li>
+                a) is or becomes publicly available through no breach of this
+                Policy or any confidentiality obligation by the Receiving Party
+                or its Representatives;
+              </li>
+              <li>
+                b) was lawfully known to the Receiving Party on a
+                non-confidential basis before disclosure by the Disclosing
+                Party;
+              </li>
+              <li>
+                c) is or becomes available to the Receiving Party on a
+                non-confidential basis from a third party who, to the Receiving
+                Party's knowledge, is not bound by a confidentiality obligation
+                to the Disclosing Party or otherwise prohibited from disclosing
+                the information;
+              </li>
+              <li>
+                d) is independently developed by the Receiving Party without use
+                of or reference to the Disclosing Party's Confidential
+                Information; or
+              </li>
+              <li>
+                e) the parties explicitly agree in writing is not confidential
+                or may be publicly disclosed.
+              </li>
+            </ul>
+
+            <h3 className="tp-headline-s mb-3">2.2. Use and Non-Disclosure</h3>
+            <p className="text-muted-foreground mb-4">Each party shall:</p>
+            <ul className="list-disc list-inside text-muted-foreground space-y-2 mb-6">
+              <li>
+                a) keep the other party's Confidential Information strictly
+                confidential;
+              </li>
+              <li>
+                b) use such Confidential Information solely for the purpose of
+                performing or receiving the Services, exercising rights, or
+                complying with obligations under the Terms of Service or other
+                written agreements between the parties (the "Permitted
+                Purpose"); and
+              </li>
+              <li>
+                c) not disclose any Confidential Information, in whole or in
+                part, to any third party, except as permitted in this Policy or
+                with the prior written consent of the Disclosing Party.
+              </li>
+            </ul>
+
+            <h3 className="tp-headline-s mb-3">
+              2.3. Disclosure to Representatives and Affiliates
+            </h3>
+            <p className="text-muted-foreground mb-4">
+              A party may disclose the other party's Confidential Information to
+              its Representatives and Affiliates who have a strict need to know
+              such information for the Permitted Purpose, provided that:
+            </p>
+            <ul className="list-disc list-inside text-muted-foreground space-y-2 mb-6">
+              <li>
+                a) such persons are informed of the confidential nature of the
+                Confidential Information prior to disclosure; and
+              </li>
+              <li>
+                b) the disclosing party remains fully responsible and liable for
+                any breach of this Policy by its Representatives and Affiliates
+                as if such breach had been committed by the disclosing party
+                itself.
+              </li>
+            </ul>
+
+            <h3 className="tp-headline-s mb-3">2.4. Disclosure Required by Law</h3>
+            <p className="text-muted-foreground mb-4">
+              A party may disclose Confidential Information to the extent
+              required by applicable law, regulation, or by a court,
+              supervisory, or regulatory authority of competent jurisdiction,
+              provided that, where legally permitted and reasonably practicable,
+              the Receiving Party:
+            </p>
+            <ul className="list-disc list-inside text-muted-foreground space-y-2 mb-6">
+              <li>
+                a) gives prompt written notice to the Disclosing Party of the
+                required disclosure; and
+              </li>
+              <li>
+                b) reasonably cooperates with the Disclosing Party, at the
+                Disclosing Party's cost, in seeking protective measures or
+                limiting the scope of such disclosure.
+              </li>
+            </ul>
+
+            <h3 className="tp-headline-s mb-3">2.5. No Implied Rights</h3>
+            <p className="text-muted-foreground mb-4">
+              Each party retains all rights, title, and interest in and to its
+              own Confidential Information. No rights or licences (including
+              intellectual property rights) are granted by either party to the
+              other in relation to its Confidential Information except as
+              expressly set out in this Policy or in the Terms of Service.
+            </p>
+
+            <h3 className="tp-headline-s mb-3">2.6. Survival</h3>
+            <p className="text-muted-foreground">
+              The confidentiality obligations in this Policy survive termination
+              or expiry of the contractual relationship between the parties and
+              shall remain in effect for as long as the relevant Confidential
+              Information remains confidential.
+            </p>
+
+            <h1 className="tp-headline-m" data-v-129383>
+              3. Personal Data and Privacy
+            </h1>
+
+            <h3 className="tp-headline-s mb-3 mt-4">3.1. Scope</h3>
+            <p className="text-muted-foreground mb-4">
+              This section describes how Highbid processes Personal Data in
+              connection with the System and Services, including data relating
+              to Users and, where applicable, their end-users.
+            </p>
+
+            <h3 className="tp-headline-s mb-3">3.2. Categories of Personal Data</h3>
+            <p className="text-muted-foreground mb-4">
+              Depending on how you use the Services, Highbid may process the
+              following categories of Personal Data:
+            </p>
+            <ul className="list-disc list-inside text-muted-foreground space-y-2 mb-6">
+              <li>
+                <strong>Account and identification data:</strong> name, company
+                name, contact details (e-mail address, phone number), login
+                credentials, role, and billing contact information;
+              </li>
+              <li>
+                <strong>Billing and transaction data:</strong> payment method
+                identifiers (e.g., masked card data), invoicing details,
+                transaction history;
+              </li>
+              <li>
+                <strong>Technical and usage data:</strong> IP addresses, device
+                identifiers, proxy configuration, connection timestamps, logs of
+                requests and responses via the System (to the extent required
+                for security, abuse prevention, billing, and service
+                optimisation);
+              </li>
+              <li>
+                <strong>Communication data:</strong> content of support
+                requests, feedback, and any other communications with Highbid.
+              </li>
+            </ul>
+
+            <h3 className="tp-headline-s mb-3">3.3. Purposes of Processing</h3>
+            <p className="text-muted-foreground mb-4">
+              Highbid processes Personal Data for the following purposes:
+            </p>
+            <ul className="list-disc list-inside text-muted-foreground space-y-2 mb-6">
+              <li>
+                To create, manage, and secure User accounts and access to the
+                Services;
+              </li>
+              <li>
+                To provide, operate, maintain, and improve the System and
+                Services, including troubleshooting, monitoring, capacity
+                planning, and performance optimisation;
+              </li>
+              <li>
+                To prevent, detect, investigate, and mitigate security
+                incidents, abuse, fraud, or Prohibited Activities, as defined in
+                the Terms of Service;
+              </li>
+              <li>
+                To process payments, issue invoices, and manage billing and
+                collections;
+              </li>
+              <li>
+                To communicate with Users regarding the Services, including
+                service updates, alerts, and support;
+              </li>
+              <li>
+                To comply with legal obligations and to respond to lawful
+                requests from public authorities;
+              </li>
+              <li>
+                To produce aggregated or anonymised statistics and analytics
+                that do not identify individual Users.
+              </li>
+            </ul>
+
+            <h3 className="tp-headline-s mb-3">3.4. Legal Bases</h3>
+            <p className="text-muted-foreground mb-4">
+              Highbid processes Personal Data based on one or more of the
+              following legal bases, as applicable:
+            </p>
+            <ul className="list-disc list-inside text-muted-foreground space-y-2 mb-6">
+              <li>
+                performance of a contract or taking steps prior to entering into
+                a contract with you (e.g., provision of the Services, billing);
+              </li>
+              <li>
+                compliance with legal obligations (e.g., accounting, tax, AML
+                requirements, regulatory requests);
+              </li>
+              <li>
+                Highbid's legitimate interests (e.g., securing the System,
+                preventing abuse, improving the Services), provided that such
+                interests are not overridden by your rights and freedoms;
+              </li>
+              <li>
+                your consent, where required by applicable law (e.g., certain
+                cookies, marketing communications).
+              </li>
+            </ul>
+
+            <h3 className="tp-headline-s mb-3">3.5. Third-Party Service Providers</h3>
+            <p className="text-muted-foreground mb-4">
+              Highbid may share Personal Data with trusted third-party service
+              providers who process data on Highbid's behalf and in accordance
+              with Highbid's instructions, including:
+            </p>
+            <ul className="list-disc list-inside text-muted-foreground space-y-2 mb-6">
+              <li>hosting and infrastructure providers;</li>
+              <li>payment processors and financial institutions;</li>
+              <li>analytics, logging, and monitoring providers;</li>
+              <li>professional advisors (legal, tax, audit).</li>
+            </ul>
+            <p className="text-muted-foreground mb-4">
+              These service providers are bound by contractual obligations to
+              protect Personal Data and to use it only for the purposes for
+              which it was disclosed.
+            </p>
+
+            <h3 className="tp-headline-s mb-3">3.6. Data Retention</h3>
+            <p className="text-muted-foreground">
+              Highbid retains Personal Data only for as long as necessary to
+              fulfil the purposes for which it was collected, including to
+              comply with legal, accounting, or reporting requirements, and to
+              resolve disputes or enforce agreements. The specific retention
+              periods may vary depending on the category of data and applicable
+              law.
+            </p>
+
+            <h1 className="tp-headline-m" data-v-129383>
+              4. Cookies and Similar Technologies
+            </h1>
+
+            <h3 className="tp-headline-s mb-3 mt-4">4.1. Use of Cookies</h3>
+            <p className="text-muted-foreground mb-4">
+              Highbid may use cookies and similar technologies (such as local
+              storage, pixels, and scripts) on its websites and within the
+              dashboard to:
+            </p>
+            <ul className="list-disc list-inside text-muted-foreground space-y-2 mb-6">
+              <li>
+                enable and secure core functionality of the Services (e.g.,
+                authentication, session management);
+              </li>
+              <li>remember your preferences and settings;</li>
+              <li>
+                collect technical and usage information for service performance,
+                diagnostics, and optimisation;
+              </li>
+              <li>
+                conduct analytics and produce statistics on how the Services are
+                used;
+              </li>
+              <li>
+                support marketing and advertising activities where permitted by
+                law and, where required, with your consent.
+              </li>
+            </ul>
+
+            <h3 className="tp-headline-s mb-3">4.2. Types of Cookies</h3>
+            <p className="text-muted-foreground mb-4">
+              The cookies used by Highbid may include:
+            </p>
+            <ul className="list-disc list-inside text-muted-foreground space-y-2 mb-6">
+              <li>
+                <strong>Strictly necessary cookies:</strong> required for the
+                operation and security of the website and dashboard and cannot
+                be disabled in our systems;
+              </li>
+              <li>
+                <strong>Functional cookies:</strong> used to remember your
+                preferences and improve your experience;
+              </li>
+              <li>
+                <strong>Analytics cookies:</strong> used to understand how Users
+                interact with the Services and to help us improve them;
+              </li>
+              <li>
+                <strong>Advertising/marketing cookies:</strong> used, where
+                applicable, to deliver relevant content and campaigns.
+              </li>
+            </ul>
+
+            <h3 className="tp-headline-s mb-3">4.3. Control of Cookies</h3>
+            <p className="text-muted-foreground mb-4">
+              Where required by law, Highbid will request your consent before
+              placing non-essential cookies (such as analytics or advertising
+              cookies). You may manage or withdraw your consent through the
+              cookie banner or settings provided on our website, and you can
+              also control cookies through your browser settings. Disabling
+              certain cookies may affect the functionality or performance of the
+              Services.
+            </p>
+
+            <h3 className="tp-headline-s mb-3">4.4. Third-Party Cookies</h3>
+            <p className="text-muted-foreground">
+              Some cookies or similar technologies may be placed by third-party
+              service providers (for example, analytics or advertising partners)
+              acting on Highbid's behalf. These third parties may process
+              limited Personal Data in connection with their services, in
+              accordance with their own privacy terms and applicable data
+              protection laws.
+            </p>
+
+            <h1 className="tp-headline-m" data-v-129383>
+              5. Data Security
+            </h1>
+            <p className="text-muted-foreground">
+              Highbid implements appropriate technical and organisational
+              measures designed to protect Personal Data and Confidential
+              Information against accidental or unlawful destruction, loss,
+              alteration, unauthorised disclosure, or access. While no system
+              can be guaranteed to be 100% secure, Highbid uses industry-standard
+              safeguards and regularly reviews its security controls in light of
+              technological developments and risk assessments.
+            </p>
+
+            <h1 className="tp-headline-m" data-v-129383>
+              6. International Data Transfers
+            </h1>
+            <p className="text-muted-foreground">
+              Where Personal Data is transferred across borders, Highbid will
+              ensure that such transfers comply with applicable data protection
+              laws and that an adequate level of protection is provided, for
+              example by using standard contractual clauses or other lawful
+              transfer mechanisms.
+            </p>
+
+            <h1 className="tp-headline-m" data-v-129383>
+              7. Changes to This Policy
+            </h1>
+            <p className="text-muted-foreground">
+              Highbid may update this Privacy and Confidentiality Policy from
+              time to time. Any material changes will be communicated through
+              the website or dashboard, or by other appropriate means. Your
+              continued use of the Services after such changes become effective
+              constitutes your acceptance of the revised Policy.
+            </p>
           </div>
+
+         
         </div>
       </main>
 

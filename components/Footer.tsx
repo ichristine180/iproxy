@@ -33,14 +33,7 @@ const Footer = () => {
                   Privacy Policy
                 </Link>
               </li>
-              <li>
-                <Link
-                  href="/refund"
-                  className="text-neutral-0 hover:text-brand-300 transition-all cursor-pointer"
-                >
-                  Refund Policy
-                </Link>
-              </li>
+             
             </ul>
           </div>
 
@@ -49,12 +42,12 @@ const Footer = () => {
             <p className="text-neutral-0 hover:text-brand-300 transition-all cursor-pointer">
               If you have any issues, questions, or special requests, please don't hesitate to contact us:{" "}
               <a
-                href="https://t.me/HighbidProxyUS"
+                href="https://t.me/US5Gwetrust"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-primary hover:underline transition-colors"
               >
-                Telegram - @HighbidProxyUS
+                Telegram - @US5Gwetrust
               </a>
             </p>
           </div>

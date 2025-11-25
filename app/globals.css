@@ -6167,9 +6167,13 @@ label {
   padding: 16px 16px 0 16px;
 }
 
-/* .login-form {
-  margin: 0 20px;
-  color: rgb(var(--neutral-0)) !important;
-  padding: 0 30px 40px;
-} */
-
+.content-heading {
+  &[data-v-129383]:not(:first-child) {
+    margin-top: var(--ct-heading-spacing);
+  }
+}
+.content-heading {
+  &[data-v-129383]:not(:last-child) {
+    margin-bottom: var(--ct-heading-spacing);
+  }
+}
